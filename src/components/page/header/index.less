@@ -1,0 +1,36 @@
+.page-header{
+  background: @base-bg-color;
+  padding: 10px 20px;
+  &.head.content-fixed{
+    margin: auto;
+    max-width: 1400px;
+  }
+  .page-header-wide{
+    .detail{
+      display: flex;
+      .row {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+      }
+      .avatar {
+      }
+      .main{
+        width: 100%;
+        .title{
+          font-size: 20px;
+          color: @title-color;
+          margin-bottom: .2rem;
+        }
+        .content{
+          display: flex;
+          flex-wrap: wrap;
+          color: @text-color-second;
+        }
+        .extra{
+          display: flex;
+        }
+      }
+    }
+  }
+}
