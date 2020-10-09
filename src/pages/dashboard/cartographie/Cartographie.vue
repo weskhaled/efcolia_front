@@ -5,8 +5,8 @@
       <div>{{ currUser.position[lang] }}</div>
     </div>
     <template slot="extra">
-      <a-row type="flex" :gutter="8" style="width:100%" class="text-center">
-        <a-col flex="100" class="flex">
+      <div class="w-full block md:flex justify-end">
+        <div class="flex flex-1 mb-4 md:mb-0">
           <a-select
             show-search
             placeholder="Sélectionner une entreprise"
@@ -33,48 +33,50 @@
               {{ client.commercialname }}
             </a-select-option>
           </a-select>
-        </a-col>
-        <a-col flex="auto" class="flex">
-          <a-button
-            class="self-center"
-            type="primary"
-            shape="circle"
-            icon="search"
-          />
-        </a-col>
-        <a-col flex="auto" class="flex">
-          <a-button
-            class="self-center"
-            type="primary"
-            shape="circle"
-            icon="setting"
-          />
-        </a-col>
-        <a-col flex="auto" class="flex">
-          <a-button
-            class="self-center"
-            type="primary"
-            shape="circle"
-            icon="clock-circle"
-          />
-        </a-col>
-        <a-col flex="auto" class="flex">
-          <a-button
-            class="self-center"
-            type="primary"
-            shape="circle"
-            icon="customer-service"
-          />
-        </a-col>
-        <a-col flex="auto" class="flex">
-          <a-button
-            class="self-center"
-            type="primary"
-            shape="circle"
-            icon="message"
-          />
-        </a-col>
-      </a-row>
+        </div>
+        <div class="flex">
+          <div class="inline flex-auto md:flex-none flex flex-1 justify-center mx-1">
+            <a-button
+              class="self-center"
+              type="primary"
+              shape="circle"
+              icon="search"
+            />
+          </div>
+          <div class="inline flex-auto md:flex-none flex flex-1 justify-center mx-1">
+            <a-button
+              class="self-center"
+              type="primary"
+              shape="circle"
+              icon="setting"
+            />
+          </div>
+          <div class="inline flex-auto md:flex-none flex flex-1 justify-center mx-1">
+            <a-button
+              class="self-center"
+              type="primary"
+              shape="circle"
+              icon="clock-circle"
+            />
+          </div>
+          <div class="inline flex-auto md:flex-none flex flex-1 justify-center mx-1">
+            <a-button
+              class="self-center"
+              type="primary"
+              shape="circle"
+              icon="customer-service"
+            />
+          </div>
+          <div class="inline flex-auto md:flex-none flex flex-1 justify-center mx-1 mr-0">
+            <a-button
+              class="self-center"
+              type="primary"
+              shape="circle"
+              icon="message"
+            />
+          </div>
+        </div>
+      </div>
     </template>
     <template>
       <div class="md:flex sm:block">

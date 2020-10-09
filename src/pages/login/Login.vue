@@ -67,30 +67,6 @@
               </a-input>
             </a-form-item>
           </a-tab-pane>
-          <a-tab-pane tab="Register" key="2">
-            <a-form-item>
-              <a-input size="large" placeholder="mobile number">
-                <a-icon slot="prefix" type="mobile" />
-              </a-input>
-            </a-form-item>
-            <a-form-item>
-              <a-row :gutter="8" style="margin: 0 -4px">
-                <a-col :span="16">
-                  <a-input size="large" placeholder="captcha">
-                    <a-icon slot="prefix" type="mail" />
-                  </a-input>
-                </a-col>
-                <a-col :span="8" style="padding-left: 4px">
-                  <a-button
-                    style="width: 100%"
-                    class="captcha-button"
-                    size="large"
-                    >Submit</a-button
-                  >
-                </a-col>
-              </a-row>
-            </a-form-item>
-          </a-tab-pane>
         </a-tabs>
         <div>
           <a-checkbox :checked="false">remember me</a-checkbox>
