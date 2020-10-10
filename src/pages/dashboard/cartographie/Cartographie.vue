@@ -35,7 +35,9 @@
           </a-select>
         </div>
         <div class="flex">
-          <div class="inline flex-auto md:flex-none flex flex-1 justify-center mx-1">
+          <div
+            class="inline flex-auto md:flex-none flex flex-1 justify-center mx-1"
+          >
             <a-button
               class="self-center"
               type="primary"
@@ -43,7 +45,9 @@
               icon="search"
             />
           </div>
-          <div class="inline flex-auto md:flex-none flex flex-1 justify-center mx-1">
+          <div
+            class="inline flex-auto md:flex-none flex flex-1 justify-center mx-1"
+          >
             <a-button
               class="self-center"
               type="primary"
@@ -51,7 +55,9 @@
               icon="setting"
             />
           </div>
-          <div class="inline flex-auto md:flex-none flex flex-1 justify-center mx-1">
+          <div
+            class="inline flex-auto md:flex-none flex flex-1 justify-center mx-1"
+          >
             <a-button
               class="self-center"
               type="primary"
@@ -59,7 +65,9 @@
               icon="clock-circle"
             />
           </div>
-          <div class="inline flex-auto md:flex-none flex flex-1 justify-center mx-1">
+          <div
+            class="inline flex-auto md:flex-none flex flex-1 justify-center mx-1"
+          >
             <a-button
               class="self-center"
               type="primary"
@@ -67,7 +75,9 @@
               icon="customer-service"
             />
           </div>
-          <div class="inline flex-auto md:flex-none flex flex-1 justify-center mx-1 mr-0">
+          <div
+            class="inline flex-auto md:flex-none flex flex-1 justify-center mx-1 mr-0"
+          >
             <a-button
               class="self-center"
               type="primary"
@@ -130,7 +140,8 @@
               <div style="height: 550px" class="bg-gray-200">
                 <gmaps-map :options="mapOptions">
                   <gmaps-marker
-                    :position="{ lat: -21.083826, lng: 55.288006 }"
+                    v-if="devicePosition"
+                    :position="devicePosition"
                   />
                   <gmaps-polyline
                     :editable="false"
@@ -197,7 +208,7 @@ export default {
       },
       mapOptions: {
         center: { lat: -27.5, lng: 153 },
-        zoom: 9,
+        zoom: 14,
         fullscreenControl: false,
         mapTypeControl: false,
         rotateControl: false,
@@ -205,6 +216,7 @@ export default {
         streetViewControl: false,
         zoomControl: true,
       },
+      devicePosition: null,
       items: [
         { lat: -27.41, lng: 153.01 },
         { lat: -27.42, lng: 153.02 },
@@ -225,7 +237,7 @@ export default {
     request('/user/welcome', METHOD.GET).then(
       (res) => (this.welcome = res.data)
     )
-    request('http://107.155.162.18:3000/api/client', METHOD.GET).then((res) => {
+    request('api/client', METHOD.GET).then((res) => {
       this.clients = res.data
     })
     this.loading = false
@@ -237,19 +249,36 @@ export default {
       this.devices
         .filter((d) => d.id !== device.id)
         .forEach((d) => (d.selected = false))
+      if (device.selected) {
+        if (device?.deviceState?.latitude && device?.deviceState?.longitude) {
+          this.devicePosition = {
+            lat: device.deviceState.latitude,
+            lng: device.deviceState.longitude,
+          }
+          this.mapOptions.center = {
+            lat: device.deviceState.latitude,
+            lng: device.deviceState.longitude,
+          }
+        }
+        else {
+          this.$message.warn(this.$t('noGeoForDevice'), 3)
+          this.devicePosition = null
+        }
+      }
+      if (this.devices.every((d) => !d.selected)) {
+        this.devicePosition = null
+      }
     },
     selectClient(client_id) {
       this.devices = []
       this.devicesLoaded = false
       this.devicesLoading = true
-      request(
-        `http://107.155.162.18:3000/api/device/byClientId/${client_id}`,
-        METHOD.GET
-      ).then((res) => {
+      request(`api/device/byClientId/${client_id}`, METHOD.GET).then((res) => {
         this.devices = res.data.map((d) => ({
           id: d.device_id,
           name: d.name,
           date: '1/11/2010 15:11:11',
+          deviceState: d.deviceState,
           infos: {
             address: {
               startAddress: 'Rue Voltaire',

@@ -187,6 +187,7 @@ export default {
         this.$message.success(userData.message, 3)
       } else {
         this.error = loginRes.message
+        this.logging = false
       }
     },
   },

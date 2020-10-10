@@ -14,7 +14,8 @@ module.exports = {
       add: 'Add',
       geo: 'Géolocalisation',
       devices: 'Liste des appareils',
-      selectClientFirst: 'Veuillez sélectionner le client d\'abord'
+      selectClientFirst: 'Veuillez sélectionner le client d\'abord',
+      noGeoForDevice: 'Cet appareil n\'a pas de géolocalisation',
     },
     US: {
       project: 'Project',
@@ -29,7 +30,8 @@ module.exports = {
       add: 'Add',
       geo: 'Geolocalisation',
       devices: 'List of devices',
-      selectClientFirst: 'Please select client first'
+      selectClientFirst: 'Please select client first',
+      noGeoForDevice: 'This device has not a geoLocation',
     },
   }
 }
