@@ -68,10 +68,6 @@
             </a-form-item>
           </a-tab-pane>
         </a-tabs>
-        <div>
-          <a-checkbox :checked="false">remember me</a-checkbox>
-          <a style="float: right">forget password</a>
-        </div>
         <a-form-item>
           <a-button
             :loading="logging"
@@ -82,11 +78,6 @@
             >log in</a-button
           >
         </a-form-item>
-        <div>
-          Other login methods
-          <a-icon class="icon" type="facebook" />
-          <a-icon class="icon" type="google" />
-        </div>
       </a-form>
     </div>
   </common-layout>
@@ -187,8 +178,8 @@ export default {
         this.$message.success(userData.message, 3)
       } else {
         this.error = loginRes.message
-        this.logging = false
       }
+      this.logging = false
     },
   },
 }
