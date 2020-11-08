@@ -24,7 +24,7 @@
     <a-card-meta
       class="flex"
       :title="device.name"
-      :description="device.date"
+      :description="device.appdate"
       @click.stop="$emit('select', device)"
     >
       <div slot="avatar" class="self-center">
@@ -57,14 +57,14 @@
           </div>
           <div class="self-center flex-auto text-left">
             <div>
-              {{ device.infos.address.startAddress }}
+              {{ device.appsource }}
               <span class="float-right">{{
-                device.infos.address.startGeo
+                device.appsource
               }}</span>
             </div>
             <div>
-              {{ device.infos.address.endAddress }}
-              <span class="float-right">{{ device.infos.address.endGeo }}</span>
+              {{ device.deviceport }}
+              <span class="float-right">{{ device.deviceip }}</span>
             </div>
           </div>
         </div>
@@ -83,8 +83,8 @@
           </div>
           <div class="self-center flex-auto text-left">
             <div>
-              {{ device.infos.desc.text }}
-              <span class="float-right">{{ device.infos.desc.id }}</span>
+              +{{ device.msisdn }}
+              <span class="float-right">{{ device.serialnumber }}</span>
             </div>
           </div>
         </div>

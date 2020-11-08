@@ -1,5 +1,5 @@
 import TabsView from '@/layouts/tabs/TabsView'
-import BlankView from '@/layouts/BlankView'
+// import BlankView from '@/layouts/BlankView'
 // import PageView from '@/layouts/PageView'
 
 // 路由配置
@@ -100,26 +100,26 @@ const options = {
         //     }
         //   ]
         // },
-        {
-          path: 'details',
-          name: '详情页',
-          meta: {
-            icon: 'profile'
-          },
-          component: BlankView,
-          children: [
-            {
-              path: 'basic',
-              name: '基础详情页',
-              component: () => import('@/pages/detail/BasicDetail')
-            },
-            {
-              path: 'advance',
-              name: '高级详情页',
-              component: () => import('@/pages/detail/AdvancedDetail')
-            }
-          ]
-        },
+        // {
+        //   path: 'details',
+        //   name: '详情页',
+        //   meta: {
+        //     icon: 'profile'
+        //   },
+        //   component: BlankView,
+        //   children: [
+        //     {
+        //       path: 'basic',
+        //       name: '基础详情页',
+        //       component: () => import('@/pages/detail/BasicDetail')
+        //     },
+        //     {
+        //       path: 'advance',
+        //       name: '高级详情页',
+        //       component: () => import('@/pages/detail/AdvancedDetail')
+        //     }
+        //   ]
+        // },
         // {
         //   path: 'result',
         //   name: '结果页',

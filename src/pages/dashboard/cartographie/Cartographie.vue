@@ -7,32 +7,6 @@
     <template slot="extra">
       <div class="w-full block md:flex justify-end">
         <div class="flex flex-1 mb-4 md:mb-0">
-          <!-- <a-select
-            show-search
-            placeholder="Sélectionner une entreprise"
-            option-filter-prop="children"
-            class="self-center w-full"
-            :loading="clients.length < 0"
-            @change="selectClient"
-          >
-            <div slot="dropdownRender" slot-scope="menu">
-              <v-nodes :vnodes="menu" />
-              <a-divider style="margin: 0 0 4px 0;" />
-              <div
-                style="padding: 0 8px 8px;cursor: pointer;"
-                @mousedown="(e) => e.preventDefault()"
-              >
-                <a-icon type="plus" /> Load more client
-              </div>
-            </div>
-            <a-select-option
-              v-for="client in clients"
-              :key="client.clientId"
-              :value="client.clientId"
-            >
-              {{ client.commercialname }}
-            </a-select-option>
-          </a-select> -->
           <a-tree-select
             @change="selectClient"
             tree-data-simple-mode
@@ -101,22 +75,14 @@
       <div class="md:flex sm:block">
         <div class="w-full sm:w-full md:w-10 lg:w-12">
           <a-card :title="false" :bordered="false" :body-style="{ padding: 0 }">
-            <div
-              class="px-0 overflow-scroll"
-              style="height: 598px;border-right: solid 1px #e2e8f0;"
-            >
-              <div class="flex md:block divide-y divide-gray-300">
+            <div class="px-0 overflow-scroll left-tab">
+              <div class="flex md:block md:divide-y divide-gray-300">
                 <div
                   class="inline flex-auto md:flex-none flex flex-1 justify-center"
                 >
                   <a
-                    class="flex justify-center w-12 h-12"
-                    :class="tab === 1 ? 'bg-blue-100' : null"
-                    :style="
-                      tab === 1
-                        ? 'box-shadow: inset -2px 0 0px 0px #1c90ff;'
-                        : null
-                    "
+                    class="flex justify-center w-full md:w-12 h-12"
+                    :class="tab === 1 ? 'bg-blue-100 active' : null"
                     @click.prevent="tab = 1"
                   >
                     <a-icon
@@ -130,13 +96,8 @@
                   class="inline flex-auto md:flex-none flex flex-1 justify-center"
                 >
                   <a
-                    class="flex justify-center w-12 h-12"
-                    :class="tab === 2 ? 'bg-blue-100' : null"
-                    :style="
-                      tab === 2
-                        ? 'box-shadow: inset -2px 0 0px 0px #1c90ff;'
-                        : null
-                    "
+                    class="flex justify-center w-full md:w-12 h-12"
+                    :class="tab === 2 ? 'bg-blue-100 active' : null"
                     @click.prevent="tab = 2"
                   >
                     <a-icon
@@ -467,7 +428,6 @@ export default {
     ...mapState('setting', ['lang']),
   },
   created() {
-    console.log(this.currUser)
     request('/user/welcome', METHOD.GET).then(
       (res) => (this.welcome = res.data)
     )
@@ -477,7 +437,7 @@ export default {
         pId: 0,
         value: c.client_id,
         title: c.commercialname,
-        isLeaf: !c.parentclient_id || c.countChilds === 0
+        isLeaf: !c.parentclient_id || c.countChilds === 0,
       }))
     })
     this.loading = false
@@ -490,14 +450,14 @@ export default {
         .filter((d) => d.id !== device.id)
         .forEach((d) => (d.selected = false))
       if (device.selected) {
-        if (device?.deviceState?.latitude && device?.deviceState?.longitude) {
+        if (device?.latitude && device?.longitude) {
           this.devicePosition = {
-            lat: Number(device.deviceState.latitude),
-            lng: Number(device.deviceState.longitude),
+            lat: Number(device.latitude),
+            lng: Number(device.longitude),
           }
           this.mapOptions.center = {
-            lat: Number(device.deviceState.latitude),
-            lng: Number(device.deviceState.longitude),
+            lat: Number(device.latitude),
+            lng: Number(device.longitude),
           }
         } else {
           this.$message.warn(this.$t('noGeoForDevice'), 3)
@@ -509,8 +469,8 @@ export default {
       }
     },
     selectClient(client_id) {
-      console.log(client_id)
       this.devices = []
+      this.alertes = []
       this.devicePosition = null
       this.devicesLoaded = false
       this.devicesLoading = true
@@ -520,36 +480,17 @@ export default {
         `${BASE_URL}/api/device/byClientId/${client_id}`,
         METHOD.GET
       ).then((res) => {
-        this.devices = res.data.map((d) => ({
-          id: d.deviceId,
-          name: d.name,
-          date: '1/11/2010 15:11:11',
-          deviceState: d.deviceState,
-          infos: {
-            address: {
-              startAddress: 'Rue Voltaire',
-              endAddress: '1000 TROYES FRANCE',
-              startGeo: '124.234N',
-              endGeo: '124.234E',
-            },
-            desc: {
-              text: d.description,
-              id: 123124324,
-            },
-          },
-          selected: false,
-        }))
+        this.devices = res.data
         this.devicesLoaded = true
         this.devicesLoading = false
       })
-      request(
-        `${BASE_URL}/api/getalertbyclientid/${client_id}`,
-        METHOD.GET
-      ).then((res) => {
-        this.alertes = res.data.map((a) => ({ ...a, selected: false }))
-        this.alertesLoaded = true
-        this.alertesLoading = false
-      })
+      request(`${BASE_URL}/api/alert/byClientId/${client_id}`, METHOD.GET).then(
+        (res) => {
+          this.alertes = res.data
+          this.alertesLoaded = true
+          this.alertesLoading = false
+        }
+      )
     },
     selecteAlert(alert) {
       alert.selected = !alert.selected
@@ -569,19 +510,20 @@ export default {
     },
     onLoadClientsData(treeNode) {
       const { id } = treeNode.dataRef
-      return request(`${BASE_URL}/api/client/byParentId/${id}`, METHOD.GET).then(
-        (res) => {
-          this.treeClientsData = this.treeClientsData.concat(
-            res.data.map((c) => ({
-              id: c.client_id,
-              pId: c.parentclient_id,
-              value: c.client_id,
-              title: c.commercialname,
-              isLeaf: c.countChilds === 0
-            })),
-          )
-        }
-      )
+      return request(
+        `${BASE_URL}/api/client/byParentId/${id}`,
+        METHOD.GET
+      ).then((res) => {
+        this.treeClientsData = this.treeClientsData.concat(
+          res.data.map((c) => ({
+            id: c.client_id,
+            pId: c.parentclient_id,
+            value: c.client_id,
+            title: c.commercialname,
+            isLeaf: c.countChilds === 0,
+          }))
+        )
+      })
     },
   },
 }
@@ -606,7 +548,7 @@ export default {
   color: red !important;
 }
 .greenyellow {
-  color: greenyellow !important;
+  color: rgb(188, 207, 159) !important;
 }
 .fade-up-enter-active,
 .fade-up-leave-active {
@@ -617,5 +559,19 @@ export default {
   height: 0;
   transform: translateY(0px);
   opacity: 0;
+}
+.left-tab {
+  > div > div > a.active {
+    box-shadow: rgb(28, 144, 255) 0px -2px 0px 0px inset
+  }
+}
+@media only screen and (min-width: 768px) { 
+  .left-tab {
+    height: 598px;
+    border-right: solid 1px #e2e8f0;
+    > div > div > a.active {
+      box-shadow: inset -2px 0 0px 0px #1c90ff;
+    }
+  }
 }
 </style>

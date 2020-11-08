@@ -160,16 +160,7 @@ export default {
                 router: 'cartographie',
                 name: 'cartographie',
                 icon: 'dashboard',
-              },
-              {
-                router: 'message',
-                name: 'message',
-                icon: 'message',
-              },
-              {
-                router: 'form',
-                children: ['basicForm', 'stepForm', 'advanceForm'],
-              },
+              }
             ],
           },
         ]
