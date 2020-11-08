@@ -89,6 +89,7 @@ import { login } from '@/services/user'
 import { setAuthorization, request, METHOD } from '@/utils/request'
 import { loadRoutes } from '@/utils/routerUtil'
 import { mapMutations } from 'vuex'
+const BASE_URL = process.env.VUE_APP_API_BASE_URL
 
 export default {
   name: 'Login',
@@ -124,10 +125,10 @@ export default {
       if (loginRes) {
         setAuthorization({
           token: loginRes.token,
-          expireAt: new Date(new Date().getTime() + loginRes.expires),
+          expireAt: new Date(new Date().getTime() + 3600000),
         })
         const userData = await request(
-          'http://107.155.162.18:3000/request/user',
+          `${BASE_URL}/request/user`,
           METHOD.GET
         ).then((res) => ({
           message: 'Welcome ，Welcome back',
@@ -147,7 +148,6 @@ export default {
             roles: [{ id: 'admin', operation: ['add', 'edit', 'delete'] }],
           },
         }))
-        console.log(userData)
         const { user, permissions, roles } = userData.data
         this.setUser(user)
         this.setPermissions(permissions)

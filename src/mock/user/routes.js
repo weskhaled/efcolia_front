@@ -11,15 +11,6 @@ Mock.mock(`${process.env.VUE_APP_API_BASE_URL}/routes`, 'get', () => {
         name: 'cartographie',
         icon: 'dashboard',
         // authority: 'form'
-      },
-      {
-        router: 'message',
-        name: 'message',
-        icon: 'message',
-      },
-      {
-        router: 'form',
-        children: ['basicForm', 'stepForm', 'advanceForm']
       }
     ]
   }]

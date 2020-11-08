@@ -7,7 +7,7 @@
     <template slot="extra">
       <div class="w-full block md:flex justify-end">
         <div class="flex flex-1 mb-4 md:mb-0">
-          <a-select
+          <!-- <a-select
             show-search
             placeholder="Sélectionner une entreprise"
             option-filter-prop="children"
@@ -27,12 +27,21 @@
             </div>
             <a-select-option
               v-for="client in clients"
-              :key="client.client_id"
-              :value="client.client_id"
+              :key="client.clientId"
+              :value="client.clientId"
             >
               {{ client.commercialname }}
             </a-select-option>
-          </a-select>
+          </a-select> -->
+          <a-tree-select
+            @change="selectClient"
+            tree-data-simple-mode
+            class="self-center w-full"
+            :dropdown-style="{ maxHeight: '400px', overflow: 'auto' }"
+            :tree-data="treeClientsData"
+            placeholder="Please select"
+            :load-data="onLoadClientsData"
+          />
         </div>
         <div class="flex">
           <div
@@ -90,32 +99,52 @@
     </template>
     <template>
       <div class="md:flex sm:block">
-        <div class="w-full sm:w-full md:w-12 lg:w-20">
+        <div class="w-full sm:w-full md:w-10 lg:w-12">
           <a-card :title="false" :bordered="false" :body-style="{ padding: 0 }">
             <div
-              class="py-2 px-0 overflow-scroll"
+              class="px-0 overflow-scroll"
               style="height: 598px;border-right: solid 1px #e2e8f0;"
             >
-              <div class="flex md:block">
+              <div class="flex md:block divide-y divide-gray-300">
                 <div
-                  class="inline flex-auto md:flex-none flex flex-1 justify-center m-1 mb-2"
+                  class="inline flex-auto md:flex-none flex flex-1 justify-center"
                 >
-                  <a-button
-                    class="self-center"
-                    :type="tab === 1 ? 'primary' : 'default'"
-                    icon="pushpin"
+                  <a
+                    class="flex justify-center w-12 h-12"
+                    :class="tab === 1 ? 'bg-blue-100' : null"
+                    :style="
+                      tab === 1
+                        ? 'box-shadow: inset -2px 0 0px 0px #1c90ff;'
+                        : null
+                    "
                     @click.prevent="tab = 1"
-                  />
+                  >
+                    <a-icon
+                      class="self-center"
+                      type="pushpin"
+                      :class="tab === 1 ? 'text-blue-600' : null"
+                    />
+                  </a>
                 </div>
                 <div
-                  class="inline flex-auto md:flex-none flex flex-1 justify-center m-1 mb-2"
+                  class="inline flex-auto md:flex-none flex flex-1 justify-center"
                 >
-                  <a-button
-                    class="self-center"
-                    :type="tab === 2 ? 'primary' : 'default'"
-                    icon="alert"
+                  <a
+                    class="flex justify-center w-12 h-12"
+                    :class="tab === 2 ? 'bg-blue-100' : null"
+                    :style="
+                      tab === 2
+                        ? 'box-shadow: inset -2px 0 0px 0px #1c90ff;'
+                        : null
+                    "
                     @click.prevent="tab = 2"
-                  />
+                  >
+                    <a-icon
+                      class="self-center"
+                      type="alert"
+                      :class="tab === 2 ? 'text-blue-600' : null"
+                    />
+                  </a>
                 </div>
               </div>
             </div>
@@ -177,7 +206,6 @@
                 <a-input-search
                   class="self-center w-48"
                   placeholder="search device"
-                  @search="onSearchDevice"
                 />
               </a>
               <div
@@ -186,25 +214,25 @@
               >
                 <a-result
                   v-if="
-                    devices.length === 0 && !devicesLoaded && !devicesLoading
+                    alertes.length === 0 && !alertesLoaded && !alertesLoading
                   "
                   :title="$t('selectClientFirst')"
                 >
                 </a-result>
                 <a-result
                   status="404"
-                  title="No Devices"
-                  sub-title="Sorry, No devices for this client."
-                  v-if="devices.length === 0 && devicesLoaded"
+                  title="No Alertes"
+                  sub-title="No alertes for this client."
+                  v-if="alertes.length === 0 && alertesLoaded"
                 >
                 </a-result>
                 <div
-                  v-if="!devicesLoaded && devicesLoading"
+                  v-if="!alertesLoaded && alertesLoading"
                   class="w-full h-full flex place-content-center content-center"
                 >
                   <a-spin class="self-center" />
                 </div>
-                <div class="mb-3" v-for="alert in devices" :key="alert.id">
+                <div class="mb-3" v-for="alert in alertes" :key="alert.id">
                   <device-alert-card :alert="alert" @select="selecteAlert" />
                 </div>
               </div>
@@ -251,39 +279,53 @@
             >
               <div class="bg-white">
                 <div style="height: 550px" class="p-2">
-                  <a-descriptions :title="false" layout="vertical">
-                    <a-descriptions-item label="Name">
-                      Cloud Database
-                    </a-descriptions-item>
-                    <a-descriptions-item label="Description">
-                      Prepaid
-                    </a-descriptions-item>
-                    <a-descriptions-item label="Active">
-                      <a-badge status="processing" text="Yes" />
-                    </a-descriptions-item>
-                    <a-descriptions-item label="from">
-                      2018-04-24 18:00:00
-                    </a-descriptions-item>
-                    <a-descriptions-item label="to">
-                      2019-04-24 18:00:00
-                    </a-descriptions-item>
-                    <a-descriptions-item label="importance">
-                      Normal
-                    </a-descriptions-item>
-                    <a-descriptions-item
-                      label="Acknowlegment By User"
-                      :span="3"
-                    >
-                      <a-badge status="processing" text="Yes" />
-                    </a-descriptions-item>>
-                    <a-descriptions-item label="Requirement / Action">
-                      <a-table
-                        :columns="columnsAlert"
-                        :data-source="dataAlert"
-                        size="small"
-                      />
-                    </a-descriptions-item>
-                  </a-descriptions>
+                  <a-result
+                    v-if="!selectedAlert"
+                    :title="$t('selectAlertFirst')"
+                  />
+                  <div v-if="selectedAlert">
+                    <a-descriptions :title="false" layout="vertical">
+                      <a-descriptions-item label="Name">
+                        {{ selectedAlert.name }}
+                      </a-descriptions-item>
+                      <a-descriptions-item label="Description">
+                        {{ selectedAlert.description }}
+                      </a-descriptions-item>
+                      <a-descriptions-item label="Active">
+                        <a-badge
+                          :status="
+                            selectedAlert.status === '1' ? 'processing' : 'warn'
+                          "
+                          :text="selectedAlert.status === '1' ? 'Yes' : 'No'"
+                        />
+                      </a-descriptions-item>
+                      <a-descriptions-item label="from">
+                        2018-04-24 18:00:00
+                      </a-descriptions-item>
+                      <a-descriptions-item label="to">
+                        2019-04-24 18:00:00
+                      </a-descriptions-item>
+                      <a-descriptions-item label="importance">
+                        Normal
+                      </a-descriptions-item>
+                      <a-descriptions-item
+                        label="Acknowlegment By User"
+                        :span="3"
+                      >
+                        <a-badge
+                          status="processing"
+                          text="Yes"
+                        /> </a-descriptions-item
+                      >>
+                      <a-descriptions-item label="Requirement / Action">
+                        <a-table
+                          :columns="columnsAlert"
+                          :data-source="dataAlert"
+                          size="small"
+                        />
+                      </a-descriptions-item>
+                    </a-descriptions>
+                  </div>
                 </div>
               </div>
             </a-card>
@@ -299,7 +341,8 @@ import PageLayout from '@/layouts/PageLayout'
 import { mapState } from 'vuex'
 import { request, METHOD } from '@/utils/request'
 import { gmapsMap, gmapsMarker, gmapsPolyline } from '@/plugins/myGmap'
-import {DeviceCard, DeviceAlertCard} from '../../components'
+import { DeviceCard, DeviceAlertCard } from '../../components'
+const BASE_URL = process.env.VUE_APP_API_BASE_URL
 const icon = {
   path: 'M -2,0 0,-2 2,0 0,2 z',
   strokeColor: '#F00',
@@ -369,10 +412,10 @@ export default {
     gmapsPolyline,
     DeviceCard,
     DeviceAlertCard,
-    VNodes: {
-      functional: true,
-      render: (h, ctx) => ctx.props.vnodes,
-    },
+    // VNodes: {
+    //   functional: true,
+    //   render: (h, ctx) => ctx.props.vnodes,
+    // },
   },
   i18n: require('./i18n'),
   data() {
@@ -380,11 +423,17 @@ export default {
       clients: [],
       loading: true,
       companies: [],
+      clientValue: undefined,
+      treeClientsData: [],
       devices: [],
+      alertes: [],
+      selectedAlert: null,
       columnsAlert,
       dataAlert,
       devicesLoaded: false,
       devicesLoading: false,
+      alertesLoaded: false,
+      alertesLoading: false,
       welcome: {
         timeFix: '',
         message: '',
@@ -418,11 +467,18 @@ export default {
     ...mapState('setting', ['lang']),
   },
   created() {
+    console.log(this.currUser)
     request('/user/welcome', METHOD.GET).then(
       (res) => (this.welcome = res.data)
     )
-    request('api/client', METHOD.GET).then((res) => {
-      this.clients = res.data
+    request(`${BASE_URL}/api/client`, METHOD.GET).then((res) => {
+      this.treeClientsData = res.data.map((c) => ({
+        id: c.client_id,
+        pId: 0,
+        value: c.client_id,
+        title: c.commercialname,
+        isLeaf: !c.parentclient_id || c.countChilds === 0
+      }))
     })
     this.loading = false
   },
@@ -436,12 +492,12 @@ export default {
       if (device.selected) {
         if (device?.deviceState?.latitude && device?.deviceState?.longitude) {
           this.devicePosition = {
-            lat: device.deviceState.latitude,
-            lng: device.deviceState.longitude,
+            lat: Number(device.deviceState.latitude),
+            lng: Number(device.deviceState.longitude),
           }
           this.mapOptions.center = {
-            lat: device.deviceState.latitude,
-            lng: device.deviceState.longitude,
+            lat: Number(device.deviceState.latitude),
+            lng: Number(device.deviceState.longitude),
           }
         } else {
           this.$message.warn(this.$t('noGeoForDevice'), 3)
@@ -453,13 +509,19 @@ export default {
       }
     },
     selectClient(client_id) {
+      console.log(client_id)
       this.devices = []
       this.devicePosition = null
       this.devicesLoaded = false
       this.devicesLoading = true
-      request(`api/device/byClientId/${client_id}`, METHOD.GET).then((res) => {
+      this.alertesLoaded = false
+      this.alertesLoading = true
+      request(
+        `${BASE_URL}/api/device/byClientId/${client_id}`,
+        METHOD.GET
+      ).then((res) => {
         this.devices = res.data.map((d) => ({
-          id: d.device_id,
+          id: d.deviceId,
           name: d.name,
           date: '1/11/2010 15:11:11',
           deviceState: d.deviceState,
@@ -480,8 +542,47 @@ export default {
         this.devicesLoaded = true
         this.devicesLoading = false
       })
+      request(
+        `${BASE_URL}/api/getalertbyclientid/${client_id}`,
+        METHOD.GET
+      ).then((res) => {
+        this.alertes = res.data.map((a) => ({ ...a, selected: false }))
+        this.alertesLoaded = true
+        this.alertesLoading = false
+      })
     },
-    selecteAlert() {}  
+    selecteAlert(alert) {
+      alert.selected = !alert.selected
+      this.alertes
+        .filter((a) => a.id !== alert.id)
+        .forEach((a) => (a.selected = false))
+      if (alert.selected) {
+        if (alert) {
+          this.selectedAlert = alert
+        } else {
+          this.selectedAlert = null
+        }
+      }
+      if (this.alertes.every((a) => !a.selected)) {
+        this.selectedAlert = null
+      }
+    },
+    onLoadClientsData(treeNode) {
+      const { id } = treeNode.dataRef
+      return request(`${BASE_URL}/api/client/byParentId/${id}`, METHOD.GET).then(
+        (res) => {
+          this.treeClientsData = this.treeClientsData.concat(
+            res.data.map((c) => ({
+              id: c.client_id,
+              pId: c.parentclient_id,
+              value: c.client_id,
+              title: c.commercialname,
+              isLeaf: c.countChilds === 0
+            })),
+          )
+        }
+      )
+    },
   },
 }
 </script>
@@ -509,7 +610,7 @@ export default {
 }
 .fade-up-enter-active,
 .fade-up-leave-active {
-  transition: all 0.3s ease-in-out;
+  transition: all 0.2s ease-in-out;
 }
 .fade-up-enter,
 .fade-up-leave-to {

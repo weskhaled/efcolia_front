@@ -34,22 +34,22 @@ const options = {
           },
           component: () => import('@/pages/dashboard/cartographie'),
         },
-        {
-          path: 'message',
-          name: 'messagePage',
-          meta: {
-            icon: 'message',
-          },
-          component: () => import('@/pages/form/basic'),
-        },
-        {
-          path: 'rapport',
-          name: 'rapportPage',
-          meta: {
-            icon: 'profile',
-          },
-          component: () => import('@/pages/list/QueryList'),
-        },
+        // {
+        //   path: 'message',
+        //   name: 'messagePage',
+        //   meta: {
+        //     icon: 'message',
+        //   },
+        //   component: () => import('@/pages/form/basic'),
+        // },
+        // {
+        //   path: 'rapport',
+        //   name: 'rapportPage',
+        //   meta: {
+        //     icon: 'profile',
+        //   },
+        //   component: () => import('@/pages/list/QueryList'),
+        // },
         // {
         //   path: 'list',
         //   name: '列表页',
