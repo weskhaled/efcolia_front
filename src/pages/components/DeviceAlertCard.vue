@@ -11,9 +11,14 @@
       @click.stop="$emit('select', alert)"
     >
       <div slot="avatar" class="self-center">
-        <a-badge color="orange"/>
+        <a-badge color="orange" />
       </div>
     </a-card-meta>
+    <template slot="actions" class="ant-card-actions">
+      <a-icon key="setting" type="setting" />
+      <a-icon key="edit" type="edit" />
+      <a-icon key="delete" type="delete" />
+    </template>
   </a-card>
 </template>
 

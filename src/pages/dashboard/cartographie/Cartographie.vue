@@ -9,12 +9,15 @@
         <div class="flex flex-1 mb-4 md:mb-0">
           <a-tree-select
             @change="selectClient"
-            tree-data-simple-mode
+            treeNodeFilterProp="title"
             class="self-center w-full"
-            :dropdown-style="{ maxHeight: '400px', overflow: 'auto' }"
-            :tree-data="treeClientsData"
             placeholder="Please select"
+            show-search
+            tree-data-simple-mode
+            :dropdown-style="{ maxHeight: '300px', overflow: 'auto' }"
+            :tree-data="treeClientsData"
             :load-data="onLoadClientsData"
+            v-model="defaultClientValue"
           />
         </div>
         <div class="flex">
@@ -80,32 +83,43 @@
                 <div
                   class="inline flex-auto md:flex-none flex flex-1 justify-center"
                 >
-                  <a
-                    class="flex justify-center w-full md:w-12 h-12"
-                    :class="tab === 1 ? 'bg-blue-100 active' : null"
-                    @click.prevent="tab = 1"
-                  >
-                    <a-icon
-                      class="self-center"
-                      type="pushpin"
-                      :class="tab === 1 ? 'text-blue-600' : null"
-                    />
-                  </a>
+                  <a-tooltip>
+                    <template slot="title">
+                      Devices List
+                    </template>
+                    <a
+                      class="flex justify-center w-full md:w-12 h-12"
+                      :class="tab === 1 ? 'bg-blue-100 active' : null"
+                      @click.prevent="tab = 1"
+                    >
+                      <a-icon
+                        class="self-center"
+                        type="pushpin"
+                        :class="tab === 1 ? 'text-blue-600' : null"
+                      />
+                    </a>
+                  </a-tooltip>
                 </div>
                 <div
                   class="inline flex-auto md:flex-none flex flex-1 justify-center"
                 >
-                  <a
-                    class="flex justify-center w-full md:w-12 h-12"
-                    :class="tab === 2 ? 'bg-blue-100 active' : null"
-                    @click.prevent="tab = 2"
-                  >
-                    <a-icon
-                      class="self-center"
-                      type="alert"
-                      :class="tab === 2 ? 'text-blue-600' : null"
-                    />
-                  </a>
+                  <a-tooltip>
+                    <template slot="title">
+                      Alertes List
+                    </template>
+
+                    <a
+                      class="flex justify-center w-full md:w-12 h-12"
+                      :class="tab === 2 ? 'bg-blue-100 active' : null"
+                      @click.prevent="tab = 2"
+                    >
+                      <a-icon
+                        class="self-center"
+                        type="alert"
+                        :class="tab === 2 ? 'text-blue-600' : null"
+                      />
+                    </a>
+                  </a-tooltip>
                 </div>
               </div>
             </div>
@@ -245,47 +259,71 @@
                     :title="$t('selectAlertFirst')"
                   />
                   <div v-if="selectedAlert">
-                    <a-descriptions :title="false" layout="vertical">
+                    <a-descriptions
+                      :title="false"
+                      layout="vertical"
+                      :column="3"
+                    >
                       <a-descriptions-item label="Name">
                         {{ selectedAlert.name }}
                       </a-descriptions-item>
                       <a-descriptions-item label="Description">
-                        {{ selectedAlert.description }}
+                        {{ selectedAlert.description || 'No description' }}
                       </a-descriptions-item>
                       <a-descriptions-item label="Active">
                         <a-badge
                           :status="
-                            selectedAlert.status === '1' ? 'processing' : 'warn'
+                            selectedAlert.status === 1 ? 'processing' : 'error'
                           "
-                          :text="selectedAlert.status === '1' ? 'Yes' : 'No'"
+                          :text="selectedAlert.status === 1 ? 'Yes' : 'No'"
                         />
                       </a-descriptions-item>
                       <a-descriptions-item label="from">
-                        2018-04-24 18:00:00
+                        {{
+                          formatDate(
+                            new Date(selectedAlert.begindate),
+                            'dd/MM/yyyy'
+                          )
+                        }}
                       </a-descriptions-item>
                       <a-descriptions-item label="to">
-                        2019-04-24 18:00:00
+                        {{
+                          selectedAlert.enddate
+                            ? formatDate(
+                                new Date(selectedAlert.enddate),
+                                'dd/MM/yyyy'
+                              )
+                            : 'None'
+                        }}
                       </a-descriptions-item>
                       <a-descriptions-item label="importance">
-                        Normal
+                        {{
+                          selectedAlert.level === 3
+                            ? 'Danger'
+                            : selectedAlert.level === 2
+                            ? 'Warning'
+                            : 'Normal'
+                        }}
                       </a-descriptions-item>
                       <a-descriptions-item
                         label="Acknowlegment By User"
                         :span="3"
                       >
-                        <a-badge
-                          status="processing"
-                          text="Yes"
-                        /> </a-descriptions-item
-                      >>
-                      <a-descriptions-item label="Requirement / Action">
+                        <a-badge status="processing" text="Yes" />
+                      </a-descriptions-item>
+                    </a-descriptions>
+                    <a-tabs default-active-key="2">
+                      <a-tab-pane key="1" tab="Requirement">
+                        test
+                      </a-tab-pane>
+                      <a-tab-pane key="2" tab="Action" force-render>
                         <a-table
                           :columns="columnsAlert"
                           :data-source="dataAlert"
                           size="small"
                         />
-                      </a-descriptions-item>
-                    </a-descriptions>
+                      </a-tab-pane>
+                    </a-tabs>
                   </div>
                 </div>
               </div>
@@ -298,6 +336,7 @@
 </template>
 
 <script>
+import { format } from 'date-fns'
 import PageLayout from '@/layouts/PageLayout'
 import { mapState } from 'vuex'
 import { request, METHOD } from '@/utils/request'
@@ -384,7 +423,7 @@ export default {
       clients: [],
       loading: true,
       companies: [],
-      clientValue: undefined,
+      defaultClientValue: null,
       treeClientsData: [],
       devices: [],
       alertes: [],
@@ -432,6 +471,7 @@ export default {
       (res) => (this.welcome = res.data)
     )
     request(`${BASE_URL}/api/client`, METHOD.GET).then((res) => {
+      const defaultSelectClient = res.data.find((c) => !c.parentclient_id)
       this.treeClientsData = res.data.map((c) => ({
         id: c.client_id,
         pId: 0,
@@ -439,10 +479,15 @@ export default {
         title: c.commercialname,
         isLeaf: !c.parentclient_id || c.countChilds === 0,
       }))
+      this.selectClient(defaultSelectClient.client_id)
+      this.defaultClientValue = defaultSelectClient.client_id
     })
     this.loading = false
   },
   methods: {
+    formatDate: (date = new Date(), formatDate = 'yyyy-MM-dd') => {
+      return format(date, formatDate)
+    },
     onSearchDevice() {},
     selecteDevice(device) {
       device.selected = !device.selected
@@ -562,10 +607,10 @@ export default {
 }
 .left-tab {
   > div > div > a.active {
-    box-shadow: rgb(28, 144, 255) 0px -2px 0px 0px inset
+    box-shadow: rgb(28, 144, 255) 0px -2px 0px 0px inset;
   }
 }
-@media only screen and (min-width: 768px) { 
+@media only screen and (min-width: 768px) {
   .left-tab {
     height: 598px;
     border-right: solid 1px #e2e8f0;

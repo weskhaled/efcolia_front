@@ -1,9 +1,30 @@
-@import "ant-time-picker";
-@import "ant-message";
-@import "ant-table";
-@import "ant-menu";
-@import "ant-card";
+@import 'ant-time-picker';
+@import 'ant-message';
+@import 'ant-table';
+@import 'ant-menu';
+@import 'ant-card';
 .anticon svg {
   display: inline-block;
   vertical-align: unset;
+}
+.device-card {
+  .ant-popover-title {
+    min-width: 90px;
+    text-align: center;
+    min-height: 25px;
+    padding: 4px;
+    font-size: 0.9em;
+  }
+  .ant-popover-inner-content {
+    text-align: center;
+    padding: 5px;
+  }
+  .ant-rate-star {
+    &:not(:last-child) {
+      margin-right: 2px;
+    }
+    .anticon {
+      font-size: 0.6em;
+    }
+  }
 }

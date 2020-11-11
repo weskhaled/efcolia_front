@@ -6,16 +6,38 @@
     :class="device.selected ? 'bg-blue-200' : ''"
   >
     <template slot="actions" class="ant-card-actions p-0">
-      <a-badge color="green">
+      <a-popover title="Speed" overlayClassName="device-card">
+        <template slot="content">
+          <p>{{ device.speed }} Km/h</p>
+        </template>
         <a-icon class="" key="setting" type="car" />
-      </a-badge>
-      <a-badge color="red">
-        <a-icon class="" key="edit" type="api" />
-      </a-badge>
-      <a-badge color="blue">
-        <a-icon class="" key="ellipsis" type="eye" />
-      </a-badge>
-      <a-icon class="" key="edit" type="pushpin" />
+      </a-popover>
+      <a-popover title="Batry Level" overlayClassName="device-card">
+        <template slot="content">
+          <a-rate :default-value="device.speed" count="7" disabled />
+        </template>
+        <a-icon key="edit" type="thunderbolt" />
+      </a-popover>
+      <a-tooltip>
+        <template slot="title">
+          GPRS state
+        </template>
+        <span>
+          <a-badge :color="device.gprsstate ? 'green' : 'red'">
+            <a-icon class="" key="ellipsis" type="global" />
+          </a-badge>
+        </span>
+      </a-tooltip>
+      <a-tooltip>
+        <template slot="title">
+          Engine state
+        </template>
+        <span>
+          <a-badge :color="device.enginestate ? 'green' : 'red'">
+            <a-icon class="" key="edit" type="dashboard" />
+          </a-badge>
+        </span>
+      </a-tooltip>
       <a-icon class="" key="ellipsis" type="wifi" />
       <a-icon class="" key="ellipsis" type="sync" />
       <a-icon class="" key="ellipsis" type="car" />
@@ -24,7 +46,7 @@
     <a-card-meta
       class="flex"
       :title="device.name"
-      :description="device.appdate"
+      :description="formatDate(new Date(device.appdate), 'dd/MM/yyyy HH:mm:ss')"
       @click.stop="$emit('select', device)"
     >
       <div slot="avatar" class="self-center">
@@ -58,9 +80,7 @@
           <div class="self-center flex-auto text-left">
             <div>
               {{ device.appsource }}
-              <span class="float-right">{{
-                device.appsource
-              }}</span>
+              <span class="float-right">{{ device.appsource }}</span>
             </div>
             <div>
               {{ device.deviceport }}
@@ -94,6 +114,8 @@
 </template>
 
 <script>
+import { format } from 'date-fns'
+
 export default {
   name: 'DeviceCard',
   props: {
@@ -107,7 +129,11 @@ export default {
       showInfos: false,
     }
   },
-  created() {},
+  methods: {
+    formatDate: (date = new Date(), formatDate = 'yyyy-MM-dd') => {
+      return format(date, formatDate)
+    },
+  },
 }
 </script>
 
