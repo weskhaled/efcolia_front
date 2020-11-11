@@ -17,7 +17,15 @@
     <template slot="actions" class="ant-card-actions">
       <a-icon key="setting" type="setting" />
       <a-icon key="edit" type="edit" />
-      <a-icon key="delete" type="delete" />
+      <a-popconfirm
+        title="Are you sure delete this task?"
+        ok-text="Yes"
+        cancel-text="No"
+        @confirm="$emit('delete', alert)"
+        @cancel="$message.error('Click on No')"
+      >
+        <a-icon key="delete" type="delete" />
+      </a-popconfirm>
     </template>
   </a-card>
 </template>
@@ -35,7 +43,7 @@ export default {
     return {
       showInfos: false,
     }
-  },
+  }
 }
 </script>
 

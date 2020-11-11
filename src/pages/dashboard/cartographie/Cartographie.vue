@@ -229,8 +229,13 @@
                 <div style="height: 550px" class="bg-gray-200">
                   <gmaps-map :options="mapOptions">
                     <gmaps-marker
-                      v-if="devicePosition"
-                      :position="devicePosition"
+                      v-for="device in selectedDevices"
+                      @click="clickOnMapPin(device.id)"
+                      :key="device.id"
+                      :position="{
+                        lat: device.latitude,
+                        lng: device.longitude,
+                      }"
                     />
                     <gmaps-polyline
                       :editable="false"
@@ -340,7 +345,11 @@ import { format } from 'date-fns'
 import PageLayout from '@/layouts/PageLayout'
 import { mapState } from 'vuex'
 import { request, METHOD } from '@/utils/request'
-import { gmapsMap, gmapsMarker, gmapsPolyline } from '@/plugins/myGmap'
+import {
+  gmapsMap,
+  gmapsMarker,
+  gmapsPolyline
+} from '@/plugins/myGmap'
 import { DeviceCard, DeviceAlertCard } from '../../components'
 const BASE_URL = process.env.VUE_APP_API_BASE_URL
 const icon = {
@@ -428,6 +437,7 @@ export default {
       devices: [],
       alertes: [],
       selectedAlert: null,
+      selectedDevice: null,
       columnsAlert,
       dataAlert,
       devicesLoaded: false,
@@ -440,8 +450,8 @@ export default {
       },
       tab: 1,
       mapOptions: {
-        center: { lat: -27.5, lng: 153 },
-        zoom: 14,
+        center: { lat: 48, lng: 2 },
+        zoom: 2,
         fullscreenControl: false,
         mapTypeControl: false,
         rotateControl: false,
@@ -449,7 +459,7 @@ export default {
         streetViewControl: false,
         zoomControl: true,
       },
-      devicePosition: null,
+      selectedDevices: [],
       items: [
         { lat: -27.41, lng: 153.01 },
         { lat: -27.42, lng: 153.02 },
@@ -491,32 +501,24 @@ export default {
     onSearchDevice() {},
     selecteDevice(device) {
       device.selected = !device.selected
-      this.devices
-        .filter((d) => d.id !== device.id)
-        .forEach((d) => (d.selected = false))
       if (device.selected) {
-        if (device?.latitude && device?.longitude) {
-          this.devicePosition = {
+        this.selectedDevice = device
+      }
+      this.selectedDevices = this.devices.filter((sDevice) => sDevice.selected)
+      this.mapOptions = {
+          ...this.mapOptions,
+          zoom: 18,
+          center: {
             lat: Number(device.latitude),
             lng: Number(device.longitude),
-          }
-          this.mapOptions.center = {
-            lat: Number(device.latitude),
-            lng: Number(device.longitude),
-          }
-        } else {
-          this.$message.warn(this.$t('noGeoForDevice'), 3)
-          this.devicePosition = null
+          },
         }
-      }
-      if (this.devices.every((d) => !d.selected)) {
-        this.devicePosition = null
-      }
+      //   this.$message.warn(this.$t('noGeoForDevice'), 3)
     },
     selectClient(client_id) {
       this.devices = []
       this.alertes = []
-      this.devicePosition = null
+      this.selectedDevices = []
       this.devicesLoaded = false
       this.devicesLoading = true
       this.alertesLoaded = false
@@ -525,7 +527,9 @@ export default {
         `${BASE_URL}/api/device/byClientId/${client_id}`,
         METHOD.GET
       ).then((res) => {
+        this.selectedDevices = []
         this.devices = res.data
+        this.selectedDevices = res.data
         this.devicesLoaded = true
         this.devicesLoading = false
       })
@@ -569,6 +573,9 @@ export default {
           }))
         )
       })
+    },
+    clickOnMapPin(e) {
+      console.log(e)
     },
   },
 }
