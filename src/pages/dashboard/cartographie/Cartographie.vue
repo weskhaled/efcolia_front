@@ -38,7 +38,7 @@
               class="self-center"
               type="primary"
               shape="circle"
-              icon="setting"
+              icon="plus"
             />
           </div>
           <div
@@ -130,10 +130,20 @@
             <a-card
               v-if="tab === 1"
               key="1"
-              :title="$t('devices')"
               :bordered="false"
               :body-style="{ padding: 0 }"
             >
+              <template slot="title"
+                >{{ $t('devices') }}
+                <a-button
+                  class="self-center"
+                  type="primary"
+                  shape="circle"
+                  icon="plus"
+                  size="small"
+                  @click="() => (modalAddAlertVisible = true)"
+                />
+              </template>
               <a slot="extra">
                 <a-input-search
                   class="self-center w-48"
@@ -173,14 +183,24 @@
             <a-card
               v-if="tab === 2"
               key="2"
-              :title="$t('devicesAlerts')"
               :bordered="false"
               :body-style="{ padding: 0 }"
             >
+              <template slot="title"
+                >{{ $t('devicesAlerts') }}
+                <a-button
+                  class="self-center"
+                  type="primary"
+                  shape="circle"
+                  icon="plus"
+                  size="small"
+                  @click="() => (modalAddAlertVisible = true)"
+                />
+              </template>
               <a slot="extra">
                 <a-input-search
                   class="self-center w-48"
-                  placeholder="search device"
+                  placeholder="search alert"
                 />
               </a>
               <div
@@ -208,7 +228,11 @@
                   <a-spin class="self-center" />
                 </div>
                 <div class="mb-3" v-for="alert in alertes" :key="alert.id">
-                  <device-alert-card :alert="alert" @select="selecteAlert" />
+                  <device-alert-card
+                    :alert="alert"
+                    @select="selecteAlert"
+                    @delete="deleteAlert"
+                  />
                 </div>
               </div>
             </a-card>
@@ -228,23 +252,29 @@
               <div>
                 <div style="height: 550px" class="bg-gray-200">
                   <gmaps-map :options="mapOptions">
-                    <gmaps-marker
-                      v-for="device in selectedDevices"
-                      @click="clickOnMapPin(device.id)"
-                      :key="device.id"
+                    <gmaps-popup
+                      v-for="device in devices"
+                      :key="'gmaps-popup-' + device.id"
                       :position="{
-                        lat: device.latitude,
-                        lng: device.longitude,
+                        lat: Number(device.latitude),
+                        lng: Number(device.longitude),
                       }"
-                    />
-                    <gmaps-polyline
-                      :editable="false"
-                      :icons="icons"
-                      :path="items"
-                      @pathChanged="items = $event"
-                      strokeColor="dodgerblue"
-                      strokeWeight="5"
-                    />
+                      :background="
+                        device.selected
+                          ? 'rgb(255 255 255 / 100%)'
+                          : 'rgb(0 0 0 / 25%)'
+                      "
+                      :zIndex="device.selected ? 2 : 1"
+                    >
+                      <div :style="{ opacity: device.selected ? 1 : 0.25 }">
+                        <a-button
+                          class="self-center"
+                          type="primary"
+                          @click="clickOnMapPin($event, device)"
+                          >{{ device.name }}</a-button
+                        >
+                      </div>
+                    </gmaps-popup>
                   </gmaps-map>
                 </div>
               </div>
@@ -337,6 +367,15 @@
         </div>
       </div>
     </template>
+    <a-modal
+      title="addNewDevice"
+      :dialog-style="{ top: '20px' }"
+      :visible="modalAddAlertVisible"
+      @ok="() => (modalAddAlertVisible = false)"
+      @cancel="() => (modalAddAlertVisible = false)"
+    >
+      <p>some contents...</p>
+    </a-modal>
   </page-layout>
 </template>
 
@@ -345,11 +384,7 @@ import { format } from 'date-fns'
 import PageLayout from '@/layouts/PageLayout'
 import { mapState } from 'vuex'
 import { request, METHOD } from '@/utils/request'
-import {
-  gmapsMap,
-  gmapsMarker,
-  gmapsPolyline
-} from '@/plugins/myGmap'
+import { gmapsMap, gmapsPopup } from '@/plugins/myGmap'
 import { DeviceCard, DeviceAlertCard } from '../../components'
 const BASE_URL = process.env.VUE_APP_API_BASE_URL
 const icon = {
@@ -417,8 +452,7 @@ export default {
   components: {
     PageLayout,
     gmapsMap,
-    gmapsMarker,
-    gmapsPolyline,
+    gmapsPopup,
     DeviceCard,
     DeviceAlertCard,
     // VNodes: {
@@ -436,6 +470,7 @@ export default {
       treeClientsData: [],
       devices: [],
       alertes: [],
+      modalAddAlertVisible: false,
       selectedAlert: null,
       selectedDevice: null,
       columnsAlert,
@@ -501,19 +536,24 @@ export default {
     onSearchDevice() {},
     selecteDevice(device) {
       device.selected = !device.selected
+      this.devices
+        .filter((d) => d.id !== device.id)
+        .forEach((d) => (d.selected = false))
+      // this.selectedDevices = this.devices
+      //   .filter((d) => d.id !== device.id)
+      //   .map((d) => ({ ...d, selected: false }))
       if (device.selected) {
         this.selectedDevice = device
+        this.mapOptions.zoom = 18
+        this.mapOptions.center.lat = device.latitude
+        this.mapOptions.center.lng = device.longitude
+      } else {
+        this.selectedDevice = null
       }
-      this.selectedDevices = this.devices.filter((sDevice) => sDevice.selected)
-      this.mapOptions = {
-          ...this.mapOptions,
-          zoom: 18,
-          center: {
-            lat: Number(device.latitude),
-            lng: Number(device.longitude),
-          },
-        }
-      //   this.$message.warn(this.$t('noGeoForDevice'), 3)
+      if (this.devices.every((d) => !d.selected)) {
+        this.mapOptions.zoom = 2
+      }
+      // this.selectedDevices = this.devices.filter((sDevice) => sDevice.selected)
     },
     selectClient(client_id) {
       this.devices = []
@@ -527,7 +567,6 @@ export default {
         `${BASE_URL}/api/device/byClientId/${client_id}`,
         METHOD.GET
       ).then((res) => {
-        this.selectedDevices = []
         this.devices = res.data
         this.selectedDevices = res.data
         this.devicesLoaded = true
@@ -574,8 +613,15 @@ export default {
         )
       })
     },
-    clickOnMapPin(e) {
-      console.log(e)
+    clickOnMapPin(event, device) {
+      this.selecteDevice(device)
+    },
+    deleteAlert(alert) {
+      request(`${BASE_URL}/api/alert/${alert.id}`, METHOD.DELETE).then(
+        (result) => {
+          console.log(result)
+        }
+      )
     },
   },
 }

@@ -1,23 +1,33 @@
 <template>
   <a-card
     hoverable
-    class="w-full"
+    class="w-full device-card"
     :bodyStyle="{ padding: '.5rem .5rem' }"
     :class="device.selected ? 'bg-blue-200' : ''"
   >
     <template slot="actions" class="ant-card-actions p-0">
-      <a-popover title="Speed" overlayClassName="device-card">
-        <template slot="content">
-          <p>{{ device.speed }} Km/h</p>
+      <a-tooltip>
+        <template slot="title">
+          Speed
         </template>
-        <a-icon class="" key="setting" type="car" />
-      </a-popover>
-      <a-popover title="Batry Level" overlayClassName="device-card">
-        <template slot="content">
-          <a-rate :default-value="device.speed" count="7" disabled />
+        <span>
+          {{ device.speed }} Km/h
+        </span>
+      </a-tooltip>
+      <a-tooltip>
+        <template slot="title">
+          {{device.batteryvoltage }} V
         </template>
-        <a-icon key="edit" type="thunderbolt" />
-      </a-popover>
+        <span class="icon-wrp">
+          <span
+            class="battery"
+            :class="(device.batterylevel * 100) / 7 < 10 ? 'low' : ''"
+            :style="{
+              '--battery-level': (device.batterylevel * 100) / 7 + '%',
+            }"
+          />
+        </span>
+      </a-tooltip>
       <a-tooltip>
         <template slot="title">
           GPRS state
@@ -38,10 +48,26 @@
           </a-badge>
         </span>
       </a-tooltip>
-      <a-icon class="" key="ellipsis" type="wifi" />
-      <a-icon class="" key="ellipsis" type="sync" />
-      <a-icon class="" key="ellipsis" type="car" />
-      <a-icon class="" key="ellipsis" type="setting" />
+      <a-tooltip>
+        <template slot="title">
+          Last update {{formatDate(new Date(device.localizationdate), 'dd/MM/yyyy HH:mm:ss')}}
+        </template>
+        <span>
+          <a-badge :color="(formatDate(new Date(), 'dd') - formatDate(new Date(), 'dd') < 1) && (formatDate(new Date(), 'MM/yyyy') === formatDate(new Date(device.localizationdate), 'MM/yyyy')) && (formatDate(new Date(), 'HH') - formatDate(new Date(device.localizationdate), 'HH') < 8) ? 'green' : 'red'">
+            <a-icon class="" key="edit" type="sync" />
+          </a-badge>
+        </span>
+      </a-tooltip>
+      <a-tooltip>
+        <template slot="title">
+          GPRS state
+        </template>
+        <span>
+          <a-badge :color="device.gprsstate ? 'green' : 'red'">
+            <a-icon class="" key="edit" type="api" />
+          </a-badge>
+        </span>
+      </a-tooltip>
     </template>
     <a-card-meta
       class="flex"
@@ -80,11 +106,11 @@
           <div class="self-center flex-auto text-left">
             <div>
               {{ device.appsource }}
-              <span class="float-right">{{ device.appsource }}</span>
+              <span class="float-right">{{ device.latitude }}</span>
             </div>
             <div>
               {{ device.deviceport }}
-              <span class="float-right">{{ device.deviceip }}</span>
+              <span class="float-right">{{ device.longitude }}</span>
             </div>
           </div>
         </div>
@@ -103,7 +129,7 @@
           </div>
           <div class="self-center flex-auto text-left">
             <div>
-              +{{ device.msisdn }}
+              <span v-if="device.msisdn">+{{ device.msisdn }}</span>
               <span class="float-right">{{ device.serialnumber }}</span>
             </div>
           </div>
@@ -130,11 +156,53 @@ export default {
     }
   },
   methods: {
-    formatDate: (date = new Date(), formatDate = 'yyyy-MM-dd') => {
+    formatDate: (date = new Date(), formatDate = 'yyyy-MM-dd HH:mm:ss') => {
       return format(date, formatDate)
     },
   },
 }
 </script>
 
-<style lang="less" scoped></style>
+<style lang="less" scoped>
+.device-card .ant-card-actions li > span > span {
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.battery {
+  display: block;
+  position: relative;
+  margin: 0 auto;
+  width: calc(20px);
+  color: rgb(0, 255, 109);
+  border: calc(1px) solid currentColor;
+  height: calc(10px);
+  border-radius: calc(2px);
+  &:before {
+    content: '';
+    width: var(--battery-level);
+    height: 100%;
+    left: 0px;
+    top: 0px;
+    background: currentColor;
+    position: absolute;
+    padding: 0.5px 0;
+  }
+  &:after {
+    content: '';
+    position: absolute;
+    margin-right: calc(-4px);
+    right: 0;
+    top: 1px;
+    width: calc(2px);
+    height: calc(100% - 2px);
+    background: currentColor;
+    border-bottom-right-radius: calc(5px);
+    border-top-right-radius: calc(5px);
+  }
+  &.low {
+    color: rgb(255, 38, 0);
+  }
+}
+</style>

@@ -123,9 +123,10 @@ export default {
       this.logging = false
       const loginRes = res.data
       if (loginRes) {
+        const now = new Date();
         setAuthorization({
           token: loginRes.token,
-          expireAt: new Date(new Date().getTime() + 3600000),
+          expireAt: new Date(now.getTime() + loginRes.expires*1000),
         })
         const userData = await request(
           `${BASE_URL}/request/user`,

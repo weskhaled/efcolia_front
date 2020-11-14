@@ -1,6 +1,6 @@
 <template>
   <div class="gmaps-popup-container" @click.prevent="$emit('click')">
-    <div class="gmaps-popup-bubble-anchor" :style="`color: ${background};`">
+    <div class="gmaps-popup-bubble-anchor" :style="`color: ${background};z-index: ${zIndex};`">
       <div class="gmaps-popup-bubble" :style="`background: ${background}; maxWidth:${width}; maxHeight:${height};`">
         <slot />
       </div>
@@ -18,7 +18,8 @@ export default {
     background: { type: String, default: '#EEEEEE' },
     width: { type: String, default: '200px' },
     height: { type: String, default: '60px' },
-    position: { type: Object, required: true }
+    position: { type: Object, required: true },
+    zIndex: { type: Number, default: 1 },
   },
   data: () => ({ popup: null }),
   watch: {

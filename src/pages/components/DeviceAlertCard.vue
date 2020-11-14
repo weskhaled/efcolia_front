@@ -18,7 +18,7 @@
       <a-icon key="setting" type="setting" />
       <a-icon key="edit" type="edit" />
       <a-popconfirm
-        title="Are you sure delete this task?"
+        title="Are you sure delete this alert?"
         ok-text="Yes"
         cancel-text="No"
         @confirm="$emit('delete', alert)"
