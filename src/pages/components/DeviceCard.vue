@@ -10,20 +10,16 @@
         <template slot="title">
           Speed
         </template>
-        <span>
-          {{ device.speed }} Km/h
-        </span>
+        <span> {{ device.speed }} Km/h </span>
       </a-tooltip>
       <a-tooltip>
-        <template slot="title">
-          {{device.batteryvoltage }} V
-        </template>
+        <template slot="title"> {{ device.batteryvoltage }} V - {{((device.batterylevel * 100) / 7).toFixed(0)}} % </template>
         <span class="icon-wrp">
           <span
             class="battery"
             :class="(device.batterylevel * 100) / 7 < 10 ? 'low' : ''"
             :style="{
-              '--battery-level': (device.batterylevel * 100) / 7 + '%',
+              '--battery-level': `${(device.batterylevel * 100) / 7}%`,
             }"
           />
         </span>
@@ -50,10 +46,24 @@
       </a-tooltip>
       <a-tooltip>
         <template slot="title">
-          Last update {{formatDate(new Date(device.localizationdate), 'dd/MM/yyyy HH:mm:ss')}}
+          Last update
+          {{
+            formatDate(new Date(device.localizationdate), 'dd/MM/yyyy HH:mm:ss')
+          }}
         </template>
         <span>
-          <a-badge :color="(formatDate(new Date(), 'dd') - formatDate(new Date(), 'dd') < 1) && (formatDate(new Date(), 'MM/yyyy') === formatDate(new Date(device.localizationdate), 'MM/yyyy')) && (formatDate(new Date(), 'HH') - formatDate(new Date(device.localizationdate), 'HH') < 8) ? 'green' : 'red'">
+          <a-badge
+            :color="
+              formatDate(new Date(), 'dd') - formatDate(new Date(), 'dd') < 1 &&
+              formatDate(new Date(), 'MM/yyyy') ===
+                formatDate(new Date(device.localizationdate), 'MM/yyyy') &&
+              formatDate(new Date(), 'HH') -
+                formatDate(new Date(device.localizationdate), 'HH') <
+                8
+                ? 'green'
+                : 'red'
+            "
+          >
             <a-icon class="" key="edit" type="sync" />
           </a-badge>
         </span>
@@ -173,30 +183,31 @@ export default {
 .battery {
   display: block;
   position: relative;
-  margin: 0 auto;
+  margin: 2px auto;
   width: calc(20px);
-  color: rgb(0, 255, 109);
-  border: calc(1px) solid currentColor;
+  color: #00ff6d;
+  /* border: calc(1px) solid currentColor; */
   height: calc(10px);
-  border-radius: calc(2px);
+  border-radius: 1px;
+  box-shadow: 0px 0px 0px 1px currentColor;
   &:before {
     content: '';
     width: var(--battery-level);
-    height: 100%;
-    left: 0px;
-    top: 0px;
+    height: calc(100%);
+    left: 0;
+    top: 0;
     background: currentColor;
     position: absolute;
-    padding: 0.5px 0;
+    border-radius: 0;
   }
   &:after {
     content: '';
     position: absolute;
     margin-right: calc(-4px);
     right: 0;
-    top: 1px;
+    top: 2px;
     width: calc(2px);
-    height: calc(100% - 2px);
+    height: calc(100% - 4px);
     background: currentColor;
     border-bottom-right-radius: calc(5px);
     border-top-right-radius: calc(5px);

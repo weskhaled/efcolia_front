@@ -6,7 +6,7 @@
     </div>
     <template slot="extra">
       <div class="w-full block md:flex justify-end">
-        <div class="flex flex-1 mb-4 md:mb-0">
+        <div class="flex flex-1 mb-4 md:mb-0 relative">
           <a-tree-select
             @change="selectClient"
             treeNodeFilterProp="title"
@@ -14,11 +14,24 @@
             placeholder="Please select"
             show-search
             tree-data-simple-mode
+            :disabled="!!!treeClientsData.length"
+            :class="!!!treeClientsData.length ? 'opacity-50' : ''"
             :dropdown-style="{ maxHeight: '300px', overflow: 'auto' }"
+            :treeDefaultExpandAll="true"
             :tree-data="treeClientsData"
-            :load-data="onLoadClientsData"
             v-model="defaultClientValue"
           />
+          <a-spin
+            :spinning="!!!treeClientsData.length"
+            style="position: absolute;top: 15px;right: 5px"
+          >
+            <a-icon
+              slot="indicator"
+              type="loading"
+              style="font-size: 24px"
+              spin
+            />
+          </a-spin>
         </div>
         <div class="flex">
           <div
@@ -83,7 +96,8 @@
                 <div
                   class="inline flex-auto md:flex-none flex flex-1 justify-center"
                 >
-                  <a-tooltip>
+                  <a-tooltip placement="rightTop"
+                    >``
                     <template slot="title">
                       Devices List
                     </template>
@@ -103,7 +117,7 @@
                 <div
                   class="inline flex-auto md:flex-none flex flex-1 justify-center"
                 >
-                  <a-tooltip>
+                  <a-tooltip placement="rightTop">
                     <template slot="title">
                       Alertes List
                     </template>
@@ -269,7 +283,24 @@
                       <div :style="{ opacity: device.selected ? 1 : 0.25 }">
                         <a-button
                           class="self-center"
-                          type="primary"
+                          :type="
+                            formatDate(new Date(), 'dd') -
+                              formatDate(new Date(), 'dd') <
+                              1 &&
+                            formatDate(new Date(), 'MM/yyyy') ===
+                              formatDate(
+                                new Date(device.localizationdate),
+                                'MM/yyyy'
+                              ) &&
+                            formatDate(new Date(), 'HH') -
+                              formatDate(
+                                new Date(device.localizationdate),
+                                'HH'
+                              ) <
+                              8
+                              ? 'primary'
+                              : 'danger'
+                          "
                           @click="clickOnMapPin($event, device)"
                           >{{ device.name }}</a-button
                         >
@@ -516,16 +547,10 @@ export default {
       (res) => (this.welcome = res.data)
     )
     request(`${BASE_URL}/api/client`, METHOD.GET).then((res) => {
-      const defaultSelectClient = res.data.find((c) => !c.parentclient_id)
-      this.treeClientsData = res.data.map((c) => ({
-        id: c.client_id,
-        pId: 0,
-        value: c.client_id,
-        title: c.commercialname,
-        isLeaf: !c.parentclient_id || c.countChilds === 0,
-      }))
-      this.selectClient(defaultSelectClient.client_id)
-      this.defaultClientValue = defaultSelectClient.client_id
+      const defaultSelectClient = res.data.find((c) => !c.pId)
+      this.treeClientsData = res.data
+      this.selectClient(defaultSelectClient.id)
+      this.defaultClientValue = defaultSelectClient.id
     })
     this.loading = false
   },
@@ -629,6 +654,10 @@ export default {
 
 <style lang="less">
 @import 'index';
+.ant-spin-container {
+  width: 100%;
+  align-self: center;
+}
 .ant-card-actions {
   li {
     margin: 0.4rem 0px;
