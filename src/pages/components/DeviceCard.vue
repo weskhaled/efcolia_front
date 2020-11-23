@@ -2,6 +2,7 @@
   <a-card
     hoverable
     class="w-full device-card"
+    size="small"
     :bodyStyle="{ padding: '.5rem .5rem' }"
     :class="device.selected ? 'bg-blue-200' : ''"
   >
@@ -10,10 +11,15 @@
         <template slot="title">
           Speed
         </template>
-        <span> {{ device.speed }} Km/h </span>
+        <span class="capitalize" style="font-size:0.7em">
+          {{ device.speed }} miles/h
+        </span>
       </a-tooltip>
       <a-tooltip>
-        <template slot="title"> {{ device.batteryvoltage }} V - {{((device.batterylevel * 100) / 7).toFixed(0)}} % </template>
+        <template slot="title">
+          {{ device.batteryvoltage }} V -
+          {{ ((device.batterylevel * 100) / 7).toFixed(0) }} %
+        </template>
         <span class="icon-wrp">
           <span
             class="battery"
@@ -78,6 +84,18 @@
           </a-badge>
         </span>
       </a-tooltip>
+      <a-dropdown>
+        <a class="ant-dropdown-link" @click="(e) => e.preventDefault()">
+          <a-icon class="" key="edit" type="setting" />
+        </a>
+        <a-menu slot="overlay">
+          <a-menu-item>
+            <span @click.stop="$emit('history-device', {id: device.id, name: device.name})"
+              ><a-icon class="mr-1" type="history" /> Historique</span
+            >
+          </a-menu-item>
+        </a-menu>
+      </a-dropdown>
     </template>
     <a-card-meta
       class="flex"

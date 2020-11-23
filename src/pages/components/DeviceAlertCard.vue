@@ -15,7 +15,6 @@
       </div>
     </a-card-meta>
     <template slot="actions" class="ant-card-actions">
-      <a-icon key="setting" type="setting" />
       <a-icon key="edit" type="edit" />
       <a-popconfirm
         title="Are you sure delete this alert?"

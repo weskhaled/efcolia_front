@@ -91,20 +91,19 @@
       <div class="md:flex sm:block">
         <div class="w-full sm:w-full md:w-10 lg:w-12">
           <a-card :title="false" :bordered="false" :body-style="{ padding: 0 }">
-            <div class="px-0 overflow-scroll left-tab">
+            <div class="px-0 overflow-scroll left-tab overflow-hidden">
               <div class="flex md:block md:divide-y divide-gray-300">
                 <div
                   class="inline flex-auto md:flex-none flex flex-1 justify-center"
                 >
-                  <a-tooltip placement="rightTop"
-                    >``
+                  <a-tooltip placement="rightTop">
                     <template slot="title">
                       Devices List
                     </template>
                     <a
                       class="flex justify-center w-full md:w-12 h-12"
                       :class="tab === 1 ? 'bg-blue-100 active' : null"
-                      @click.prevent="tab = 1"
+                      @click.prevent="tab = 1, showHistoryInMap = false"
                     >
                       <a-icon
                         class="self-center"
@@ -139,13 +138,21 @@
             </div>
           </a-card>
         </div>
-        <div class="w-full sm:w-full md:w-3/6 lg:w-3/6">
+        <div
+          :class="
+            tab === 3
+              ? 'w-full sm:w-full md:w-3/6 lg:w-3/6 xl:w-3/6'
+              : 'w-full sm:w-full md:w-3/6 lg:w-2/6'
+          "
+        >
           <transition-group name="fade-up" target="div" appear>
+            <!-- devices list -->
             <a-card
               v-if="tab === 1"
               key="1"
               :bordered="false"
               :body-style="{ padding: 0 }"
+              class="overflow-hidden"
             >
               <template slot="title"
                 >{{ $t('devices') }}
@@ -160,40 +167,47 @@
               </template>
               <a slot="extra">
                 <a-input-search
-                  class="self-center w-48"
+                  class="self-center w-48 invisible md:visible"
                   placeholder="search device"
                   @search="onSearchDevice"
                 />
               </a>
-              <div
-                class="p-3 overflow-scroll"
-                style="height: 550px; border-right: 1px solid rgb(226, 232, 240);"
-              >
-                <a-result
-                  v-if="
-                    devices.length === 0 && !devicesLoaded && !devicesLoading
-                  "
-                  :title="$t('selectClientFirst')"
-                >
-                </a-result>
-                <a-result
-                  status="404"
-                  title="No Devices"
-                  sub-title="Sorry, No devices for this client."
-                  v-if="devices.length === 0 && devicesLoaded"
-                >
-                </a-result>
+              <div>
                 <div
-                  v-if="!devicesLoaded && devicesLoading"
-                  class="w-full h-full flex place-content-center content-center"
+                  class="p-3 overflow-scroll"
+                  style="height: 550px; border-right: 1px solid rgb(226, 232, 240);"
                 >
-                  <a-spin class="self-center" />
-                </div>
-                <div class="mb-3" v-for="device in devices" :key="device.id">
-                  <device-card :device="device" @select="selecteDevice" />
+                  <a-result
+                    v-if="
+                      devices.length === 0 && !devicesLoaded && !devicesLoading
+                    "
+                    :title="$t('selectClientFirst')"
+                  >
+                  </a-result>
+                  <a-result
+                    status="404"
+                    title="No Devices"
+                    sub-title="Sorry, No devices for this client."
+                    v-if="devices.length === 0 && devicesLoaded"
+                  >
+                  </a-result>
+                  <div
+                    v-if="!devicesLoaded && devicesLoading"
+                    class="w-full h-full flex place-content-center content-center"
+                  >
+                    <a-spin class="self-center" />
+                  </div>
+                  <div class="mb-3" v-for="device in devices" :key="device.id">
+                    <device-card
+                      :device="device"
+                      @select="selecteDevice"
+                      @history-device="historyDevice"
+                    />
+                  </div>
                 </div>
               </div>
             </a-card>
+            <!-- alert list -->
             <a-card
               v-if="tab === 2"
               key="2"
@@ -213,7 +227,7 @@
               </template>
               <a slot="extra">
                 <a-input-search
-                  class="self-center w-48"
+                  class="self-center w-48 invisible md:visible"
                   placeholder="search alert"
                 />
               </a>
@@ -250,13 +264,81 @@
                 </div>
               </div>
             </a-card>
+            <!-- history devices -->
+            <a-card
+              class="device-history-list"
+              v-if="tab === 3"
+              key="3"
+              :bordered="false"
+              :body-style="{ padding: '0px', overflowY: 'auto' }"
+            >
+              <template slot="title"
+                >{{ selectedDevice.name || '' + ' ' + $t('deviceHistory') }}
+              </template>
+              <div>
+                <div
+                  class="p-0 overflow-scroll"
+                  style="height: 550px; border-right: 1px solid rgb(226, 232, 240);"
+                >
+                  <a-result
+                    v-if="
+                      devices.length === 0 && !devicesLoaded && !devicesLoading
+                    "
+                    :title="$t('selectClientFirst')"
+                  >
+                  </a-result>
+                  <a-result
+                    status="404"
+                    title="No Devices"
+                    sub-title="Sorry, No devices for this client."
+                    v-if="devices.length === 0 && devicesLoaded"
+                  >
+                  </a-result>
+                  <div
+                    v-if="!devicesLoaded && devicesLoading"
+                    class="w-full h-full flex place-content-center content-center"
+                  >
+                    <a-spin class="self-center" />
+                  </div>
+                  <div class="relative w-full h-full">
+                    <a-table
+                      :loading="dataHistoryLoading"
+                      :columns="columnsHistory"
+                      :data-source="dataHistory"
+                      rowKey="{record => record.history_id}"
+                      :scroll="{ x: 1100, y: 'calc(450px)' }"
+                      :pagination="{ pageSize: 25 }"
+                      size="small"
+                      class="table-history-device"
+                    >
+                      <div slot="action">
+                        <a><a-icon type="environment"/></a>
+                      </div>
+                      <span slot-scope="gprsstate" slot="gprsstate">
+                        <a-badge
+                          :status="gprsstate === 1 ? 'processing' : 'error'"
+                          :text="gprsstate === 1 ? 'Yes' : 'No'"
+                        />
+                      </span>
+                    </a-table>
+                  </div>
+                </div>
+              </div>
+            </a-card>
           </transition-group>
         </div>
-        <div class="w-full sm:w-full md:w-3/6 lg:w-full">
+        <!-- tab gmaps-map -->
+        <div
+          :class="
+            tab === 3
+              ? 'w-full sm:w-full md:w-3/6 lg:w-3/6 xl:w-3/6'
+              : 'w-full sm:w-full md:w-3/6 lg:w-4/6'
+          "
+        >
           <transition-group name="fade-up" target="div" appear>
             <a-card
               class="project-list"
-              v-if="tab === 1"
+              v-if="tab === 1 || tab === 3"
               key="1"
               :loading="loading"
               :bordered="false"
@@ -265,47 +347,57 @@
             >
               <div>
                 <div style="height: 550px" class="bg-gray-200">
-                  <gmaps-map :options="mapOptions">
-                    <gmaps-popup
-                      v-for="device in devices"
-                      :key="'gmaps-popup-' + device.id"
-                      :position="{
-                        lat: Number(device.latitude),
-                        lng: Number(device.longitude),
-                      }"
-                      :background="
-                        device.selected
-                          ? 'rgb(255 255 255 / 100%)'
-                          : 'rgb(0 0 0 / 25%)'
-                      "
-                      :zIndex="device.selected ? 2 : 1"
-                    >
-                      <div :style="{ opacity: device.selected ? 1 : 0.25 }">
-                        <a-button
-                          class="self-center"
-                          :type="
-                            formatDate(new Date(), 'dd') -
-                              formatDate(new Date(), 'dd') <
-                              1 &&
-                            formatDate(new Date(), 'MM/yyyy') ===
-                              formatDate(
-                                new Date(device.localizationdate),
-                                'MM/yyyy'
-                              ) &&
-                            formatDate(new Date(), 'HH') -
-                              formatDate(
-                                new Date(device.localizationdate),
-                                'HH'
-                              ) <
-                              8
-                              ? 'primary'
-                              : 'danger'
-                          "
-                          @click="clickOnMapPin($event, device)"
-                          >{{ device.name }}</a-button
-                        >
-                      </div>
-                    </gmaps-popup>
+                  <gmaps-map :options="mapOptions" ref="devicesMap">
+                    <template v-if="!showHistoryInMap">
+                      <gmaps-popup
+                        v-for="device in devices"
+                        :key="'gmaps-popup-' + device.id"
+                        :position="{
+                          lat: Number(device.latitude),
+                          lng: Number(device.longitude),
+                        }"
+                        :background="
+                          device.selected
+                            ? 'rgb(255 255 255 / 100%)'
+                            : 'rgb(0 0 0 / 25%)'
+                        "
+                        :zIndex="device.selected ? 2 : 1"
+                      >
+                        <div :style="{ opacity: device.selected ? 1 : 0.25 }">
+                          <a-button
+                            class="self-center"
+                            :type="
+                              formatDate(new Date(), 'dd') -
+                                formatDate(new Date(), 'dd') <
+                                1 &&
+                              formatDate(new Date(), 'MM/yyyy') ===
+                                formatDate(
+                                  new Date(device.localizationdate),
+                                  'MM/yyyy'
+                                ) &&
+                              formatDate(new Date(), 'HH') -
+                                formatDate(
+                                  new Date(device.localizationdate),
+                                  'HH'
+                                ) <
+                                8
+                                ? 'primary'
+                                : 'danger'
+                            "
+                            @click="clickOnMapPin($event, device)"
+                            >{{ device.name }}</a-button
+                          >
+                        </div>
+                      </gmaps-popup>
+                    </template>
+                    <gmaps-polyline
+                      v-if="showHistoryInMap && historyPoints.length"
+                      :editable="false"
+                      :path="historyPoints"
+                      :icons="icons"
+                      strokeColor="dodgerblue"
+                      strokeWeight="3"
+                    />
                   </gmaps-map>
                 </div>
               </div>
@@ -325,11 +417,7 @@
                     :title="$t('selectAlertFirst')"
                   />
                   <div v-if="selectedAlert">
-                    <a-descriptions
-                      :title="false"
-                      layout="vertical"
-                      :column="3"
-                    >
+                    <a-descriptions :title="false" :column="3">
                       <a-descriptions-item label="Name">
                         {{ selectedAlert.name }}
                       </a-descriptions-item>
@@ -405,7 +493,7 @@
       @ok="() => (modalAddAlertVisible = false)"
       @cancel="() => (modalAddAlertVisible = false)"
     >
-      <p>some contents...</p>
+      <add-device-form />
     </a-modal>
   </page-layout>
 </template>
@@ -415,20 +503,18 @@ import { format } from 'date-fns'
 import PageLayout from '@/layouts/PageLayout'
 import { mapState } from 'vuex'
 import { request, METHOD } from '@/utils/request'
-import { gmapsMap, gmapsPopup } from '@/plugins/myGmap'
-import { DeviceCard, DeviceAlertCard } from '../../components'
+import { gmapsMap, gmapsPopup, gmapsPolyline } from '@/plugins/myGmap'
+import { DeviceCard, DeviceAlertCard, AddDeviceForm } from '../../components'
 const BASE_URL = process.env.VUE_APP_API_BASE_URL
-const icon = {
-  path: 'M -2,0 0,-2 2,0 0,2 z',
-  strokeColor: '#F00',
-  fillColor: '#F00',
-  fillOpacity: 1,
+const iconStart = {
+  path: 'M -2,-2 2,2 M 2,-2 -2,2',
+  strokeColor: '#f00',
+  strokeWeight: 3,
 }
-const circle = {
+const iconFinish = {
   path: 'M 0, 0 m -1.5, 0 a 1.5,1.5 0 1,0 2,0 a 1,2 0 3,0 -3,0',
-  strokeColor: '#0af',
-  fillColor: '#f0a',
-  fillOpacity: 1,
+  strokeColor: '#008000',
+  strokeWeight: 3,
 }
 const columnsAlert = [
   {
@@ -478,25 +564,58 @@ const dataAlert = [
     value: 32,
   },
 ]
+
+const columnsHistory = [
+  {
+    title: 'History Id',
+    width: 120,
+    dataIndex: 'history_id',
+    fixed: 'left',
+  },
+  {
+    title: 'Engine State',
+    width: 100,
+    dataIndex: 'enginestate',
+    fixed: 'left',
+  },
+  { title: 'Device ip', width: 160, dataIndex: 'deviceip' },
+  {
+    title: 'gprs State',
+    dataIndex: 'gprsstate',
+    width: 150,
+    scopedSlots: { customRender: 'gprsstate' },
+  },
+  { title: 'Speed', dataIndex: 'speed', width: 100 },
+  { title: 'Latitude', dataIndex: 'latitude', width: 150 },
+  { title: 'Longitude', dataIndex: 'longitude', width: 150 },
+  {
+    title: 'Localization Date',
+    dataIndex: 'localizationdate',
+    width: 200,
+  },
+  {
+    title: 'Action',
+    key: 'action',
+    fixed: 'right',
+    width: 100,
+    scopedSlots: { customRender: 'action' },
+  },
+]
 export default {
   name: 'Cartographie',
   components: {
     PageLayout,
     gmapsMap,
     gmapsPopup,
+    gmapsPolyline,
     DeviceCard,
     DeviceAlertCard,
-    // VNodes: {
-    //   functional: true,
-    //   render: (h, ctx) => ctx.props.vnodes,
-    // },
+    AddDeviceForm
   },
   i18n: require('./i18n'),
   data() {
     return {
-      clients: [],
       loading: true,
-      companies: [],
       defaultClientValue: null,
       treeClientsData: [],
       devices: [],
@@ -504,6 +623,10 @@ export default {
       modalAddAlertVisible: false,
       selectedAlert: null,
       selectedDevice: null,
+      dataHistory: [],
+      showHistoryInMap: false,
+      dataHistoryLoading: true,
+      columnsHistory,
       columnsAlert,
       dataAlert,
       devicesLoaded: false,
@@ -525,16 +648,10 @@ export default {
         streetViewControl: false,
         zoomControl: true,
       },
-      selectedDevices: [],
-      items: [
-        { lat: -27.41, lng: 153.01 },
-        { lat: -27.42, lng: 153.02 },
-        { lat: -27.22, lng: 152.099 },
-        { lat: -27.55, lng: 152.01 },
-      ],
+      historyPoints: [],
       icons: [
-        { icon, offset: '0%' },
-        { icon: circle, offset: '100%' },
+        { icon: iconStart, offset: '0%' },
+        { icon: iconFinish, offset: '100%' },
       ],
     }
   },
@@ -554,6 +671,7 @@ export default {
     })
     this.loading = false
   },
+  mounted() {},
   methods: {
     formatDate: (date = new Date(), formatDate = 'yyyy-MM-dd') => {
       return format(date, formatDate)
@@ -564,26 +682,21 @@ export default {
       this.devices
         .filter((d) => d.id !== device.id)
         .forEach((d) => (d.selected = false))
-      // this.selectedDevices = this.devices
-      //   .filter((d) => d.id !== device.id)
-      //   .map((d) => ({ ...d, selected: false }))
       if (device.selected) {
         this.selectedDevice = device
-        this.mapOptions.zoom = 18
+        this.mapOptions.zoom = 20
         this.mapOptions.center.lat = device.latitude
         this.mapOptions.center.lng = device.longitude
       } else {
         this.selectedDevice = null
       }
       if (this.devices.every((d) => !d.selected)) {
-        this.mapOptions.zoom = 2
+        this.zoomeExtends()
       }
-      // this.selectedDevices = this.devices.filter((sDevice) => sDevice.selected)
     },
     selectClient(client_id) {
       this.devices = []
       this.alertes = []
-      this.selectedDevices = []
       this.devicesLoaded = false
       this.devicesLoading = true
       this.alertesLoaded = false
@@ -593,9 +706,11 @@ export default {
         METHOD.GET
       ).then((res) => {
         this.devices = res.data
-        this.selectedDevices = res.data
         this.devicesLoaded = true
         this.devicesLoading = false
+        this.tab = 1
+        this.showHistoryInMap = false
+        this.zoomeExtends()
       })
       request(`${BASE_URL}/api/alert/byClientId/${client_id}`, METHOD.GET).then(
         (res) => {
@@ -621,23 +736,6 @@ export default {
         this.selectedAlert = null
       }
     },
-    onLoadClientsData(treeNode) {
-      const { id } = treeNode.dataRef
-      return request(
-        `${BASE_URL}/api/client/byParentId/${id}`,
-        METHOD.GET
-      ).then((res) => {
-        this.treeClientsData = this.treeClientsData.concat(
-          res.data.map((c) => ({
-            id: c.client_id,
-            pId: c.parentclient_id,
-            value: c.client_id,
-            title: c.commercialname,
-            isLeaf: c.countChilds === 0,
-          }))
-        )
-      })
-    },
     clickOnMapPin(event, device) {
       this.selecteDevice(device)
     },
@@ -647,6 +745,40 @@ export default {
           console.log(result)
         }
       )
+    },
+    historyDevice(device) {
+      this.dataHistory = []
+      this.historyPoints = []
+      this.dataHistoryLoading = true
+      this.showHistoryInMap = true
+      request(`${BASE_URL}/api/history/${device.id}`, METHOD.GET).then(
+        (res) => {
+          this.dataHistory = res.data
+          this.dataHistoryLoading = false
+          for (let i = 0; i < 15; i++) {
+            this.historyPoints.push({
+              lat: res.data[i].latitude,
+              lng: res.data[i].longitude,
+            })
+          }
+        }
+      )
+      this.selectedDevice = device
+      this.zoomeExtends()
+      this.devices.forEach((d) => (d.selected = false))
+      this.tab = 3
+    },
+    zoomeExtends() {
+      let bounds = new window.google.maps.LatLngBounds()
+      if (this.devices.length > 0) {
+        for (let i = 0; i < this.devices.length; i++) {
+          bounds.extend({
+            lat: this.devices[i].latitude,
+            lng: this.devices[i].longitude,
+          })
+        }
+        this.$refs.devicesMap.getMap().fitBounds(bounds)
+      }
     },
   },
 }
@@ -699,6 +831,12 @@ export default {
     > div > div > a.active {
       box-shadow: inset -2px 0 0px 0px #1c90ff;
     }
+  }
+}
+.table-history-device {
+  .ant-table {
+    border-radius: 0;
+    border: none;
   }
 }
 </style>

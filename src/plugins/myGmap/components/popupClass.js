@@ -20,11 +20,14 @@ export default () => {
   }
   /** Called when the popup is removed from the map. */
   Popup.prototype.onRemove = function() {
-    if (this.content.parentElement) this.content.parentElement.removeChild(this.content)
+    if (this.content.parentElement)
+      this.content.parentElement.removeChild(this.content)
   }
   /** Called each frame when the popup needs to draw itself. */
   Popup.prototype.draw = function() {
-    const divPosition = this.getProjection().fromLatLngToDivPixel(this.position)
+    const divPosition = this.getProjection()?.fromLatLngToDivPixel(
+      this.position
+    ) || { x: 0, y: 0 }
     this.content.style.left = divPosition.x + 'px'
     this.content.style.top = divPosition.y + 'px'
   }

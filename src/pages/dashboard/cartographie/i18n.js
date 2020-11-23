@@ -19,6 +19,7 @@ module.exports = {
       alert: 'alerte',
       devicesAlerts: 'Liste d\'alert',
       alertDetails: 'Détails d\'alert',
+      deviceHistory: 'Historique',
     },
     US: {
       project: 'Project',
@@ -38,6 +39,7 @@ module.exports = {
       alert: 'alert',
       devicesAlerts: 'Alert list',
       alertDetails: 'Alert details',
+      deviceHistory: 'History',
     },
   }
 }

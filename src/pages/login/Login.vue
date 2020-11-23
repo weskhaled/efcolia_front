@@ -129,7 +129,7 @@ export default {
           expireAt: new Date(now.getTime() + loginRes.expires*1000),
         })
         const userData = await request(
-          `${BASE_URL}/request/user`,
+          `${BASE_URL}/api/request/user`,
           METHOD.GET
         ).then((res) => ({
           message: 'Welcome ，Welcome back',
