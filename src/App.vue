@@ -66,8 +66,8 @@ export default {
         case 'CN':
           this.locale = require('ant-design-vue/es/locale-provider/zh_CN').default
           break
-        case 'HK':
-          this.locale = require('ant-design-vue/es/locale-provider/zh_TW').default
+        case 'FR':
+          this.locale = require('ant-design-vue/es/locale-provider/fr_FR').default
           break
         case 'US':
         default:

@@ -21,7 +21,6 @@
         ok-text="Yes"
         cancel-text="No"
         @confirm="$emit('delete', alert)"
-        @cancel="$message.error('Click on No')"
       >
         <a-icon key="delete" type="delete" />
       </a-popconfirm>

@@ -103,7 +103,7 @@
                     <a
                       class="flex justify-center w-full md:w-12 h-12"
                       :class="tab === 1 ? 'bg-blue-100 active' : null"
-                      @click.prevent="tab = 1, showHistoryInMap = false"
+                      @click.prevent=";(tab = 1), (showHistoryInMap = false)"
                     >
                       <a-icon
                         class="self-center"
@@ -610,7 +610,7 @@ export default {
     gmapsPolyline,
     DeviceCard,
     DeviceAlertCard,
-    AddDeviceForm
+    AddDeviceForm,
   },
   i18n: require('./i18n'),
   data() {
@@ -701,6 +701,7 @@ export default {
       this.devicesLoading = true
       this.alertesLoaded = false
       this.alertesLoading = true
+      this.defaultClientValue = client_id
       request(
         `${BASE_URL}/api/device/byClientId/${client_id}`,
         METHOD.GET
@@ -712,7 +713,10 @@ export default {
         this.showHistoryInMap = false
         this.zoomeExtends()
       })
-      request(`${BASE_URL}/api/alert/byClientId/${client_id}`, METHOD.GET).then(
+      this.getAlertByClientId(client_id)
+    },
+    getAlertByClientId(clientId) {
+      request(`${BASE_URL}/api/alert/byClientId/${clientId}`, METHOD.GET).then(
         (res) => {
           this.alertes = res.data
           this.alertesLoaded = true
@@ -740,11 +744,21 @@ export default {
       this.selecteDevice(device)
     },
     deleteAlert(alert) {
-      request(`${BASE_URL}/api/alert/${alert.id}`, METHOD.DELETE).then(
-        (result) => {
-          console.log(result)
-        }
-      )
+      console.log()
+      request(`${BASE_URL}/api/alert/${alert.id}`, METHOD.DELETE)
+        .then(() => {
+          this.alertes = []
+          this.alertesLoaded = false
+          this.alertesLoading = true
+          this.getAlertByClientId(this.defaultClientValue)
+          this.$message.success(`${alert.name}, Alert Has been deleted`, 5)
+        })
+        .catch((error) =>
+          this.$message.error(
+            `${alert.name}, Sorry Alert Has been not deleted, error: ${error.status}`,
+            5
+          )
+        )
     },
     historyDevice(device) {
       this.dataHistory = []
