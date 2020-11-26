@@ -20,6 +20,7 @@ module.exports = {
       devicesAlerts: 'Liste d\'alert',
       alertDetails: 'Détails d\'alert',
       deviceHistory: 'Historique',
+      addNewDevice: 'Ajouter un nouvel appareil',
     },
     US: {
       project: 'Project',
@@ -40,6 +41,7 @@ module.exports = {
       devicesAlerts: 'Alert list',
       alertDetails: 'Alert details',
       deviceHistory: 'History',
+      addNewDevice: 'add new device',
     },
   }
 }

@@ -94,6 +94,11 @@
               ><a-icon class="mr-1" type="history" /> Historique</span
             >
           </a-menu-item>
+          <a-menu-item>
+            <span @click.stop="$emit('delete-device', device.id)"
+              ><a-icon class="mr-1" type="delete" /> Delete Device</span
+            >
+          </a-menu-item>
         </a-menu>
       </a-dropdown>
     </template>

@@ -11,15 +11,15 @@
             @change="selectClient"
             treeNodeFilterProp="title"
             class="self-center w-full"
-            placeholder="Please select"
+            placeholder="Please select a client"
             show-search
             tree-data-simple-mode
             :disabled="!!!treeClientsData.length"
             :class="!!!treeClientsData.length ? 'opacity-50' : ''"
             :dropdown-style="{ maxHeight: '300px', overflow: 'auto' }"
-            :treeDefaultExpandAll="true"
+            :treeDefaultExpandAll="false"
             :tree-data="treeClientsData"
-            v-model="defaultClientValue"
+            v-model="selectedClientValue"
           />
           <a-spin
             :spinning="!!!treeClientsData.length"
@@ -91,7 +91,7 @@
       <div class="md:flex sm:block">
         <div class="w-full sm:w-full md:w-10 lg:w-12">
           <a-card :title="false" :bordered="false" :body-style="{ padding: 0 }">
-            <div class="px-0 overflow-scroll left-tab overflow-hidden">
+            <div class="px-0 left-tab overflow-hidden">
               <div class="flex md:block md:divide-y divide-gray-300">
                 <div
                   class="inline flex-auto md:flex-none flex flex-1 justify-center"
@@ -103,7 +103,13 @@
                     <a
                       class="flex justify-center w-full md:w-12 h-12"
                       :class="tab === 1 ? 'bg-blue-100 active' : null"
-                      @click.prevent=";(tab = 1), (showHistoryInMap = false)"
+                      @click.prevent="
+                        () => {
+                          tab = 1
+                          showHistoryInMap = false
+                          zoomeExtends(devices)
+                        }
+                      "
                     >
                       <a-icon
                         class="self-center"
@@ -157,12 +163,13 @@
               <template slot="title"
                 >{{ $t('devices') }}
                 <a-button
+                  v-if="selectedClient"
                   class="self-center"
                   type="primary"
                   shape="circle"
                   icon="plus"
                   size="small"
-                  @click="() => (modalAddAlertVisible = true)"
+                  @click="() => (modalAddDeviceVisible = true)"
                 />
               </template>
               <a slot="extra">
@@ -174,8 +181,8 @@
               </a>
               <div>
                 <div
-                  class="p-3 overflow-scroll"
-                  style="height: 550px; border-right: 1px solid rgb(226, 232, 240);"
+                  class="p-3 overflow-scroll min-h-555 h-content"
+                  style="border-right: 1px solid rgb(226, 232, 240);"
                 >
                   <a-result
                     v-if="
@@ -202,6 +209,7 @@
                       :device="device"
                       @select="selecteDevice"
                       @history-device="historyDevice"
+                      @delete-device="deleteDevice"
                     />
                   </div>
                 </div>
@@ -232,8 +240,8 @@
                 />
               </a>
               <div
-                class="p-3 overflow-scroll"
-                style="height: 550px; border-right: 1px solid rgb(226, 232, 240);"
+                class="p-3 overflow-scroll min-h-555 h-content"
+                style="border-right: 1px solid rgb(226, 232, 240);"
               >
                 <a-result
                   v-if="
@@ -273,54 +281,21 @@
               :body-style="{ padding: '0px', overflowY: 'auto' }"
             >
               <template slot="title"
-                >{{ selectedDevice.name || '' + ' ' + $t('deviceHistory') }}
+                >{{ selectedDevice.name + ' ' + $t('deviceHistory') }}
+              </template>
+              <template slot="extra">
+                <a-range-picker />
               </template>
               <div>
                 <div
-                  class="p-0 overflow-scroll"
-                  style="height: 550px; border-right: 1px solid rgb(226, 232, 240);"
+                  class="p-0 overflow-auto min-h-555 h-content"
+                  style="border-right: 1px solid rgb(226, 232, 240);"
                 >
-                  <a-result
-                    v-if="
-                      devices.length === 0 && !devicesLoaded && !devicesLoading
-                    "
-                    :title="$t('selectClientFirst')"
-                  >
-                  </a-result>
-                  <a-result
-                    status="404"
-                    title="No Devices"
-                    sub-title="Sorry, No devices for this client."
-                    v-if="devices.length === 0 && devicesLoaded"
-                  >
-                  </a-result>
-                  <div
-                    v-if="!devicesLoaded && devicesLoading"
-                    class="w-full h-full flex place-content-center content-center"
-                  >
-                    <a-spin class="self-center" />
-                  </div>
                   <div class="relative w-full h-full">
-                    <a-table
-                      :loading="dataHistoryLoading"
-                      :columns="columnsHistory"
-                      :data-source="dataHistory"
-                      rowKey="{record => record.history_id}"
-                      :scroll="{ x: 1100, y: 'calc(450px)' }"
-                      :pagination="{ pageSize: 25 }"
-                      size="small"
-                      class="table-history-device"
-                    >
-                      <div slot="action">
-                        <a><a-icon type="environment"/></a>
-                      </div>
-                      <span slot-scope="gprsstate" slot="gprsstate">
-                        <a-badge
-                          :status="gprsstate === 1 ? 'processing' : 'error'"
-                          :text="gprsstate === 1 ? 'Yes' : 'No'"
-                        />
-                      </span>
-                    </a-table>
+                    <device-history-table
+                      :dataHistory="dataHistory"
+                      :dataHistoryLoading="dataHistoryLoading"
+                    />
                   </div>
                 </div>
               </div>
@@ -345,61 +320,59 @@
               :title="$t('geo')"
               :body-style="{ padding: 0 }"
             >
-              <div>
-                <div style="height: 550px" class="bg-gray-200">
-                  <gmaps-map :options="mapOptions" ref="devicesMap">
-                    <template v-if="!showHistoryInMap">
-                      <gmaps-popup
-                        v-for="device in devices"
-                        :key="'gmaps-popup-' + device.id"
-                        :position="{
-                          lat: Number(device.latitude),
-                          lng: Number(device.longitude),
-                        }"
-                        :background="
-                          device.selected
-                            ? 'rgb(255 255 255 / 100%)'
-                            : 'rgb(0 0 0 / 25%)'
-                        "
-                        :zIndex="device.selected ? 2 : 1"
-                      >
-                        <div :style="{ opacity: device.selected ? 1 : 0.25 }">
-                          <a-button
-                            class="self-center"
-                            :type="
-                              formatDate(new Date(), 'dd') -
-                                formatDate(new Date(), 'dd') <
-                                1 &&
-                              formatDate(new Date(), 'MM/yyyy') ===
-                                formatDate(
-                                  new Date(device.localizationdate),
-                                  'MM/yyyy'
-                                ) &&
-                              formatDate(new Date(), 'HH') -
-                                formatDate(
-                                  new Date(device.localizationdate),
-                                  'HH'
-                                ) <
-                                8
-                                ? 'primary'
-                                : 'danger'
-                            "
-                            @click="clickOnMapPin($event, device)"
-                            >{{ device.name }}</a-button
-                          >
-                        </div>
-                      </gmaps-popup>
-                    </template>
-                    <gmaps-polyline
-                      v-if="showHistoryInMap && historyPoints.length"
-                      :editable="false"
-                      :path="historyPoints"
-                      :icons="icons"
-                      strokeColor="dodgerblue"
-                      strokeWeight="3"
-                    />
-                  </gmaps-map>
-                </div>
+              <div class="min-h-555 h-content bg-gray-200">
+                <gmaps-map :options="mapOptions" ref="devicesMap">
+                  <template v-if="!showHistoryInMap">
+                    <gmaps-popup
+                      v-for="device in devices"
+                      :key="'gmaps-popup-' + device.id"
+                      :position="{
+                        lat: Number(device.latitude),
+                        lng: Number(device.longitude),
+                      }"
+                      :background="
+                        device.selected
+                          ? 'rgb(255 255 255 / 100%)'
+                          : 'rgb(0 0 0 / 25%)'
+                      "
+                      :zIndex="device.selected ? 2 : 1"
+                    >
+                      <div :style="{ opacity: device.selected ? 1 : 0.25 }">
+                        <a-button
+                          class="self-center"
+                          :type="
+                            formatDate(new Date(), 'dd') -
+                              formatDate(new Date(), 'dd') <
+                              1 &&
+                            formatDate(new Date(), 'MM/yyyy') ===
+                              formatDate(
+                                new Date(device.localizationdate),
+                                'MM/yyyy'
+                              ) &&
+                            formatDate(new Date(), 'HH') -
+                              formatDate(
+                                new Date(device.localizationdate),
+                                'HH'
+                              ) <
+                              8
+                              ? 'primary'
+                              : 'danger'
+                          "
+                          @click="clickOnMapPin($event, device)"
+                          >{{ device.name }}</a-button
+                        >
+                      </div>
+                    </gmaps-popup>
+                  </template>
+                  <gmaps-polyline
+                    v-if="showHistoryInMap && historyPoints.length"
+                    :editable="false"
+                    :path="historyPoints"
+                    :icons="icons"
+                    strokeColor="dodgerblue"
+                    strokeWeight="3"
+                  />
+                </gmaps-map>
               </div>
             </a-card>
             <a-card
@@ -411,74 +384,15 @@
               :body-style="{ padding: '0px', overflowY: 'auto' }"
             >
               <div class="bg-white">
-                <div style="height: 550px" class="p-2">
+                <div class="p-2 min-h-555 h-content">
                   <a-result
                     v-if="!selectedAlert"
                     :title="$t('selectAlertFirst')"
                   />
-                  <div v-if="selectedAlert">
-                    <a-descriptions :title="false" :column="3">
-                      <a-descriptions-item label="Name">
-                        {{ selectedAlert.name }}
-                      </a-descriptions-item>
-                      <a-descriptions-item label="Description">
-                        {{ selectedAlert.description || 'No description' }}
-                      </a-descriptions-item>
-                      <a-descriptions-item label="Active">
-                        <a-badge
-                          :status="
-                            selectedAlert.status === 1 ? 'processing' : 'error'
-                          "
-                          :text="selectedAlert.status === 1 ? 'Yes' : 'No'"
-                        />
-                      </a-descriptions-item>
-                      <a-descriptions-item label="from">
-                        {{
-                          formatDate(
-                            new Date(selectedAlert.begindate),
-                            'dd/MM/yyyy'
-                          )
-                        }}
-                      </a-descriptions-item>
-                      <a-descriptions-item label="to">
-                        {{
-                          selectedAlert.enddate
-                            ? formatDate(
-                                new Date(selectedAlert.enddate),
-                                'dd/MM/yyyy'
-                              )
-                            : 'None'
-                        }}
-                      </a-descriptions-item>
-                      <a-descriptions-item label="importance">
-                        {{
-                          selectedAlert.level === 3
-                            ? 'Danger'
-                            : selectedAlert.level === 2
-                            ? 'Warning'
-                            : 'Normal'
-                        }}
-                      </a-descriptions-item>
-                      <a-descriptions-item
-                        label="Acknowlegment By User"
-                        :span="3"
-                      >
-                        <a-badge status="processing" text="Yes" />
-                      </a-descriptions-item>
-                    </a-descriptions>
-                    <a-tabs default-active-key="2">
-                      <a-tab-pane key="1" tab="Requirement">
-                        test
-                      </a-tab-pane>
-                      <a-tab-pane key="2" tab="Action" force-render>
-                        <a-table
-                          :columns="columnsAlert"
-                          :data-source="dataAlert"
-                          size="small"
-                        />
-                      </a-tab-pane>
-                    </a-tabs>
-                  </div>
+                  <alert-descriptions
+                    v-if="selectedAlert"
+                    :alert="selectedAlert"
+                  />
                 </div>
               </div>
             </a-card>
@@ -487,13 +401,50 @@
       </div>
     </template>
     <a-modal
-      title="addNewDevice"
+      :title="
+        `${$t('addNewDevice')} #${selectedClient ? selectedClient.title : ''}`
+      "
+      class="add-evice-modal"
+      width="65vw"
       :dialog-style="{ top: '20px' }"
-      :visible="modalAddAlertVisible"
-      @ok="() => (modalAddAlertVisible = false)"
-      @cancel="() => (modalAddAlertVisible = false)"
+      :visible="modalAddDeviceVisible"
+      @cancel="
+        () => {
+          $refs.addDeviceFormRef.resetForm()
+          modalAddDeviceVisible = false
+        }
+      "
     >
-      <add-device-form />
+      <template slot="footer">
+        <a-button
+          type="danger"
+          key="cancel"
+          @click="
+            () => {
+              $refs.addDeviceFormRef.resetForm()
+              modalAddDeviceVisible = false
+            }
+          "
+        >
+          Cancel
+        </a-button>
+        <a-button key="back" @click="() => $refs.addDeviceFormRef.resetForm()">
+          Reset
+        </a-button>
+        <a-button
+          key="submit"
+          type="primary"
+          :loading="addingLoading"
+          @click="() => $refs.addDeviceFormRef.onSubmit()"
+        >
+          Submit
+        </a-button>
+      </template>
+      <add-device-form
+        :deviceTypes="deviceTypes"
+        ref="addDeviceFormRef"
+        @submit="addNewDevice"
+      />
     </a-modal>
   </page-layout>
 </template>
@@ -504,7 +455,13 @@ import PageLayout from '@/layouts/PageLayout'
 import { mapState } from 'vuex'
 import { request, METHOD } from '@/utils/request'
 import { gmapsMap, gmapsPopup, gmapsPolyline } from '@/plugins/myGmap'
-import { DeviceCard, DeviceAlertCard, AddDeviceForm } from '../../components'
+import {
+  DeviceCard,
+  DeviceAlertCard,
+  AddDeviceForm,
+  AlertDescriptions,
+  DeviceHistoryTable,
+} from '../../components'
 const BASE_URL = process.env.VUE_APP_API_BASE_URL
 const iconStart = {
   path: 'M -2,-2 2,2 M 2,-2 -2,2',
@@ -516,91 +473,6 @@ const iconFinish = {
   strokeColor: '#008000',
   strokeWeight: 3,
 }
-const columnsAlert = [
-  {
-    title: 'Link',
-    dataIndex: 'link',
-  },
-  {
-    title: 'Type',
-    dataIndex: 'type',
-  },
-  {
-    title: 'Target',
-    dataIndex: 'target',
-  },
-  {
-    title: 'Operator',
-    dataIndex: 'operator',
-  },
-  {
-    title: 'Value',
-    dataIndex: 'value',
-  },
-]
-const dataAlert = [
-  {
-    key: '1',
-    link: 'John Brown',
-    type: 'test',
-    target: 'New York',
-    operator: 'New York No. 1 Lake Park',
-    value: 32,
-  },
-  {
-    key: '2',
-    link: 'Jim Green',
-    type: 'test',
-    target: 'London',
-    operator: 'London No. 1 Lake Park',
-    value: 42,
-  },
-  {
-    key: '3',
-    link: 'Joe Black',
-    type: 'test',
-    target: 'Sidney',
-    operator: 'Sidney No. 1 Lake Park',
-    value: 32,
-  },
-]
-
-const columnsHistory = [
-  {
-    title: 'History Id',
-    width: 120,
-    dataIndex: 'history_id',
-    fixed: 'left',
-  },
-  {
-    title: 'Engine State',
-    width: 100,
-    dataIndex: 'enginestate',
-    fixed: 'left',
-  },
-  { title: 'Device ip', width: 160, dataIndex: 'deviceip' },
-  {
-    title: 'gprs State',
-    dataIndex: 'gprsstate',
-    width: 150,
-    scopedSlots: { customRender: 'gprsstate' },
-  },
-  { title: 'Speed', dataIndex: 'speed', width: 100 },
-  { title: 'Latitude', dataIndex: 'latitude', width: 150 },
-  { title: 'Longitude', dataIndex: 'longitude', width: 150 },
-  {
-    title: 'Localization Date',
-    dataIndex: 'localizationdate',
-    width: 200,
-  },
-  {
-    title: 'Action',
-    key: 'action',
-    fixed: 'right',
-    width: 100,
-    scopedSlots: { customRender: 'action' },
-  },
-]
 export default {
   name: 'Cartographie',
   components: {
@@ -611,24 +483,27 @@ export default {
     DeviceCard,
     DeviceAlertCard,
     AddDeviceForm,
+    AlertDescriptions,
+    DeviceHistoryTable,
   },
   i18n: require('./i18n'),
   data() {
     return {
       loading: true,
-      defaultClientValue: null,
+      selectedClientValue: null,
+      selectedClient: null,
       treeClientsData: [],
       devices: [],
       alertes: [],
+      modalAddDeviceVisible: false,
       modalAddAlertVisible: false,
+      addingLoading: false,
       selectedAlert: null,
       selectedDevice: null,
+      deviceTypes: [],
       dataHistory: [],
       showHistoryInMap: false,
       dataHistoryLoading: true,
-      columnsHistory,
-      columnsAlert,
-      dataAlert,
       devicesLoaded: false,
       devicesLoading: false,
       alertesLoaded: false,
@@ -664,10 +539,10 @@ export default {
       (res) => (this.welcome = res.data)
     )
     request(`${BASE_URL}/api/client`, METHOD.GET).then((res) => {
-      const defaultSelectClient = res.data.find((c) => !c.pId)
+      this.selectedClient = res.data.find((c) => !c.pId)
       this.treeClientsData = res.data
-      this.selectClient(defaultSelectClient.id)
-      this.defaultClientValue = defaultSelectClient.id
+      this.selectClient(this.selectedClient.id)
+      this.selectedClientValue = this.selectedClient.id
     })
     this.loading = false
   },
@@ -691,31 +566,35 @@ export default {
         this.selectedDevice = null
       }
       if (this.devices.every((d) => !d.selected)) {
-        this.zoomeExtends()
+        this.zoomeExtends(this.devices)
       }
     },
     selectClient(client_id) {
-      this.devices = []
-      this.alertes = []
-      this.devicesLoaded = false
-      this.devicesLoading = true
-      this.alertesLoaded = false
-      this.alertesLoading = true
-      this.defaultClientValue = client_id
-      request(
-        `${BASE_URL}/api/device/byClientId/${client_id}`,
-        METHOD.GET
-      ).then((res) => {
-        this.devices = res.data
-        this.devicesLoaded = true
-        this.devicesLoading = false
-        this.tab = 1
-        this.showHistoryInMap = false
-        this.zoomeExtends()
-      })
+      this.selectedClient = this.treeClientsData.find((c) => c.id === client_id)
+      this.selectedClientValue = client_id
+
+      this.getDevicesByClientId(client_id)
       this.getAlertByClientId(client_id)
     },
+    getDevicesByClientId(clientId) {
+      this.devices = []
+      this.devicesLoaded = false
+      this.devicesLoading = true
+      request(`${BASE_URL}/api/device/byClientId/${clientId}`, METHOD.GET).then(
+        (res) => {
+          this.devices = res.data
+          this.devicesLoaded = true
+          this.devicesLoading = false
+          this.tab = 1
+          this.showHistoryInMap = false
+          this.zoomeExtends(this.devices)
+        }
+      )
+    },
     getAlertByClientId(clientId) {
+      this.alertes = []
+      this.alertesLoaded = false
+      this.alertesLoading = true
       request(`${BASE_URL}/api/alert/byClientId/${clientId}`, METHOD.GET).then(
         (res) => {
           this.alertes = res.data
@@ -744,18 +623,17 @@ export default {
       this.selecteDevice(device)
     },
     deleteAlert(alert) {
-      console.log()
       request(`${BASE_URL}/api/alert/${alert.id}`, METHOD.DELETE)
         .then(() => {
           this.alertes = []
           this.alertesLoaded = false
           this.alertesLoading = true
-          this.getAlertByClientId(this.defaultClientValue)
-          this.$message.success(`${alert.name}, Alert Has been deleted`, 5)
+          this.getAlertByClientId(this.selectedClientValue)
+          this.$message.success(`${alert.name}, Alert has been deleted`, 5)
         })
         .catch((error) =>
           this.$message.error(
-            `${alert.name}, Sorry Alert Has been not deleted, error: ${error.status}`,
+            `${alert.name}, Sorry alert not deleted, error: ${error.status}`,
             5
           )
         )
@@ -769,30 +647,80 @@ export default {
         (res) => {
           this.dataHistory = res.data
           this.dataHistoryLoading = false
-          for (let i = 0; i < 15; i++) {
-            this.historyPoints.push({
-              lat: res.data[i].latitude,
-              lng: res.data[i].longitude,
-            })
+          for (let i = 0; i < res.data.length; i++) {
+            if (res.data[i].latitude && res.data[i].longitude) {
+              this.historyPoints.push({
+                lat: res.data[i].latitude,
+                lng: res.data[i].longitude,
+              })
+            }
           }
         }
       )
       this.selectedDevice = device
-      this.zoomeExtends()
+      this.zoomeExtends(this.devices)
       this.devices.forEach((d) => (d.selected = false))
       this.tab = 3
     },
-    zoomeExtends() {
+    zoomeExtends(points) {
       let bounds = new window.google.maps.LatLngBounds()
-      if (this.devices.length > 0) {
-        for (let i = 0; i < this.devices.length; i++) {
+      if (points.length > 0) {
+        for (let i = 0; i < points.length; i++) {
           bounds.extend({
-            lat: this.devices[i].latitude,
-            lng: this.devices[i].longitude,
+            lat: points[i].latitude,
+            lng: points[i].longitude,
           })
         }
-        this.$refs.devicesMap.getMap().fitBounds(bounds)
+        if (this.tab === 1) {
+          setTimeout(() => {
+            this.$refs.devicesMap.getMap().fitBounds(bounds)
+          }, 20)
+        }
       }
+    },
+    deleteDevice(deviceId) {
+      const self = this
+      this.$confirm({
+        content: 'Delet Device',
+        okText: 'Yes',
+        onOk() {
+          return request(`${BASE_URL}/api/device/${deviceId}`, METHOD.DELETE)
+            .then(() => {
+              self.getDevicesByClientId(self.selectedClientValue)
+              self.$message.success(`Device has been deleted`, 5)
+              self.$destroyAll()
+            })
+            .catch((error) => {
+              self.$destroyAll()
+              self.$message.error(
+                `Sorry device not deleted, error: ${error.status}`,
+                5
+              )
+            })
+        },
+        cancelText: 'No',
+      })
+    },
+    addNewDevice(device) {
+      this.addingLoading = true
+      request(`${BASE_URL}/api/device`, METHOD.POST, {
+        ...device,
+        clientId: this.selectedClientValue,
+      })
+        .then(() => {
+          this.getDevicesByClientId(this.selectedClientValue)
+          this.$refs.addDeviceFormRef.resetForm()
+          this.modalAddDeviceVisible = false
+          this.addingLoading = false
+          this.$message.success(`${device.name}, Device has been Adedd`, 5)
+        })
+        .catch((error) => {
+          this.addingLoading = false
+          this.$message.error(
+            `${device.name}, Sorry device not created, error: ${error.status}`,
+            5
+          )
+        })
     },
   },
 }
@@ -840,7 +768,8 @@ export default {
 }
 @media only screen and (min-width: 768px) {
   .left-tab {
-    height: 598px;
+    min-height: 605px;
+    height: calc(100vh - 151px);
     border-right: solid 1px #e2e8f0;
     > div > div > a.active {
       box-shadow: inset -2px 0 0px 0px #1c90ff;
@@ -852,5 +781,8 @@ export default {
     border-radius: 0;
     border: none;
   }
+}
+.add-evice-modal .ant-modal {
+  min-width: 350px;
 }
 </style>
