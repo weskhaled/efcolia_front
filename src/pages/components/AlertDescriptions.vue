@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div v-if="alert">
     <a-descriptions :title="false" :column="3">
       <a-descriptions-item label="Name">
         {{ alert.name }}
@@ -36,15 +36,21 @@
         <a-badge status="processing" text="Yes" />
       </a-descriptions-item>
     </a-descriptions>
-    <a-tabs default-active-key="2">
+    <a-tabs default-active-key="1">
       <a-tab-pane key="1" tab="Requirement">
-        test
-      </a-tab-pane>
-      <a-tab-pane key="2" tab="Action" force-render>
         <a-table
-          :columns="columnsAlert"
-          :data-source="dataAlert"
+          :columns="columnsConditionsAlert"
+          :data-source="conditions"
           size="small"
+          :loading="conditionsLoading"
+        />
+      </a-tab-pane>
+      <a-tab-pane key="2" tab="Action">
+        <a-table
+          :columns="columnsActionsAlert"
+          :data-source="actions"
+          size="small"
+          :loading="actionsLoading"
         />
       </a-tab-pane>
     </a-tabs>
@@ -52,11 +58,10 @@
 </template>
 <script>
 import { format } from 'date-fns'
-const columnsAlert = [
-  {
-    title: 'Link',
-    dataIndex: 'link',
-  },
+import { request, METHOD } from '@/utils/request'
+const BASE_URL = process.env.VUE_APP_API_BASE_URL
+
+const columnsActionsAlert = [
   {
     title: 'Type',
     dataIndex: 'type',
@@ -65,39 +70,27 @@ const columnsAlert = [
     title: 'Target',
     dataIndex: 'target',
   },
+]
+const columnsConditionsAlert = [
   {
     title: 'Operator',
     dataIndex: 'operator',
   },
   {
-    title: 'Value',
+    title: 'Relation',
+    dataIndex: 'relation',
+  },
+  {
+    title: 'target',
+    dataIndex: 'target',
+  },
+  {
+    title: 'type',
+    dataIndex: 'type',
+  },
+  {
+    title: 'value',
     dataIndex: 'value',
-  },
-]
-const dataAlert = [
-  {
-    key: '1',
-    link: 'John Brown',
-    type: 'test',
-    target: 'New York',
-    operator: 'New York No. 1 Lake Park',
-    value: 32,
-  },
-  {
-    key: '2',
-    link: 'Jim Green',
-    type: 'test',
-    target: 'London',
-    operator: 'London No. 1 Lake Park',
-    value: 42,
-  },
-  {
-    key: '3',
-    link: 'Joe Black',
-    type: 'test',
-    target: 'Sidney',
-    operator: 'Sidney No. 1 Lake Park',
-    value: 32,
   },
 ]
 
@@ -106,19 +99,53 @@ export default {
   props: {
     alert: {
       type: Object,
-      required: true,
-      default: () => ({}),
+      required: false,
+      default: () => null,
     },
   },
   data() {
     return {
-      columnsAlert,
-      dataAlert,
+      columnsActionsAlert,
+      columnsConditionsAlert,
+      devicesAndFlottes: [],
+      conditions: [],
+      actions: [],
+      conditionsLoading: true,
+      actionsLoading: true,
     }
   },
+  watch: {
+    alert: function(newVal) {
+      if (newVal) {
+        this.updateInfos()
+      }
+    },
+  },
+  created() {},
   methods: {
     formatDate: (date = new Date(), formatDate = 'yyyy-MM-dd') => {
       return format(date, formatDate)
+    },
+    updateInfos() {
+      this.conditionsLoading = true
+      this.actionsLoading = true
+      request(
+        `${BASE_URL}/api/alertDeviceAndFlotte/${this.alert.id}`,
+        METHOD.GET
+      ).then((res) => (this.devicesAndFlottes = res.data))
+      request(
+        `${BASE_URL}/api/alertCondition/${this.alert.id}`,
+        METHOD.GET
+      ).then((res) => {
+        this.conditions = [res.data]
+        this.conditionsLoading = false
+      })
+      request(`${BASE_URL}/api/alertAction/${this.alert.id}`, METHOD.GET).then(
+        (res) => {
+          this.actions = [res.data]
+          this.actionsLoading = false
+        }
+      )
     },
   },
 }

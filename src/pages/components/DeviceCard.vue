@@ -76,10 +76,10 @@
       </a-tooltip>
       <a-tooltip>
         <template slot="title">
-          GPRS state
+          external battery connected
         </template>
         <span>
-          <a-badge :color="device.gprsstate ? 'green' : 'red'">
+          <a-badge :color="device.battery2state ? 'green' : 'red'">
             <a-icon class="" key="edit" type="api" />
           </a-badge>
         </span>

@@ -39,9 +39,10 @@
           >
             <a-button
               class="self-center"
-              type="primary"
+              type="danger"
               shape="circle"
-              icon="search"
+              icon="minus"
+              @click="() => deleteSelectedClient()"
             />
           </div>
           <div
@@ -52,6 +53,7 @@
               type="primary"
               shape="circle"
               icon="plus"
+              @click="() => (modalAddClientVisible = true)"
             />
           </div>
           <div
@@ -61,7 +63,7 @@
               class="self-center"
               type="primary"
               shape="circle"
-              icon="clock-circle"
+              icon="search"
             />
           </div>
           <div
@@ -390,7 +392,8 @@
                     :title="$t('selectAlertFirst')"
                   />
                   <alert-descriptions
-                    v-if="selectedAlert"
+                    v-show="selectedAlert"
+                    ref="alertDescriptionsRef"
                     :alert="selectedAlert"
                   />
                 </div>
@@ -446,6 +449,52 @@
         @submit="addNewDevice"
       />
     </a-modal>
+    <a-modal
+      :title="
+        `${$t('addNewClient')} #${selectedClient ? selectedClient.title : ''}`
+      "
+      class="add-evice-modal"
+      width="65vw"
+      :dialog-style="{ top: '20px' }"
+      :visible="modalAddClientVisible"
+      @cancel="
+        () => {
+          $refs.addClientFormRef.resetForm()
+          modalAddClientVisible = false
+        }
+      "
+    >
+      <template slot="footer">
+        <a-button
+          type="danger"
+          key="cancel"
+          @click="
+            () => {
+              $refs.addClientFormRef.resetForm()
+              modalAddClientVisible = false
+            }
+          "
+        >
+          Cancel
+        </a-button>
+        <a-button key="back" @click="() => $refs.addClientFormRef.resetForm()">
+          Reset
+        </a-button>
+        <a-button
+          key="submit"
+          type="primary"
+          :loading="addingLoading"
+          @click="() => $refs.addClientFormRef.onSubmit()"
+        >
+          Submit
+        </a-button>
+      </template>
+      <add-client-form
+        :deviceTypes="deviceTypes"
+        ref="addClientFormRef"
+        @submit="addNewClient"
+      />
+    </a-modal>
   </page-layout>
 </template>
 
@@ -459,6 +508,7 @@ import {
   DeviceCard,
   DeviceAlertCard,
   AddDeviceForm,
+  AddClientForm,
   AlertDescriptions,
   DeviceHistoryTable,
 } from '../../components'
@@ -483,6 +533,7 @@ export default {
     DeviceCard,
     DeviceAlertCard,
     AddDeviceForm,
+    AddClientForm,
     AlertDescriptions,
     DeviceHistoryTable,
   },
@@ -497,6 +548,7 @@ export default {
       alertes: [],
       modalAddDeviceVisible: false,
       modalAddAlertVisible: false,
+      modalAddClientVisible: false,
       addingLoading: false,
       selectedAlert: null,
       selectedDevice: null,
@@ -538,18 +590,23 @@ export default {
     request('/user/welcome', METHOD.GET).then(
       (res) => (this.welcome = res.data)
     )
-    request(`${BASE_URL}/api/client`, METHOD.GET).then((res) => {
-      this.selectedClient = res.data.find((c) => !c.pId)
-      this.treeClientsData = res.data
-      this.selectClient(this.selectedClient.id)
-      this.selectedClientValue = this.selectedClient.id
-    })
-    this.loading = false
+    this.getClients()
   },
   mounted() {},
   methods: {
     formatDate: (date = new Date(), formatDate = 'yyyy-MM-dd') => {
       return format(date, formatDate)
+    },
+    getClients() {
+      this.loading = true
+      this.treeClientsData = []
+      request(`${BASE_URL}/api/client`, METHOD.GET).then((res) => {
+        this.selectedClient = res.data.find((c) => !c.pId)
+        this.treeClientsData = res.data
+        this.selectClient(this.selectedClient.id)
+        this.selectedClientValue = this.selectedClient.id
+      })
+      this.loading = false
     },
     onSearchDevice() {},
     selecteDevice(device) {
@@ -609,11 +666,9 @@ export default {
         .filter((a) => a.id !== alert.id)
         .forEach((a) => (a.selected = false))
       if (alert.selected) {
-        if (alert) {
-          this.selectedAlert = alert
-        } else {
-          this.selectedAlert = null
-        }
+        this.selectedAlert = alert
+      } else {
+        this.selectedAlert = null
       }
       if (this.alertes.every((a) => !a.selected)) {
         this.selectedAlert = null
@@ -681,7 +736,7 @@ export default {
     deleteDevice(deviceId) {
       const self = this
       this.$confirm({
-        content: 'Delet Device',
+        content: 'Delete Device',
         okText: 'Yes',
         onOk() {
           return request(`${BASE_URL}/api/device/${deviceId}`, METHOD.DELETE)
@@ -694,6 +749,29 @@ export default {
               self.$destroyAll()
               self.$message.error(
                 `Sorry device not deleted, error: ${error.status}`,
+                5
+              )
+            })
+        },
+        cancelText: 'No',
+      })
+    },
+    deleteSelectedClient() {
+      const self = this
+      this.$confirm({
+        content: 'Delete Client',
+        okText: 'Yes',
+        onOk() {
+          return request(`${BASE_URL}/api/client/${self.selectedClientValue}`, METHOD.DELETE)
+            .then(() => {
+              self.getClients()
+              self.$message.success(`Client has been deleted`, 5)
+              self.$destroyAll()
+            })
+            .catch((error) => {
+              self.$destroyAll()
+              self.$message.error(
+                `Sorry client not deleted, error: ${error.status}`,
                 5
               )
             })
@@ -718,6 +796,30 @@ export default {
           this.addingLoading = false
           this.$message.error(
             `${device.name}, Sorry device not created, error: ${error.status}`,
+            5
+          )
+        })
+    },
+    addNewClient(client) {
+      this.addingLoading = true
+      request(`${BASE_URL}/api/client`, METHOD.POST, {
+        ...client,
+        clientId: this.selectedClientValue,
+      })
+        .then(() => {
+          this.getDevicesByClientId(this.selectedClientValue)
+          this.$refs.addClientFormRef.resetForm()
+          this.modalAddDeviceVisible = false
+          this.addingLoading = false
+          this.$message.success(
+            `${client.commercialName}, Client has been Adedd`,
+            5
+          )
+        })
+        .catch((error) => {
+          this.addingLoading = false
+          this.$message.error(
+            `${client.commercialName}, Sorry client not created, error: ${error.status}`,
             5
           )
         })
