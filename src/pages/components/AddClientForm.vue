@@ -48,14 +48,16 @@
           <a-form-model-item label="country" prop="country">
             <a-select
               v-model="form.country"
+              show-search
+              :filter-option="filterOptionCountry"
               placeholder="please select country"
             >
               <a-select-option
-                v-for="country in countries"
-                :key="country.country_id"
-                :value="country.name"
+                v-for="(country) in countries"
+                :key="country.country_id + country.lang_id"
+                :value="country.country_id"
               >
-                {{ country.name }}
+                {{ country.name }} " {{ country.lang_id }} "
               </a-select-option>
             </a-select>
           </a-form-model-item>
@@ -90,7 +92,7 @@ export default {
         commercialName: '',
         status: false,
         country: undefined,
-        clientTypeId: 1,
+        clientTypeId: undefined,
         description: '',
       },
       rules: {
@@ -105,7 +107,7 @@ export default {
           {
             required: true,
             message: 'Please input serialNumber',
-          }
+          },
         ],
         clientType: [
           {
@@ -132,8 +134,8 @@ export default {
         if (valid) {
           this.$emit('submit', {
             ...this.form,
-            clientTypeId: +this.form.deviceTypeId,
-            countryId: +this.form.country,
+            clientType: +this.form.clientTypeId,
+            country: +this.form.country,
             status: this.form.status ? 1 : 0,
           })
         } else {
@@ -143,6 +145,11 @@ export default {
     },
     resetForm() {
       this.$refs.ruleForm.resetFields()
+    },
+    filterOptionCountry(input, option) {
+      return (
+        option.componentOptions.children[0].text.toLowerCase().indexOf(input.toLowerCase()) >= 0
+      );
     },
   },
 }

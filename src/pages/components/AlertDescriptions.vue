@@ -137,12 +137,12 @@ export default {
         `${BASE_URL}/api/alertCondition/${this.alert.id}`,
         METHOD.GET
       ).then((res) => {
-        this.conditions = [res.data]
+        this.conditions = res.data ? [res.data] : []
         this.conditionsLoading = false
       })
       request(`${BASE_URL}/api/alertAction/${this.alert.id}`, METHOD.GET).then(
         (res) => {
-          this.actions = [res.data]
+          this.actions = res.data ? [res.data] : []
           this.actionsLoading = false
         }
       )

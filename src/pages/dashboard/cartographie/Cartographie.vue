@@ -142,6 +142,30 @@
                     </a>
                   </a-tooltip>
                 </div>
+                <div
+                  class="inline flex-auto md:flex-none flex flex-1 justify-center"
+                >
+                  <a-tooltip placement="rightTop">
+                    <template slot="title">
+                      Users List
+                    </template>
+                    <a
+                      class="flex justify-center w-full md:w-12 h-12"
+                      :class="tab === 4 ? 'bg-blue-100 active' : null"
+                      @click.prevent="
+                        () => {
+                          tab = 4
+                        }
+                      "
+                    >
+                      <a-icon
+                        class="self-center"
+                        type="user"
+                        :class="tab === 4 ? 'text-blue-600' : null"
+                      />
+                    </a>
+                  </a-tooltip>
+                </div>
               </div>
             </div>
           </a-card>
@@ -302,6 +326,45 @@
                 </div>
               </div>
             </a-card>
+            <!-- users list -->
+            <a-card
+              class="users-list"
+              v-if="tab === 4"
+              key="4"
+              :bordered="false"
+              :body-style="{ padding: '0px', overflowY: 'auto' }"
+            >
+              <template slot="title">Conatcts</template>
+              <template slot="extra"> </template>
+              <div
+                class="p-3 overflow-scroll min-h-555 h-content"
+                style="border-right: 1px solid rgb(226, 232, 240);"
+              >
+                <a-result
+                  v-if="
+                    contacts.length === 0 && !contactsLoaded && !contactsLoading
+                  "
+                  :title="$t('selectClientFirst')"
+                >
+                </a-result>
+                <a-result
+                  status="404"
+                  title="No Devices"
+                  sub-title="Sorry, No devices for this client."
+                  v-if="contacts.length === 0 && contactsLoaded"
+                >
+                </a-result>
+                <div
+                  v-if="!contactsLoaded && contactsLoading"
+                  class="w-full h-full flex place-content-center content-center"
+                >
+                  <a-spin class="self-center" />
+                </div>
+                <div class="mb-3" v-for="contact in contacts" :key="contact.id">
+                  <user-card :user="contact" @select="selecteUser" />
+                </div>
+              </div>
+            </a-card>
           </transition-group>
         </div>
         <!-- tab gmaps-map -->
@@ -314,7 +377,7 @@
         >
           <transition-group name="fade-up" target="div" appear>
             <a-card
-              class="project-list"
+              class=""
               v-if="tab === 1 || tab === 3"
               key="1"
               :loading="loading"
@@ -377,8 +440,9 @@
                 </gmaps-map>
               </div>
             </a-card>
+            <!-- alert details card -->
             <a-card
-              class="project-list"
+              class=""
               v-if="tab === 2"
               key="2"
               :bordered="false"
@@ -395,6 +459,29 @@
                     v-show="selectedAlert"
                     ref="alertDescriptionsRef"
                     :alert="selectedAlert"
+                  />
+                </div>
+              </div>
+            </a-card>
+            <!-- user details card -->
+            <a-card
+              class=""
+              v-if="tab === 4"
+              key="3"
+              :bordered="false"
+              :title="$t('userDetails')"
+              :body-style="{ padding: '0px', overflowY: 'auto' }"
+            >
+              <div class="bg-white">
+                <div class="p-2 min-h-555 h-content">
+                  <a-result
+                    v-if="!selectedUser"
+                    :title="$t('selectUserFirst')"
+                  />
+                  <user-infos
+                    v-show="selectedUser"
+                    ref="selectedUserRef"
+                    :user="selectedUser"
                   />
                 </div>
               </div>
@@ -506,11 +593,13 @@ import { request, METHOD } from '@/utils/request'
 import { gmapsMap, gmapsPopup, gmapsPolyline } from '@/plugins/myGmap'
 import {
   DeviceCard,
+  UserCard,
   DeviceAlertCard,
   AddDeviceForm,
   AddClientForm,
   AlertDescriptions,
   DeviceHistoryTable,
+  UserInfos,
 } from '../../components'
 const BASE_URL = process.env.VUE_APP_API_BASE_URL
 const iconStart = {
@@ -531,11 +620,13 @@ export default {
     gmapsPopup,
     gmapsPolyline,
     DeviceCard,
+    UserCard,
     DeviceAlertCard,
     AddDeviceForm,
     AddClientForm,
     AlertDescriptions,
     DeviceHistoryTable,
+    UserInfos,
   },
   i18n: require('./i18n'),
   data() {
@@ -545,6 +636,10 @@ export default {
       selectedClient: null,
       treeClientsData: [],
       devices: [],
+      contacts: [],
+      contactsLoaded: false,
+      contactsLoading: false,
+      selectedUser: null,
       alertes: [],
       modalAddDeviceVisible: false,
       modalAddAlertVisible: false,
@@ -632,6 +727,7 @@ export default {
 
       this.getDevicesByClientId(client_id)
       this.getAlertByClientId(client_id)
+      this.getContactsByClientId(client_id)
     },
     getDevicesByClientId(clientId) {
       this.devices = []
@@ -660,6 +756,19 @@ export default {
         }
       )
     },
+    getContactsByClientId(client_id) {
+      console.log(client_id)
+      this.contacts = []
+      this.contactsLoading = true
+      this.contactsLoaded = false
+      request(`${BASE_URL}/api/contact/${client_id}`, METHOD.GET).then(
+        (res) => {
+          this.contacts = res.data
+          this.contactsLoading = false
+          this.contactsLoaded = true
+        }
+      )
+    },
     selecteAlert(alert) {
       alert.selected = !alert.selected
       this.alertes
@@ -672,6 +781,20 @@ export default {
       }
       if (this.alertes.every((a) => !a.selected)) {
         this.selectedAlert = null
+      }
+    },
+    selecteUser(user) {
+      user.selected = !user.selected
+      this.contacts
+        .filter((a) => a.id !== user.id)
+        .forEach((a) => (a.selected = false))
+      if (user.selected) {
+        this.selectedUser = user
+      } else {
+        this.selectedUser = null
+      }
+      if (this.contacts.every((a) => !a.selected)) {
+        this.selectedUser = null
       }
     },
     clickOnMapPin(event, device) {
@@ -762,7 +885,10 @@ export default {
         content: 'Delete Client',
         okText: 'Yes',
         onOk() {
-          return request(`${BASE_URL}/api/client/${self.selectedClientValue}`, METHOD.DELETE)
+          return request(
+            `${BASE_URL}/api/client/${self.selectedClientValue}`,
+            METHOD.DELETE
+          )
             .then(() => {
               self.getClients()
               self.$message.success(`Client has been deleted`, 5)
@@ -804,12 +930,12 @@ export default {
       this.addingLoading = true
       request(`${BASE_URL}/api/client`, METHOD.POST, {
         ...client,
-        clientId: this.selectedClientValue,
+        parentId: this.selectedClientValue,
       })
         .then(() => {
-          this.getDevicesByClientId(this.selectedClientValue)
+          this.getClients()
           this.$refs.addClientFormRef.resetForm()
-          this.modalAddDeviceVisible = false
+          this.modalAddClientVisible = false
           this.addingLoading = false
           this.$message.success(
             `${client.commercialName}, Client has been Adedd`,
