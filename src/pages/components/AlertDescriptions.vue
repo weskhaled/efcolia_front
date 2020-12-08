@@ -37,7 +37,19 @@
       </a-descriptions-item>
     </a-descriptions>
     <a-tabs default-active-key="1">
-      <a-tab-pane key="1" tab="Requirement">
+      <a-tab-pane key="1" tab="Alert And Flotte">
+        <a-table
+          :columns="columnsAlertDeviceAndFlotte"
+          :data-source="devicesAndFlottes"
+          size="small"
+          :loading="devicesAndFlottesLoading"
+        >
+          <span slot-scope="objectType" slot="objectType">
+            <a-icon :type="objectType === 'ensemble' ? 'folder' : 'file'" />
+          </span>
+        </a-table>
+      </a-tab-pane>
+      <a-tab-pane key="2" tab="Requirement">
         <a-table
           :columns="columnsConditionsAlert"
           :data-source="conditions"
@@ -45,7 +57,7 @@
           :loading="conditionsLoading"
         />
       </a-tab-pane>
-      <a-tab-pane key="2" tab="Action">
+      <a-tab-pane key="3" tab="Action">
         <a-table
           :columns="columnsActionsAlert"
           :data-source="actions"
@@ -93,6 +105,33 @@ const columnsConditionsAlert = [
     dataIndex: 'value',
   },
 ]
+const columnsAlertDeviceAndFlotte = [
+  {
+    title: 'Alert Id',
+    dataIndex: 'alertId',
+  },
+  {
+    title: 'Alert Name',
+    dataIndex: 'alertName',
+  },
+  {
+    title: 'Device Name',
+    dataIndex: 'deviceName',
+  },
+  {
+    title: 'Flotte Name',
+    dataIndex: 'flotteName',
+  },
+  {
+    title: 'Object Id',
+    dataIndex: 'objectId',
+  },
+  {
+    title: 'Object Type',
+    dataIndex: 'objectType',
+    scopedSlots: { customRender: 'objectType' },
+  },
+]
 
 export default {
   name: 'AlertDescriptions',
@@ -107,9 +146,11 @@ export default {
     return {
       columnsActionsAlert,
       columnsConditionsAlert,
+      columnsAlertDeviceAndFlotte,
       devicesAndFlottes: [],
       conditions: [],
       actions: [],
+      devicesAndFlottesLoading: true,
       conditionsLoading: true,
       actionsLoading: true,
     }
@@ -129,20 +170,24 @@ export default {
     updateInfos() {
       this.conditionsLoading = true
       this.actionsLoading = true
+      this.devicesAndFlottesLoading = true
       request(
         `${BASE_URL}/api/alertDeviceAndFlotte/${this.alert.id}`,
         METHOD.GET
-      ).then((res) => (this.devicesAndFlottes = res.data))
+      ).then((res) => {
+        this.devicesAndFlottes = res.data
+        this.devicesAndFlottesLoading = false
+      })
       request(
         `${BASE_URL}/api/alertCondition/${this.alert.id}`,
         METHOD.GET
       ).then((res) => {
-        this.conditions = res.data ? [res.data] : []
+        this.conditions = res.data
         this.conditionsLoading = false
       })
       request(`${BASE_URL}/api/alertAction/${this.alert.id}`, METHOD.GET).then(
         (res) => {
-          this.actions = res.data ? [res.data] : []
+          this.actions = res.data
           this.actionsLoading = false
         }
       )

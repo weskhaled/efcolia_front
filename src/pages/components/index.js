@@ -6,6 +6,10 @@ import AlertDescriptions from './AlertDescriptions'
 import DeviceHistoryTable from './DeviceHistoryTable'
 import UserCard from './UserCard'
 import UserInfos from './UserInfos'
+import ClientCard from './ClientCard'
+import ClientInfos from './ClientInfos'
+import AddAlertForm from './AddAlertForm'
+import AddContactForm from './AddContactForm'
 
 export {
   DeviceCard,
@@ -16,4 +20,8 @@ export {
   DeviceHistoryTable,
   UserCard,
   UserInfos,
+  ClientCard,
+  ClientInfos,
+  AddAlertForm,
+  AddContactForm,
 }

@@ -1,14 +1,39 @@
 <template>
   <a-table
     :loading="dataHistoryLoading"
-    :columns="columnsHistory"
+    :columns="columnsHistory.filter((c) => !c.hidden)"
     :data-source="dataHistory"
-    rowKey="{record => record.history_id}"
+    :rowKey="(record) => record.history_id"
     :scroll="{ x: 1100, y: 'calc(455px)' }"
     :pagination="{ pageSize: 25 }"
     size="small"
     class="table-history-device"
   >
+    <span slot="customActionTitle">
+      <a-dropdown>
+        <a class="ant-dropdown-link" @click="(e) => e.preventDefault()">
+          select columns <a-icon type="down" />
+        </a>
+        <a-menu slot="overlay" @click="(e) => e.preventDefault()">
+          <a-menu-item
+            v-for="(column, index) in columnsHistory.filter((c) => c.title)"
+            :key="index"
+            @click="(e) => e.preventDefault()"
+          >
+            <a-checkbox
+              :checked="!column.hidden"
+              @change="
+                (e) => {
+                  column.hidden = !e.target.checked
+                }
+              "
+            >
+              {{ column.title }}
+            </a-checkbox>
+          </a-menu-item>
+        </a-menu>
+      </a-dropdown>
+    </span>
     <div slot="action">
       <a><a-icon type="environment"/></a>
     </div>
@@ -24,38 +49,42 @@
 import { format } from 'date-fns'
 const columnsHistory = [
   {
-    title: 'History Id',
+    title: 'Id',
     width: 120,
     dataIndex: 'history_id',
     fixed: 'left',
+    hidden: false,
   },
   {
     title: 'Engine State',
     width: 100,
     dataIndex: 'enginestate',
     fixed: 'left',
+    hidden: true,
   },
-  { title: 'Device ip', width: 160, dataIndex: 'deviceip' },
+  { title: 'Device ip', width: 160, dataIndex: 'deviceip', hidden: true },
   {
     title: 'gprs State',
     dataIndex: 'gprsstate',
     width: 150,
     scopedSlots: { customRender: 'gprsstate' },
+    hidden: false,
   },
-  { title: 'Speed', dataIndex: 'speed', width: 100 },
-  { title: 'Latitude', dataIndex: 'latitude', width: 150 },
-  { title: 'Longitude', dataIndex: 'longitude', width: 150 },
+  { title: 'Speed', dataIndex: 'speed', width: 100, hidden: false },
+  { title: 'Latitude', dataIndex: 'latitude', width: 150, hidden: false },
+  { title: 'Longitude', dataIndex: 'longitude', width: 150, hidden: false },
   {
     title: 'Localization Date',
     dataIndex: 'localizationdate',
     width: 200,
+    hidden: true,
   },
   {
-    title: 'Action',
     key: 'action',
     fixed: 'right',
-    width: 100,
-    scopedSlots: { customRender: 'action' },
+    width: 160,
+    slots: { title: 'customActionTitle' },
+    scopedSlots: { customRender: 'action', hidden: true },
   },
 ]
 export default {
@@ -75,6 +104,7 @@ export default {
   data() {
     return {
       columnsHistory,
+      visibleSelectColumns: false,
     }
   },
   methods: {

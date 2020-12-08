@@ -3,36 +3,40 @@
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
       <div>
         <div>
-          <a-form-model-item ref="firstname" label="firstname" prop="firstname">
+          <a-form-model-item
+            ref="commercialname"
+            label="commercialname"
+            prop="commercialname"
+          >
             <a-input
-              v-model="form.firstname"
+              v-model="form.commercialname"
               @blur="
                 () => {
-                  $refs.firstname.onFieldBlur()
+                  $refs.commercialname.onFieldBlur()
                 }
               "
             />
           </a-form-model-item>
         </div>
         <div>
-          <a-form-model-item ref="lastname" label="lastname" prop="lastname">
+          <a-form-model-item ref="country" label="country" prop="country">
             <a-input
-              v-model="form.lastname"
+              v-model="form.country"
               @blur="
                 () => {
-                  $refs.lastname.onFieldBlur()
+                  $refs.country.onFieldBlur()
                 }
               "
             />
           </a-form-model-item>
         </div>
         <div>
-          <a-form-model-item ref="jobtitle" label="jobtitle" prop="jobtitle">
+          <a-form-model-item ref="begindate" label="begindate" prop="begindate">
             <a-input
-              v-model="form.jobtitle"
+              v-model="form.begindate"
               @blur="
                 () => {
-                  $refs.jobtitle.onFieldBlur()
+                  $refs.begindate.onFieldBlur()
                 }
               "
             />
@@ -67,15 +71,17 @@
 // const BASE_URL = process.env.VUE_APP_API_BASE_URL
 
 export default {
-  name: 'UserInfos',
+  name: 'ClientInfos',
   props: {
-    user: {
+    client: {
       type: Object,
       required: false,
       default: () => ({
-        lastname: '',
-        firstname: '',
-        jobtitle: '',
+        client_id: null,
+        clientstatus: 0,
+        commercialname: '',
+        country: '',
+        begindate: '',
         description: '',
       }),
     },
@@ -83,15 +89,17 @@ export default {
   data() {
     return {
       form: {
-        lastname: '',
-        firstname: '',
-        jobtitle: '',
+        client_id: '',
+        clientstatus: 0,
+        commercialname: '',
+        country: '',
+        begindate: '',
         description: '',
       },
     }
   },
   watch: {
-    user: function(newVal) {
+    client: function(newVal) {
       if (newVal) {
         this.updateInfos()
       }
@@ -100,10 +108,12 @@ export default {
   mounted() {},
   methods: {
     updateInfos() {
-      this.form.lastname = this.user.lastname || ''
-      this.form.firstname = this.user.firstname || ''
-      this.form.jobtitle = this.user.jobtitle || ''
-      this.form.description = this.user.description || ''
+      this.form.client_id = this.client.client_id || ''
+      this.form.clientstatus = this.client.clientstatus || ''
+      this.form.commercialname = this.client.commercialname || ''
+      this.form.country = this.client.country || ''
+      this.form.begindate = this.client.begindate || ''
+      this.form.description = this.client.description || ''
     },
   },
 }

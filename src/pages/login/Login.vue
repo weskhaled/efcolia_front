@@ -144,6 +144,7 @@ export default {
                 FR: 'Front-end engineer | VUE platform',
                 US: 'Front-end engineer | VUE platform',
               },
+              permissions: res.data.permissions
             },
             permissions: [{ id: 'queryForm', operation: ['add', 'edit'] }],
             roles: [{ id: 'admin', operation: ['add', 'edit', 'delete'] }],

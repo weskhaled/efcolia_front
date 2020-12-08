@@ -35,6 +35,11 @@
         </div>
         <div class="flex">
           <div
+            v-if="
+              currUser.permissions
+                .find((p) => p.objecttype === 'client')
+                .permission.indexOf('d') !== -1
+            "
             class="inline flex-auto md:flex-none flex flex-1 justify-center mx-1"
           >
             <a-button
@@ -42,18 +47,7 @@
               type="danger"
               shape="circle"
               icon="minus"
-              @click="() => deleteSelectedClient()"
-            />
-          </div>
-          <div
-            class="inline flex-auto md:flex-none flex flex-1 justify-center mx-1"
-          >
-            <a-button
-              class="self-center"
-              type="primary"
-              shape="circle"
-              icon="plus"
-              @click="() => (modalAddClientVisible = true)"
+              @click="() => deleteClient(selectedClientValue)"
             />
           </div>
           <div
@@ -73,7 +67,7 @@
               class="self-center"
               type="primary"
               shape="circle"
-              icon="customer-service"
+              icon="user"
             />
           </div>
           <div
@@ -91,7 +85,7 @@
     </template>
     <template>
       <div class="md:flex sm:block">
-        <div class="w-full sm:w-full md:w-10 lg:w-12">
+        <div class="w-full sm:w-full md:w-10 lg:w-12 overflow-hidden">
           <a-card :title="false" :bordered="false" :body-style="{ padding: 0 }">
             <div class="px-0 left-tab overflow-hidden">
               <div class="flex md:block md:divide-y divide-gray-300">
@@ -109,7 +103,9 @@
                         () => {
                           tab = 1
                           showHistoryInMap = false
-                          zoomeExtends(devices)
+                          zoomeExtends(
+                            devices.filter((d) => d.latitude && d.longitude)
+                          )
                         }
                       "
                     >
@@ -132,7 +128,13 @@
                     <a
                       class="flex justify-center w-full md:w-12 h-12"
                       :class="tab === 2 ? 'bg-blue-100 active' : null"
-                      @click.prevent="tab = 2"
+                      @click.prevent="
+                        () => {
+                          tab = 2
+                          selectedAlert = null
+                          alertes.forEach((a) => (a.selected = false))
+                        }
+                      "
                     >
                       <a-icon
                         class="self-center"
@@ -154,6 +156,8 @@
                       :class="tab === 4 ? 'bg-blue-100 active' : null"
                       @click.prevent="
                         () => {
+                          selectedUser = null
+                          contacts.forEach((c) => (c.selected = false))
                           tab = 4
                         }
                       "
@@ -162,6 +166,35 @@
                         class="self-center"
                         type="user"
                         :class="tab === 4 ? 'text-blue-600' : null"
+                      />
+                    </a>
+                  </a-tooltip>
+                </div>
+                <div
+                  class="inline flex-auto md:flex-none flex flex-1 justify-center"
+                >
+                  <a-tooltip placement="rightTop">
+                    <template slot="title">
+                      Flotte List
+                    </template>
+                    <a
+                      class="flex justify-center w-full md:w-12 h-12"
+                      :class="tab === 5 ? 'bg-blue-100 active' : null"
+                      :disabled="!!!selectedClient"
+                      @click.prevent="
+                        () => {
+                          tab = 5
+                          clientChildSelected = { ...selectedClient }
+                          $nextTick(() => {
+                            $refs.clientChildSelectedRef.updateInfos()
+                          })
+                        }
+                      "
+                    >
+                      <a-icon
+                        class="self-center"
+                        type="home"
+                        :class="tab === 5 ? 'text-blue-600' : null"
                       />
                     </a>
                   </a-tooltip>
@@ -177,6 +210,7 @@
               : 'w-full sm:w-full md:w-3/6 lg:w-2/6'
           "
         >
+          <!-- left card tabs -->
           <transition-group name="fade-up" target="div" appear>
             <!-- devices list -->
             <a-card
@@ -310,7 +344,10 @@
                 >{{ selectedDevice.name + ' ' + $t('deviceHistory') }}
               </template>
               <template slot="extra">
-                <a-range-picker />
+                <a-range-picker
+                  :disabled="!!!dataHistory.length"
+                  @change="dataHistoryDateChange"
+                />
               </template>
               <div>
                 <div
@@ -334,7 +371,22 @@
               :bordered="false"
               :body-style="{ padding: '0px', overflowY: 'auto' }"
             >
-              <template slot="title">Conatcts</template>
+              <template slot="title"
+                >{{ $t('contactList') }}
+                <a-button
+                  class="self-center"
+                  type="primary"
+                  shape="circle"
+                  icon="plus"
+                  size="small"
+                  v-if="
+                    currUser.permissions
+                      .find((p) => p.objecttype === 'contact')
+                      .permission.indexOf('n') !== -1
+                  "
+                  @click="() => (modalAddContactVisible = true)"
+                />
+              </template>
               <template slot="extra"> </template>
               <div
                 class="p-3 overflow-scroll min-h-555 h-content"
@@ -365,9 +417,79 @@
                 </div>
               </div>
             </a-card>
+            <!-- flotte list -->
+            <a-card
+              class="flotte-list"
+              v-if="tab === 5"
+              key="5"
+              :bordered="false"
+              :body-style="{ padding: '0px', overflowY: 'auto' }"
+            >
+              <template slot="title"
+                >{{ $t('flotteList') }}
+                <a-button
+                  class="self-center"
+                  type="primary"
+                  shape="circle"
+                  icon="plus"
+                  size="small"
+                  v-if="
+                    currUser.permissions
+                      .find((p) => p.objecttype === 'client')
+                      .permission.indexOf('n') !== -1
+                  "
+                  @click="() => (modalAddClientVisible = true)"
+                />
+              </template>
+              <template slot="extra"> </template>
+              <div
+                class="p-3 overflow-scroll min-h-555 h-content"
+                style="border-right: 1px solid rgb(226, 232, 240);"
+              >
+                <a-result
+                  v-if="!selectedClient"
+                  :title="$t('selectClientFirst')"
+                >
+                </a-result>
+                <a-result
+                  status="404"
+                  title="No Clients"
+                  sub-title="Sorry, No clients for this client."
+                  v-if="
+                    treeClientsData.filter(
+                      (c) => c.pId === selectedClient.client_id
+                    ).length === 0
+                  "
+                >
+                </a-result>
+                <div
+                  v-if="loading"
+                  class="w-full h-full flex place-content-center content-center"
+                >
+                  <a-spin class="self-center" />
+                </div>
+                <div
+                  class="mb-3"
+                  v-for="client in treeClientsData.filter(
+                    (c) => c.pId === selectedClient.client_id
+                  )"
+                  :key="client.id"
+                >
+                  <client-card
+                    :client="client"
+                    :selected="
+                      clientChildSelected !== null &&
+                        clientChildSelected.client_id === client.id
+                    "
+                    @select="selectChildClient"
+                    @delete="(client) => deleteClient(client.id)"
+                  />
+                </div>
+              </div>
+            </a-card>
           </transition-group>
         </div>
-        <!-- tab gmaps-map -->
+        <!-- right card tabs -->
         <div
           :class="
             tab === 3
@@ -376,6 +498,7 @@
           "
         >
           <transition-group name="fade-up" target="div" appear>
+            <!-- tab gmaps-map -->
             <a-card
               class=""
               v-if="tab === 1 || tab === 3"
@@ -389,7 +512,9 @@
                 <gmaps-map :options="mapOptions" ref="devicesMap">
                   <template v-if="!showHistoryInMap">
                     <gmaps-popup
-                      v-for="device in devices"
+                      v-for="device in devices.filter(
+                        (d) => d.latitude && d.longitude
+                      )"
                       :key="'gmaps-popup-' + device.id"
                       :position="{
                         lat: Number(device.latitude),
@@ -486,13 +611,150 @@
                 </div>
               </div>
             </a-card>
+            <!-- user details card -->
+            <a-card
+              class=""
+              v-if="tab === 5"
+              key="4"
+              :bordered="false"
+              :title="$t('clientDetails')"
+              :body-style="{ padding: '0px', overflowY: 'auto' }"
+            >
+              <div class="bg-white">
+                <div class="p-2 min-h-555 h-content">
+                  <a-result
+                    v-if="
+                      !clientChildSelectedLoading &&
+                        clientChildSelected === null
+                    "
+                    :title="$t('clientChildSelected')"
+                  />
+                  <div
+                    v-if="
+                      clientChildSelectedLoading && clientChildSelected === null
+                    "
+                    class="w-full h-full flex place-content-center content-center"
+                  >
+                    <a-spin class="self-center" />
+                  </div>
+                  <client-infos
+                    v-show="
+                      clientChildSelected !== null &&
+                        !clientChildSelectedLoading
+                    "
+                    ref="clientChildSelectedRef"
+                    :client="clientChildSelected"
+                  />
+                </div>
+              </div>
+            </a-card>
           </transition-group>
         </div>
       </div>
     </template>
     <a-modal
       :title="
-        `${$t('addNewDevice')} #${selectedClient ? selectedClient.title : ''}`
+        `${$t('addNewAlert')} #${
+          selectedClient ? selectedClient.commercialname : ''
+        }`
+      "
+      class="add-evice-modal"
+      width="65vw"
+      :dialog-style="{ top: '20px' }"
+      :visible="modalAddAlertVisible"
+      @cancel="
+        () => {
+          $refs.addAlertFormRef.resetForm()
+          modalAddAlertVisible = false
+        }
+      "
+    >
+      <template slot="footer">
+        <a-button
+          type="danger"
+          key="cancel"
+          @click="
+            () => {
+              $refs.addAlertFormRef.resetForm()
+              modalAddAlertVisible = false
+            }
+          "
+        >
+          Cancel
+        </a-button>
+        <a-button key="back" @click="() => $refs.addAlertFormRef.resetForm()">
+          Reset
+        </a-button>
+        <a-button
+          key="submit"
+          type="primary"
+          :loading="addingLoading"
+          @click="() => $refs.addAlertFormRef.onSubmit()"
+        >
+          Submit
+        </a-button>
+      </template>
+      <add-alert-form
+        :devices="devices"
+        :clientId="selectedClientValue"
+        ref="addAlertFormRef"
+        @submit="addNewAlert"
+      />
+    </a-modal>
+    <a-modal
+      :title="
+        `${$t('addNewContact')} #${
+          selectedClient ? selectedClient.commercialname : ''
+        }`
+      "
+      class="add-evice-modal"
+      width="65vw"
+      :dialog-style="{ top: '20px' }"
+      :visible="modalAddContactVisible"
+      @cancel="
+        () => {
+          $refs.addContactFormRef.resetForm()
+          modalAddContactVisible = false
+        }
+      "
+    >
+      <template slot="footer">
+        <a-button
+          type="danger"
+          key="cancel"
+          @click="
+            () => {
+              $refs.addContactFormRef.resetForm()
+              modalAddContactVisible = false
+            }
+          "
+        >
+          Cancel
+        </a-button>
+        <a-button key="back" @click="() => $refs.addContactFormRef.resetForm()">
+          Reset
+        </a-button>
+        <a-button
+          key="submit"
+          type="primary"
+          :loading="addingLoading"
+          @click="() => $refs.addContactFormRef.onSubmit()"
+        >
+          Submit
+        </a-button>
+      </template>
+      <add-contact-form
+        :deviceTypes="deviceTypes"
+        :clientId="selectedClientValue"
+        ref="addContactFormRef"
+        @submit="addNewContact"
+      />
+    </a-modal>
+    <a-modal
+      :title="
+        `${$t('addNewDevice')} #${
+          selectedClient ? selectedClient.commercialname : ''
+        }`
       "
       class="add-evice-modal"
       width="65vw"
@@ -538,7 +800,9 @@
     </a-modal>
     <a-modal
       :title="
-        `${$t('addNewClient')} #${selectedClient ? selectedClient.title : ''}`
+        `${$t('addNewClient')} #${
+          selectedClient ? selectedClient.commercialname : ''
+        }`
       "
       class="add-evice-modal"
       width="65vw"
@@ -600,6 +864,10 @@ import {
   AlertDescriptions,
   DeviceHistoryTable,
   UserInfos,
+  ClientCard,
+  ClientInfos,
+  AddAlertForm,
+  AddContactForm,
 } from '../../components'
 const BASE_URL = process.env.VUE_APP_API_BASE_URL
 const iconStart = {
@@ -627,6 +895,10 @@ export default {
     AlertDescriptions,
     DeviceHistoryTable,
     UserInfos,
+    ClientCard,
+    ClientInfos,
+    AddAlertForm,
+    AddContactForm,
   },
   i18n: require('./i18n'),
   data() {
@@ -634,6 +906,8 @@ export default {
       loading: true,
       selectedClientValue: null,
       selectedClient: null,
+      clientChildSelected: null,
+      clientChildSelectedLoading: true,
       treeClientsData: [],
       devices: [],
       contacts: [],
@@ -644,6 +918,7 @@ export default {
       modalAddDeviceVisible: false,
       modalAddAlertVisible: false,
       modalAddClientVisible: false,
+      modalAddContactVisible: false,
       addingLoading: false,
       selectedAlert: null,
       selectedDevice: null,
@@ -686,6 +961,7 @@ export default {
       (res) => (this.welcome = res.data)
     )
     this.getClients()
+    console.log('add new alert', this.currUser)
   },
   mounted() {},
   methods: {
@@ -696,10 +972,10 @@ export default {
       this.loading = true
       this.treeClientsData = []
       request(`${BASE_URL}/api/client`, METHOD.GET).then((res) => {
-        this.selectedClient = res.data.find((c) => !c.pId)
+        // this.selectedClient = res.data.find((c) => !c.pId)
         this.treeClientsData = res.data
-        this.selectClient(this.selectedClient.id)
-        this.selectedClientValue = this.selectedClient.id
+        this.selectClient(res.data.find((c) => !c.pId).id)
+        this.selectedClientValue = res.data.find((c) => !c.pId).id
       })
       this.loading = false
     },
@@ -710,24 +986,34 @@ export default {
         .filter((d) => d.id !== device.id)
         .forEach((d) => (d.selected = false))
       if (device.selected) {
-        this.selectedDevice = device
-        this.mapOptions.zoom = 20
-        this.mapOptions.center.lat = device.latitude
-        this.mapOptions.center.lng = device.longitude
+        if (device.latitude && device.longitude) {
+          this.selectedDevice = device
+          this.mapOptions.zoom = 20
+          this.mapOptions.center.lat = device.latitude
+          this.mapOptions.center.lng = device.longitude
+        }
       } else {
         this.selectedDevice = null
       }
       if (this.devices.every((d) => !d.selected)) {
-        this.zoomeExtends(this.devices)
+        this.zoomeExtends(this.devices.filter((d) => d.latitude && d.longitude))
       }
     },
     selectClient(client_id) {
-      this.selectedClient = this.treeClientsData.find((c) => c.id === client_id)
+      // this.selectedClient = this.treeClientsData.find((c) => c.id === client_id)
       this.selectedClientValue = client_id
 
       this.getDevicesByClientId(client_id)
       this.getAlertByClientId(client_id)
       this.getContactsByClientId(client_id)
+
+      this.clientChildSelected = null
+      this.clientChildSelectedLoading = true
+      request(`${BASE_URL}/api/client/${client_id}`, METHOD.GET).then((res) => {
+        this.clientChildSelectedLoading = false
+        this.selectedClient = res.data
+        this.clientChildSelected = { ...this.selectedClient }
+      })
     },
     getDevicesByClientId(clientId) {
       this.devices = []
@@ -738,9 +1024,12 @@ export default {
           this.devices = res.data
           this.devicesLoaded = true
           this.devicesLoading = false
-          this.tab = 1
-          this.showHistoryInMap = false
-          this.zoomeExtends(this.devices)
+          if (this.tab === 1) {
+            this.showHistoryInMap = false
+            this.zoomeExtends(
+              this.devices.filter((d) => d.latitude && d.longitude)
+            )
+          }
         }
       )
     },
@@ -757,7 +1046,6 @@ export default {
       )
     },
     getContactsByClientId(client_id) {
-      console.log(client_id)
       this.contacts = []
       this.contactsLoading = true
       this.contactsLoaded = false
@@ -816,27 +1104,28 @@ export default {
           )
         )
     },
-    historyDevice(device) {
+    historyDevice(device, filter = { from: null, to: null }) {
       this.dataHistory = []
       this.historyPoints = []
       this.dataHistoryLoading = true
       this.showHistoryInMap = true
-      request(`${BASE_URL}/api/history/${device.id}`, METHOD.GET).then(
-        (res) => {
-          this.dataHistory = res.data
-          this.dataHistoryLoading = false
-          for (let i = 0; i < res.data.length; i++) {
-            if (res.data[i].latitude && res.data[i].longitude) {
-              this.historyPoints.push({
-                lat: res.data[i].latitude,
-                lng: res.data[i].longitude,
-              })
-            }
+      request(
+        `${BASE_URL}/api/history/${device.id}?from=${filter.from}&to=${filter.to}`,
+        METHOD.GET
+      ).then((res) => {
+        this.dataHistory = res.data
+        this.dataHistoryLoading = false
+        for (let i = 0; i < res.data.length; i++) {
+          if (res.data[i].latitude && res.data[i].longitude) {
+            this.historyPoints.push({
+              lat: res.data[i].latitude,
+              lng: res.data[i].longitude,
+            })
           }
         }
-      )
+      })
       this.selectedDevice = device
-      this.zoomeExtends(this.devices)
+      this.zoomeExtends(this.devices.filter((d) => d.latitude && d.longitude))
       this.devices.forEach((d) => (d.selected = false))
       this.tab = 3
     },
@@ -879,16 +1168,13 @@ export default {
         cancelText: 'No',
       })
     },
-    deleteSelectedClient() {
+    deleteClient(clientId) {
       const self = this
       this.$confirm({
         content: 'Delete Client',
         okText: 'Yes',
         onOk() {
-          return request(
-            `${BASE_URL}/api/client/${self.selectedClientValue}`,
-            METHOD.DELETE
-          )
+          return request(`${BASE_URL}/api/client/${clientId}`, METHOD.DELETE)
             .then(() => {
               self.getClients()
               self.$message.success(`Client has been deleted`, 5)
@@ -949,6 +1235,48 @@ export default {
             5
           )
         })
+    },
+    async selectChildClient(client) {
+      if (
+        this.clientChildSelected &&
+        client.id === this.clientChildSelected.client_id
+      ) {
+        this.clientChildSelected = this.selectedClient
+      } else {
+        this.clientChildSelected = null
+        this.clientChildSelectedLoading = true
+        const { data } = await request(
+          `${BASE_URL}/api/client/${client.id}`,
+          METHOD.GET
+        )
+        this.clientChildSelectedLoading = false
+        this.clientChildSelected = data
+      }
+    },
+    dataHistoryDateChange(dates) {
+      this.historyDevice(this.selectedDevice, {
+        from: dates[0].format('YYYY-MM-DD'),
+        to: dates[1].format('YYYY-MM-DD'),
+      })
+    },
+    addNewAlert(alert) {
+      request(`${BASE_URL}/api/alert`, METHOD.POST, alert)
+        .then(() => {
+          this.alertes = []
+          this.alertesLoaded = false
+          this.alertesLoading = true
+          this.getAlertByClientId(this.selectedClientValue)
+          this.$message.success(`${alert.name}, Alert has been added`, 5)
+        })
+        .catch((error) =>
+          this.$message.error(
+            `${alert.name}, Sorry alert not added, error: ${error.status}`,
+            5
+          )
+        )
+    },
+    addNewContact() {
+      console.log('add new conatct', this.currUser)
     },
   },
 }

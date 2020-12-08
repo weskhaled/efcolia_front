@@ -8,51 +8,12 @@
   >
     <a-card-meta
       class="flex"
-      :title="user.firstname"
-      :description="user.lastname"
+      :title="user.lastname"
+      :description="user.firstname"
       @click.stop="$emit('select', user)"
     >
-      <div slot="avatar" class="self-center">
-        <a-button
-          size="small"
-          type="primary"
-          shape="circle"
-          :icon="showInfos ? 'minus' : 'plus'"
-          class="self-center"
-          @click.stop="showInfos = !showInfos"
-        />
-      </div>
+      <div slot="avatar" class="self-center"> </div>
     </a-card-meta>
-    <div
-      class="bg-white mt-1 border-t p-2 bg-opacity-50"
-      :class="showInfos ? 'block' : 'hidden'"
-      style="margin: 0.5rem -.5rem -.5rem -.5rem;"
-    >
-      <div>
-        <div class="flex items-stretch">
-          <div
-            class="flex self-center flex-0 mr-2 pr-1 border-gray-400 border-r h-100"
-          >
-            <a-icon
-              type="flag"
-              class="self-center"
-              :style="{ fontSize: '18px', color: '#08c' }"
-            >
-            </a-icon>
-          </div>
-          <div class="self-center flex-auto text-left">
-            <div>
-              {{ 'user.appsource' }}
-              <span class="float-right">{{ 'user.latitude' }}</span>
-            </div>
-            <div>
-              {{ 'user.deviceport'}}
-              <span class="float-right">{{ 'user.longitude' }}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
   </a-card>
 </template>
 
