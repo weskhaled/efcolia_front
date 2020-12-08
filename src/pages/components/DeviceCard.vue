@@ -86,10 +86,38 @@
         <span>
           <div>
             <div class="signal">
-              <div :class="[device.gprsstate > 4 && 'active']"></div>
-              <div :class="[device.gprsstate > 2 && 'active']"></div>
-              <div :class="[device.gprsstate > 1 && 'active']"></div>
-              <div></div>
+              <div
+                :class="[
+                  device.csq !== null &&
+                    device.csq !== 99 &&
+                    20 > device.csq > 30 &&
+                    'active',
+                ]"
+              ></div>
+              <div
+                :class="[
+                  device.csq !== null &&
+                    device.csq !== 99 &&
+                    16 > device.csq > 20 &&
+                    'active',
+                ]"
+              ></div>
+              <div
+                :class="[
+                  device.csq !== null &&
+                    device.csq !== 99 &&
+                    11 > device.csq > 15 &&
+                    'active',
+                ]"
+              ></div>
+              <div
+                :class="[
+                  device.csq !== null &&
+                    device.csq !== 99 &&
+                    device.csq > 10 &&
+                    'active',
+                ]"
+              ></div>
             </div>
           </div>
         </span>
@@ -110,7 +138,7 @@
             viewBox="0 0 1000 1000"
             enable-background="new 0 0 1000 1000"
             xml:space="preserve"
-            :fill="device.gprsstate ? '#00ff6d' : '#6e6e6e'"
+            :fill="device.validitycode ? '#00ff6d' : '#ff0000'"
           >
             <g>
               <path
@@ -119,6 +147,7 @@
               <path d="M565.2,990H289.4l53.2-313.4h148.5L565.2,990z" />
             </g>
           </svg>
+          <span v-if="device.satsinuse !== null">X{{ device.satsinuse }}</span>
         </span>
       </a-tooltip>
       <!-- <a-tooltip>
@@ -323,6 +352,7 @@ export default {
   transform: rotate(45deg) scale(1.5);
   color: #6e6e6e;
   > div {
+    color: #6e6e6e;
     &.active {
       color: #00ff6d;
     }
@@ -354,14 +384,17 @@ export default {
     }
     &:nth-child(4) {
       border-radius: 50%;
-      border: 1px solid #00ff6d;
+      border: 1px solid currentColor;
       position: absolute;
       bottom: 0;
-      background-color: rgb(43, 253, 24);
+      background-color: #6e6e6e;
       height: 50%;
       right: 0%;
       width: 50%;
       transform: translate(50%, 50%);
+      &.active {
+        background-color: rgb(43, 253, 24);
+      }
     }
   }
 }

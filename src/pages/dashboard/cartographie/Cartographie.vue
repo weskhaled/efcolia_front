@@ -37,7 +37,7 @@
           <div
             v-if="
               currUser.permissions
-                .find((p) => p.objecttype === 'client')
+                .find((p) => p.objecttype === 'company')
                 .permission.indexOf('d') !== -1
             "
             class="inline flex-auto md:flex-none flex flex-1 justify-center mx-1"
@@ -435,7 +435,7 @@
                   size="small"
                   v-if="
                     currUser.permissions
-                      .find((p) => p.objecttype === 'client')
+                      .find((p) => p.objecttype === 'company')
                       .permission.indexOf('n') !== -1
                   "
                   @click="() => (modalAddClientVisible = true)"
@@ -1265,6 +1265,7 @@ export default {
           this.alertes = []
           this.alertesLoaded = false
           this.alertesLoading = true
+          this.modalAddAlertVisible = false
           this.getAlertByClientId(this.selectedClientValue)
           this.$message.success(`${alert.name}, Alert has been added`, 5)
         })
@@ -1275,8 +1276,22 @@ export default {
           )
         )
     },
-    addNewContact() {
-      console.log('add new conatct', this.currUser)
+    addNewContact(user) {
+      request(`${BASE_URL}/api/user`, METHOD.POST, user)
+        .then(() => {
+          this.contacts = []
+          this.contactsLoaded = false
+          this.contactsLoading = true
+          this.modalAddContactVisible = false
+          this.getContactsByClientId(this.selectedClientValue)
+          this.$message.success(`${user.firstname}, User has been added`, 5)
+        })
+        .catch((error) =>
+          this.$message.error(
+            `${alert.name}, Sorry user not added, error: ${error.status}`,
+            5
+          )
+        )
     },
   },
 }
