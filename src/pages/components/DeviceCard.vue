@@ -147,7 +147,11 @@
               <path d="M565.2,990H289.4l53.2-313.4h148.5L565.2,990z" />
             </g>
           </svg>
-          <span v-if="device.satsinuse !== null">X{{ device.satsinuse }}</span>
+          <span
+            style="line-height: 0.7;align-self: flex-end;font-size: .65rem;"
+            v-if="device.satsinuse !== null"
+            >X{{ device.satsinuse }}</span
+          >
         </span>
       </a-tooltip>
       <!-- <a-tooltip>

@@ -4,24 +4,23 @@
     :columns="columnsHistory.filter((c) => !c.hidden)"
     :data-source="dataHistory"
     :rowKey="(record) => record.history_id"
-    :scroll="{ x: 1100, y: 'calc(455px)' }"
+    :scroll="scroll"
     :pagination="{ pageSize: 25 }"
     size="small"
     class="table-history-device"
   >
     <span slot="customActionTitle">
-      <a-dropdown>
-        <a class="ant-dropdown-link" @click="(e) => e.preventDefault()">
-          select columns <a-icon type="down" />
-        </a>
-        <a-menu slot="overlay" @click="(e) => e.preventDefault()">
-          <a-menu-item
-            v-for="(column, index) in columnsHistory.filter((c) => c.title)"
+      <a-popover placement="bottom" class="device-history">
+        <template slot="content">
+          <div
+            v-for="(column, index) in columnsHistory.filter((c) => c.title).filter((c) => c.title !== 'Id')"
             :key="index"
-            @click="(e) => e.preventDefault()"
+            class="py-1"
+            :class="[columnsHistory.filter((c) => c.title).filter((c) => c.title !== 'Id').length - 1 > index ? 'border-b border-gray-200' : '']"
           >
             <a-checkbox
               :checked="!column.hidden"
+              class="w-full"
               @change="
                 (e) => {
                   column.hidden = !e.target.checked
@@ -30,12 +29,15 @@
             >
               {{ column.title }}
             </a-checkbox>
-          </a-menu-item>
-        </a-menu>
-      </a-dropdown>
+          </div>
+        </template>
+        <a class="ant-dropdown-link" @click="(e) => e.preventDefault()">
+          select columns <a-icon type="down" />
+        </a>
+      </a-popover>
     </span>
-    <div slot="action">
-      <a><a-icon type="environment"/></a>
+    <div slot="action" slot-scope="record">
+      <a v-if="record.latitude && record.longitude"><a-icon type="environment"/></a>
     </div>
     <span slot-scope="gprsstate" slot="gprsstate">
       <a-badge
@@ -105,7 +107,12 @@ export default {
     return {
       columnsHistory,
       visibleSelectColumns: false,
+      scroll: { x: 1100, y: 455 },
     }
+  },
+  created() {
+    this.scroll.x = window.innerWidth - 340
+    this.scroll.y = window.innerHeight + 10
   },
   methods: {
     formatDate: (date = new Date(), formatDate = 'yyyy-MM-dd') => {
