@@ -22,7 +22,7 @@
             width="16px"
             height="16px"
             xml:space="preserve"
-            :fill="device.batterystate ? '#00ff6d' : '#6e6e6e'"
+            :fill="device.batterystate ? '#48bb78' : '#6e6e6e'"
           >
             <g>
               <g
@@ -138,7 +138,7 @@
             viewBox="0 0 1000 1000"
             enable-background="new 0 0 1000 1000"
             xml:space="preserve"
-            :fill="device.validitycode ? '#00ff6d' : '#ff0000'"
+            :fill="device.validitycode ? '#48bb78' : '#ff0000'"
           >
             <g>
               <path
@@ -242,13 +242,13 @@
           </div>
           <div class="self-center flex-auto text-left">
             <div>
-              <span v-if="device.simcardNumber"
-                >+{{ device.simcardNumber }}</span
+              <span v-if="device.description"
+                >{{ device.description }}</span
               >
               <span class="float-right">{{ device.latitude }}</span>
             </div>
             <div>
-              {{ device.serialnumber }}
+              {{ device.serialnumber }}{{ device.simcardNumber && ' | +' + device.simcardNumber}}
               <span class="float-right">{{ device.longitude }}</span>
             </div>
           </div>
@@ -315,7 +315,7 @@ export default {
   position: relative;
   margin: 2px auto;
   width: calc(20px);
-  color: #00ff6d;
+  color: #48bb78;
   /* border: calc(1px) solid currentColor; */
   height: calc(10px);
   border-radius: 1px;
@@ -358,7 +358,7 @@ export default {
   > div {
     color: #6e6e6e;
     &.active {
-      color: #00ff6d;
+      color: #48bb78;
     }
     &:nth-child(1) {
       border-radius: 50%;
@@ -397,7 +397,7 @@ export default {
       width: 50%;
       transform: translate(50%, 50%);
       &.active {
-        background-color: rgb(43, 253, 24);
+        background-color: #48bb78;
       }
     }
   }

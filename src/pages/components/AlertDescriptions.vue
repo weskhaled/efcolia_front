@@ -55,7 +55,11 @@
           :data-source="conditions"
           size="small"
           :loading="conditionsLoading"
-        />
+        >
+          <span slot-scope="target" slot="targetRender">
+            {{ target.length > 3 && target.indexOf('{') > -1 && target.indexOf('}') > -1 ? $t(target.slice(0, -1).substring(1)) : target }}
+          </span>
+        </a-table>
       </a-tab-pane>
       <a-tab-pane key="3" tab="Action">
         <a-table
@@ -85,20 +89,21 @@ const columnsActionsAlert = [
 ]
 const columnsConditionsAlert = [
   {
-    title: 'Operator',
-    dataIndex: 'operator',
-  },
-  {
     title: 'Relation',
     dataIndex: 'relation',
   },
   {
-    title: 'target',
-    dataIndex: 'target',
-  },
-  {
     title: 'type',
     dataIndex: 'type',
+  },
+  {
+    title: 'target',
+    dataIndex: 'target',
+    scopedSlots: { customRender: 'targetRender' },
+  },
+  {
+    title: 'Operator',
+    dataIndex: 'operator',
   },
   {
     title: 'value',
@@ -140,6 +145,18 @@ export default {
       type: Object,
       required: false,
       default: () => null,
+    },
+  },
+  i18n: {
+    messages: {
+      FR: {
+        enginestate: 'Etat moteur',
+        localizationhour: 'Heure de localisation',
+      },
+      US: {
+        enginestate: 'Engine state',
+        localizationhour: 'Localization hour',
+      },
     },
   },
   data() {

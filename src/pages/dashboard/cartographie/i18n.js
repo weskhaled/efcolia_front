@@ -13,14 +13,16 @@ module.exports = {
       team: 'Team',
       add: 'Add',
       geo: 'Géolocalisation',
-      devices: 'Liste des appareils',
+      devices: 'boitiers',
       selectClientFirst: 'Veuillez sélectionner le client d\'abord',
       noGeoForDevice: 'Cet appareil n\'a pas de géolocalisation',
       alert: 'alerte',
-      devicesAlerts: 'Liste d\'alert',
+      devicesAlerts: 'Alertes',
       alertDetails: 'Détails d\'alert',
       deviceHistory: 'Historique',
       addNewDevice: 'Ajouter un nouvel appareil',
+      flotteList: 'Sociétés',
+      enginestate: 'Etat moteur',
     },
     US: {
       project: 'Project',
@@ -42,6 +44,8 @@ module.exports = {
       alertDetails: 'Alert details',
       deviceHistory: 'History',
       addNewDevice: 'add new device',
+      flotteList: 'Companies',
+      enginestate: 'Engine State',
     },
   }
 }

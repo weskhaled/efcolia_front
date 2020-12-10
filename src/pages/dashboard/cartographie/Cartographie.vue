@@ -94,7 +94,7 @@
                 >
                   <a-tooltip placement="rightTop">
                     <template slot="title">
-                      Devices List
+                      Liste des boitiers
                     </template>
                     <a
                       class="flex justify-center w-full md:w-12 h-12"
@@ -122,7 +122,7 @@
                 >
                   <a-tooltip placement="rightTop">
                     <template slot="title">
-                      Alertes List
+                      Liste des alertes
                     </template>
 
                     <a
@@ -149,7 +149,7 @@
                 >
                   <a-tooltip placement="rightTop">
                     <template slot="title">
-                      Users List
+                      Liste des contacts
                     </template>
                     <a
                       class="flex justify-center w-full md:w-12 h-12"
@@ -175,7 +175,7 @@
                 >
                   <a-tooltip placement="rightTop">
                     <template slot="title">
-                      Flotte List
+                      Liste des sociétés
                     </template>
                     <a
                       class="flex justify-center w-full md:w-12 h-12"
@@ -203,6 +203,7 @@
             </div>
           </a-card>
         </div>
+        <!-- left card tabs -->
         <div
           :class="
             tab === 3
@@ -210,7 +211,6 @@
               : 'w-full sm:w-full md:w-3/6 lg:w-2/6'
           "
         >
-          <!-- left card tabs -->
           <transition-group name="fade-up" target="div" appear>
             <!-- devices list -->
             <a-card
@@ -221,7 +221,7 @@
               class="overflow-hidden"
             >
               <template slot="title"
-                >{{ $t('devices') }}
+                >{{ devices.length > 0 && devices.length }} {{ $t('devices') }}
                 <a-button
                   v-if="selectedClient"
                   class="self-center"
@@ -283,7 +283,8 @@
               :body-style="{ padding: 0 }"
             >
               <template slot="title"
-                >{{ $t('devicesAlerts') }}
+                >{{ alertes.length > 0 && alertes.length }}
+                {{ $t('devicesAlerts') }}
                 <a-button
                   class="self-center"
                   type="primary"
@@ -372,7 +373,8 @@
               :body-style="{ padding: '0px', overflowY: 'auto' }"
             >
               <template slot="title"
-                >{{ $t('contactList') }}
+                >{{ contacts.length > 0 && contacts.length }}
+                {{ $t('contactList') }}
                 <a-button
                   class="self-center"
                   type="primary"
@@ -426,7 +428,15 @@
               :body-style="{ padding: '0px', overflowY: 'auto' }"
             >
               <template slot="title"
-                >{{ $t('flotteList') }}
+                >{{
+                  treeClientsData.filter(
+                    (c) => c.pId === selectedClient.client_id
+                  ).length > 0 &&
+                    treeClientsData.filter(
+                      (c) => c.pId === selectedClient.client_id
+                    ).length
+                }}
+                {{ $t('flotteList') }}
                 <a-button
                   class="self-center"
                   type="primary"

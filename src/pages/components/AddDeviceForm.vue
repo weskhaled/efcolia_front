@@ -20,7 +20,7 @@
           </a-form-model-item>
         </div>
         <div>
-          <a-form-model-item label="Device Type" prop="deviceTypeId">
+          <a-form-model-item label="Type boîtier" prop="deviceTypeId">
             <a-select
               v-model="form.deviceTypeId"
               placeholder="please select your device type"
@@ -55,7 +55,23 @@
         <div>
           <a-form-model-item
             ref="serialNumber"
-            label="Serial Number"
+            label="Identifiant"
+            prop="device_id2"
+          >
+            <a-input
+              v-model="form.device_id2"
+              @blur="
+                () => {
+                  $refs.device_id2.onFieldBlur()
+                }
+              "
+            />
+          </a-form-model-item>
+        </div>
+        <div>
+          <a-form-model-item
+            ref="serialNumber"
+            label="Numéro de série"
             prop="serialNumber"
           >
             <a-input
@@ -118,6 +134,7 @@ export default {
         name: '',
         deviceTypeId: undefined,
         deviceSubtypeId: undefined,
+        device_id2: '',
         serialNumber: '',
         fromTo: undefined,
         status: false,
@@ -132,7 +149,7 @@ export default {
             required: true,
             message: 'Please input name',
             trigger: 'blur',
-          }
+          },
         ],
         serialNumber: [
           {
@@ -145,12 +162,18 @@ export default {
             message: 'Length should be 1 to 15',
           },
         ],
+        device_id2: [
+          {
+            required: true,
+            message: 'Please input Identifiant',
+          },
+        ],
         deviceTypeId: [
           {
             required: true,
             message: 'Please input device type',
           },
-        ]
+        ],
       },
       deviceTypes: [],
       deviceSubTypes: [],

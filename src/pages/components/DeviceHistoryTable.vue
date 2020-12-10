@@ -12,23 +12,35 @@
     <span slot="customActionTitle">
       <a-popover placement="bottom" class="device-history">
         <template slot="content">
-          <div
-            v-for="(column, index) in columnsHistory.filter((c) => c.title).filter((c) => c.title !== 'Id')"
-            :key="index"
-            class="py-1"
-            :class="[columnsHistory.filter((c) => c.title).filter((c) => c.title !== 'Id').length - 1 > index ? 'border-b border-gray-200' : '']"
-          >
-            <a-checkbox
-              :checked="!column.hidden"
-              class="w-full"
-              @change="
-                (e) => {
-                  column.hidden = !e.target.checked
-                }
-              "
+          <div class="h-64 overflow-y-auto">
+            <div
+              v-for="(column, index) in columnsHistory
+                .filter((c) => c.title)
+                .filter((c) => c.title !== 'Id')"
+              :key="index"
+              class="py-1"
+              :class="[
+                columnsHistory
+                  .filter((c) => c.title)
+                  .filter((c) => c.title !== 'Id').length -
+                  1 >
+                index
+                  ? 'border-b border-gray-200'
+                  : '',
+              ]"
             >
-              {{ column.title }}
-            </a-checkbox>
+              <a-checkbox
+                :checked="!column.hidden"
+                class="w-full"
+                @change="
+                  (e) => {
+                    column.hidden = !e.target.checked
+                  }
+                "
+              >
+                {{ column.title }}
+              </a-checkbox>
+            </div>
           </div>
         </template>
         <a class="ant-dropdown-link" @click="(e) => e.preventDefault()">
@@ -37,12 +49,14 @@
       </a-popover>
     </span>
     <div slot="action" slot-scope="record">
-      <a v-if="record.latitude && record.longitude"><a-icon type="environment"/></a>
+      <a v-if="record.latitude && record.longitude"
+        ><a-icon type="environment"
+      /></a>
     </div>
-    <span slot-scope="gprsstate" slot="gprsstate">
+    <span slot-scope="enginestate" slot="enginestate">
       <a-badge
-        :status="gprsstate === 1 ? 'processing' : 'error'"
-        :text="gprsstate === 1 ? 'Yes' : 'No'"
+        :status="enginestate === 1 ? 'processing' : 'error'"
+        :text="''"
       />
     </span>
   </a-table>
@@ -58,28 +72,131 @@ const columnsHistory = [
     hidden: false,
   },
   {
-    title: 'Engine State',
-    width: 100,
-    dataIndex: 'enginestate',
-    fixed: 'left',
-    hidden: true,
-  },
-  { title: 'Device ip', width: 160, dataIndex: 'deviceip', hidden: true },
-  {
-    title: 'gprs State',
-    dataIndex: 'gprsstate',
-    width: 150,
-    scopedSlots: { customRender: 'gprsstate' },
+    title: 'Nom du boitier',
+    width: 120,
+    dataIndex: 'name',
     hidden: false,
   },
-  { title: 'Speed', dataIndex: 'speed', width: 100, hidden: false },
-  { title: 'Latitude', dataIndex: 'latitude', width: 150, hidden: false },
-  { title: 'Longitude', dataIndex: 'longitude', width: 150, hidden: false },
   {
-    title: 'Localization Date',
+    title: 'Date serveur',
+    width: 180,
+    dataIndex: 'appdate',
+    hidden: false,
+  },
+  {
+    title: 'Date de localisation',
+    width: 180,
     dataIndex: 'localizationdate',
-    width: 200,
-    hidden: true,
+    hidden: false,
+  },
+  {
+    title: 'Latitude',
+    width: 120,
+    dataIndex: 'latitude',
+    hidden: false,
+  },
+  {
+    title: 'Longitude',
+    width: 120,
+    dataIndex: 'longitude',
+    hidden: false,
+  },
+  {
+    title: 'Altitude',
+    width: 100,
+    dataIndex: 'altitude',
+    hidden: false,
+  },
+  {
+    title: 'Vitesse',
+    width: 100,
+    dataIndex: 'speed',
+    hidden: false,
+  },
+  {
+    title: 'GPS',
+    width: 100,
+    dataIndex: 'satsinuse',
+    hidden: false,
+  },
+  {
+    title: 'Etat moteur',
+    width: 120,
+    dataIndex: 'enginestate',
+    hidden: false,
+    scopedSlots: { customRender: 'enginestate' },
+  },
+  {
+    title: 'Etat acceleromètre',
+    width: 150,
+    dataIndex: 'accelerostate',
+    hidden: false,
+  },
+  {
+    title: 'Odomètre',
+    width: 100,
+    dataIndex: 'totaldistance',
+    hidden: false,
+  },
+  {
+    title: 'Input',
+    width: 100,
+    dataIndex: 'sensors',
+    hidden: false,
+  },
+  {
+    title: 'Temp 1',
+    width: 100,
+    dataIndex: 'temperature1',
+    hidden: false,
+  },
+  {
+    title: 'Temp 2',
+    width: 100,
+    dataIndex: 'temperature2',
+    hidden: false,
+  },
+  {
+    title: 'Temp 3',
+    width: 100,
+    dataIndex: 'temperature3',
+    hidden: false,
+  },
+  {
+    title: 'Niveau GSM',
+    width: 100,
+    dataIndex: 'csq',
+    hidden: false,
+  },
+  {
+    title: 'Voltage batterie',
+    width: 160,
+    dataIndex: 'batteryvoltage',
+    hidden: false,
+  },
+  {
+    title: 'Voltage batterie Ext.',
+    width: 160,
+    dataIndex: 'battery2voltage',
+    hidden: false,
+  },
+  {
+    title: 'Firmware',
+    width: 120,
+    dataIndex: 'firmware',
+    hidden: false,
+  },
+  {
+    title: 'Conducteur',
+    width: 120,
+    dataIndex: 'driver_id2',
+    hidden: false,
+  },
+  {
+    title: 'Adresse',
+    width: 120,
+    dataIndex: 'devicehistory_id',
+    hidden: false,
   },
   {
     key: 'action',
