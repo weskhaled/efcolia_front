@@ -4,11 +4,17 @@
     ref="ruleForm"
     :model="form"
     :rules="rules"
+    layout="inline"
   >
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
       <div>
         <div>
-          <a-form-model-item ref="name" label="Device name" prop="name">
+          <a-form-model-item label="Active" prop="status">
+            <a-switch v-model="form.status" />
+          </a-form-model-item>
+        </div>
+        <div>
+          <a-form-model-item ref="name" label="Nom" prop="name">
             <a-input
               v-model="form.name"
               @blur="
@@ -20,7 +26,7 @@
           </a-form-model-item>
         </div>
         <div>
-          <a-form-model-item label="Type boîtier" prop="deviceTypeId">
+          <a-form-model-item label="Type" prop="deviceTypeId">
             <a-select
               v-model="form.deviceTypeId"
               placeholder="please select your device type"
@@ -37,7 +43,7 @@
           </a-form-model-item>
         </div>
         <div>
-          <a-form-model-item label="Device Sub Type" prop="deviceSubtypeId">
+          <a-form-model-item label="Sous Type" prop="deviceSubtypeId">
             <a-select
               v-model="form.deviceSubtypeId"
               placeholder="please select your device sub type"
@@ -50,6 +56,34 @@
                 {{ deviceSubType.name }}
               </a-select-option>
             </a-select>
+          </a-form-model-item>
+        </div>
+        <div>
+          <a-form-model-item
+            ref="serialNumber"
+            label="N° de série"
+            prop="serialNumber"
+          >
+            <a-input
+              v-model="form.serialNumber"
+              @blur="
+                () => {
+                  $refs.serialNumber.onFieldBlur()
+                }
+              "
+            />
+          </a-form-model-item>
+        </div>
+        <div>
+          <a-form-model-item ref="imei" label="IMEI" prop="imei">
+            <a-input
+              v-model="form.imei"
+              @blur="
+                () => {
+                  $refs.imei.onFieldBlur()
+                }
+              "
+            />
           </a-form-model-item>
         </div>
         <div>
@@ -68,24 +102,10 @@
             />
           </a-form-model-item>
         </div>
+      </div>
+      <div>
         <div>
-          <a-form-model-item
-            ref="serialNumber"
-            label="Numéro de série"
-            prop="serialNumber"
-          >
-            <a-input
-              v-model="form.serialNumber"
-              @blur="
-                () => {
-                  $refs.serialNumber.onFieldBlur()
-                }
-              "
-            />
-          </a-form-model-item>
-        </div>
-        <div>
-          <a-form-model-item label="Activity time" prop="fromTo">
+          <a-form-model-item label="Du / Au" prop="fromTo">
             <a-range-picker
               v-model="form.fromTo"
               show-time
@@ -94,23 +114,81 @@
             />
           </a-form-model-item>
         </div>
-      </div>
-      <div>
         <div>
-          <a-form-model-item label="Activeted" prop="status">
-            <a-switch v-model="form.status" />
-          </a-form-model-item>
-        </div>
-        <div>
-          <a-form-model-item label="Find Address" prop="findAddress">
-            <a-switch v-model="form.findAddress" />
+          <a-form-model-item label="Client" prop="client">
+            <a-select
+              v-model="form.clientId"
+              placeholder="please select client"
+              show-search
+              :filter-option="filterOptionClient"
+            >
+              <a-select-option
+                v-for="client in clients"
+                :key="client.id"
+                :value="client.id"
+              >
+                {{ client.title }}
+              </a-select-option>
+            </a-select>
           </a-form-model-item>
         </div>
         <div class="col-span-1">
           <a-form-model-item label="Description" prop="desc">
-            <a-input v-model="form.desc" type="textarea" />
+            <a-input
+              v-model="form.desc"
+              type="textarea"
+              :auto-size="{ minRows: 7, maxRows: 12 }"
+            />
           </a-form-model-item>
         </div>
+        <div>
+          <a-form-model-item label="Recherche" prop="findAddress">
+            <a-switch v-model="form.findAddress" />
+          </a-form-model-item>
+        </div>
+      </div>
+    </div>
+    <hr class="my-3" />
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <div>
+        <div>
+          <a-form-model-item label="Cart SIM" prop="simcard">
+            <a-select
+              v-model="form.simcard"
+              placeholder="please select Sim Card"
+              show-search
+              :filter-option="filterOptionSimcard"
+            >
+              <a-select-option
+                v-for="simcard in simCards"
+                :key="simcard.simcard_id"
+                :value="simcard.simcard_id"
+              >
+                {{ simcard.sim }}
+              </a-select-option>
+            </a-select>
+          </a-form-model-item>
+        </div>
+        <div>
+          <a-form-model-item label="Vie privee" prop="device_privacy">
+            <a-select
+              v-model="form.privacy"
+              placeholder="please select Vie privee"
+            >
+              <a-select-option value="aucun">
+                Aucun
+              </a-select-option>
+              <a-select-option value="input1">
+                Input 1
+              </a-select-option>
+              <a-select-option value="input2">
+                Input 2
+              </a-select-option>
+            </a-select>
+          </a-form-model-item>
+        </div>
+      </div>
+      <div>
       </div>
     </div>
   </a-form-model>
@@ -122,10 +200,19 @@ const BASE_URL = process.env.VUE_APP_API_BASE_URL
 export default {
   name: 'AddDeviceForm',
   props: {
+    clients: {
+      type: Array,
+      required: false,
+      default: () => [],
+    },
     device: {
       type: Object,
       required: false,
       default: () => ({}),
+    },
+    clientId: {
+      type: Number,
+      required: true,
     },
   },
   data() {
@@ -135,12 +222,13 @@ export default {
         deviceTypeId: undefined,
         deviceSubtypeId: undefined,
         device_id2: '',
+        imei: '',
         serialNumber: '',
         fromTo: undefined,
         status: false,
-        simCardId: 1,
+        clientId: undefined,
         findAddress: false,
-        timezone: 'Europe/Paris',
+        simcard: undefined,
         desc: '',
       },
       rules: {
@@ -177,11 +265,15 @@ export default {
       },
       deviceTypes: [],
       deviceSubTypes: [],
+      simCards: [],
     }
   },
   created() {
     request(`${BASE_URL}/api/deviceType`, METHOD.GET).then(
       (res) => (this.deviceTypes = res.data)
+    )
+    request(`${BASE_URL}/api/simcard/${this.clientId}`, METHOD.GET).then(
+      (res) => (this.simCards = res.data)
     )
   },
   methods: {
@@ -199,6 +291,9 @@ export default {
             deviceSubtypeId: +this.form.deviceSubtypeId,
             status: this.form.status ? 1 : 0,
             findAddress: this.form.findAddress ? 1 : 0,
+            creationdate: this.form.fromTo[0],
+            enddate: this.form.fromTo[1],
+            fromTo: undefined
           })
         } else {
           return false
@@ -207,6 +302,20 @@ export default {
     },
     resetForm() {
       this.$refs.ruleForm.resetFields()
+    },
+    filterOptionClient(input, option) {
+      return (
+        option.componentOptions.children[0].text
+          .toLowerCase()
+          .indexOf(input.toLowerCase()) >= 0
+      )
+    },
+    filterOptionSimcard(input, option) {
+      return (
+        option.componentOptions.children[0].text
+          .toLowerCase()
+          .indexOf(input.toLowerCase()) >= 0
+      )
     },
   },
 }

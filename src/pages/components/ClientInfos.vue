@@ -1,7 +1,7 @@
 <template>
   <div class="grid h-full">
     <div class="ant-form ant-form-horizontal flex flex-grow-1">
-      <a-form-model ref="ruleForm" :model="form" class="w-full">
+      <a-form-model ref="ruleForm" :model="form" :rules="rules" class="w-full">
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <div>
             <div>
@@ -67,7 +67,7 @@
         key="submit"
         type="primary"
         :loading="updateLoading"
-        @click="() => updateClient"
+        @click="onSubmit"
         class="ml-2"
       >
         Update
@@ -106,6 +106,15 @@ export default {
         description: '',
       },
       updateLoading: false,
+      rules: {
+        commercialname: [
+          {
+            required: true,
+            message: 'Please input commercialname',
+            trigger: 'blur',
+          },
+        ],
+      },
     }
   },
   watch: {
@@ -125,8 +134,16 @@ export default {
       this.form.begindate = this.client.begindate || ''
       this.form.description = this.client.description || ''
     },
-    updateClient() {
-      console.log(this.form)
+    onSubmit() {
+      this.$refs.ruleForm.validate((valid) => {
+        if (valid) {
+          this.$emit('updateClient', {
+            ...this.form,
+          })
+        } else {
+          return false
+        }
+      })
     },
   },
 }

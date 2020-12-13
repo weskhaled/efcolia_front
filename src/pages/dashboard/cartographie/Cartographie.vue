@@ -18,6 +18,7 @@
             :class="!!!treeClientsData.length ? 'opacity-50' : ''"
             :dropdown-style="{ maxHeight: '300px', overflow: 'auto' }"
             :treeDefaultExpandAll="false"
+            :treeDefaultExpandedKeys="[1]"
             :tree-data="treeClientsData"
             v-model="selectedClientValue"
           />
@@ -654,6 +655,7 @@
                     "
                     ref="clientChildSelectedRef"
                     :client="clientChildSelected"
+                    @updateClient="updateClient"
                   />
                 </div>
               </div>
@@ -804,6 +806,8 @@
       </template>
       <add-device-form
         :deviceTypes="deviceTypes"
+        :clients="treeClientsData"
+        :clientId="selectedClientValue"
         ref="addDeviceFormRef"
         @submit="addNewDevice"
       />
@@ -1201,11 +1205,35 @@ export default {
         cancelText: 'No',
       })
     },
+    updateClient(client) {
+      const self = this
+      this.$confirm({
+        content: 'Update Client',
+        okText: 'Yes',
+        onOk() {
+          return request(`${BASE_URL}/api/client/${client.client_id}`, METHOD.PUT, {
+            ...client,
+          })
+            .then(() => {
+              self.getClients()
+              self.$message.success(`Client has been Updated`, 5)
+              self.$destroyAll()
+            })
+            .catch((error) => {
+              self.$destroyAll()
+              self.$message.error(
+                `Sorry client not updated, error: ${error.status}`,
+                5
+              )
+            })
+        },
+        cancelText: 'No',
+      })
+    },
     addNewDevice(device) {
       this.addingLoading = true
       request(`${BASE_URL}/api/device`, METHOD.POST, {
         ...device,
-        clientId: this.selectedClientValue,
       })
         .then(() => {
           this.getDevicesByClientId(this.selectedClientValue)
