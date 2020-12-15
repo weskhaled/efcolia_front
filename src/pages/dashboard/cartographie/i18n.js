@@ -22,6 +22,7 @@ module.exports = {
       deviceHistory: 'Historique',
       addNewDevice: 'Ajouter un nouvel appareil',
       flotteList: 'Sociétés',
+      contactList: 'Contactes',
       enginestate: 'Etat moteur',
     },
     US: {
@@ -45,6 +46,7 @@ module.exports = {
       deviceHistory: 'History',
       addNewDevice: 'add new device',
       flotteList: 'Companies',
+      contactList: 'Contacts',
       enginestate: 'Engine State',
     },
   }

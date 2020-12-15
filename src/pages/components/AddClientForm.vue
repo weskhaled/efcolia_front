@@ -53,9 +53,9 @@
               placeholder="please select country"
             >
               <a-select-option
-                v-for="(country) in countries"
-                :key="country.country_id + country.lang_id"
-                :value="country.country_id"
+                v-for="country in countries"
+                :key="country.country_id + '' + country.lang_id"
+                :value="country.country_id + ',' + country.lang_id"
               >
                 {{ country.name }} " {{ country.lang_id }} "
               </a-select-option>
@@ -148,8 +148,10 @@ export default {
     },
     filterOptionCountry(input, option) {
       return (
-        option.componentOptions.children[0].text.toLowerCase().indexOf(input.toLowerCase()) >= 0
-      );
+        option.componentOptions.children[0].text
+          .toLowerCase()
+          .indexOf(input.toLowerCase()) >= 0
+      )
     },
   },
 }

@@ -6,30 +6,36 @@
           <div>
             <div>
               <a-form-model-item
-                ref="commercialname"
-                label="commercialname"
-                prop="commercialname"
+                ref="commercialName"
+                label="commercialName"
+                prop="commercialName"
               >
                 <a-input
-                  v-model="form.commercialname"
+                  v-model="form.commercialName"
                   @blur="
                     () => {
-                      $refs.commercialname.onFieldBlur()
+                      $refs.commercialName.onFieldBlur()
                     }
                   "
                 />
               </a-form-model-item>
             </div>
             <div>
-              <a-form-model-item ref="country" label="country" prop="country">
-                <a-input
+              <a-form-model-item label="country" prop="country">
+                <a-select
                   v-model="form.country"
-                  @blur="
-                    () => {
-                      $refs.country.onFieldBlur()
-                    }
-                  "
-                />
+                  show-search
+                  :filter-option="filterOptionCountry"
+                  placeholder="please select country"
+                >
+                  <a-select-option
+                    v-for="country in countries"
+                    :key="country.country_id + '-' + country.lang_id"
+                    :value="country.country_id + ',' + country.lang_id"
+                  >
+                    {{ country.name }} " {{ country.lang_id }} "
+                  </a-select-option>
+                </a-select>
               </a-form-model-item>
             </div>
             <div>
@@ -50,6 +56,27 @@
             </div>
           </div>
           <div>
+            <div>
+              <a-form-model-item label="Client Type" prop="clientType">
+                <a-select
+                  v-model="form.clientType"
+                  placeholder="please select your device type"
+                >
+                  <a-select-option
+                    v-for="clientType in clientTypes"
+                    :key="clientType.clienttype_id"
+                    :value="clientType.clienttype_id"
+                  >
+                    {{ clientType.type }}
+                  </a-select-option>
+                </a-select>
+              </a-form-model-item>
+            </div>
+            <div class="col-span-1">
+              <a-form-model-item label="Status" prop="status">
+                <a-switch v-model="form.status" />
+              </a-form-model-item>
+            </div>
             <div class="col-span-1">
               <a-form-model-item label="description" prop="description">
                 <a-input v-model="form.description" type="textarea" />
@@ -76,8 +103,8 @@
   </div>
 </template>
 <script>
-// import { request, METHOD } from '@/utils/request'
-// const BASE_URL = process.env.VUE_APP_API_BASE_URL
+import { request, METHOD } from '@/utils/request'
+const BASE_URL = process.env.VUE_APP_API_BASE_URL
 
 export default {
   name: 'ClientInfos',
@@ -87,7 +114,8 @@ export default {
       required: false,
       default: () => ({
         client_id: null,
-        clientstatus: 0,
+        status: 0,
+        clientType: '',
         commercialname: '',
         country: '',
         begindate: '',
@@ -99,15 +127,15 @@ export default {
     return {
       form: {
         client_id: '',
-        clientstatus: 0,
-        commercialname: '',
+        status: false,
+        commercialName: '',
         country: '',
         begindate: '',
         description: '',
       },
       updateLoading: false,
       rules: {
-        commercialname: [
+        commercialName: [
           {
             required: true,
             message: 'Please input commercialname',
@@ -115,6 +143,8 @@ export default {
           },
         ],
       },
+      clientTypes: [],
+      countries: [],
     }
   },
   watch: {
@@ -124,12 +154,20 @@ export default {
       }
     },
   },
-  mounted() {},
+  created() {
+    request(`${BASE_URL}/api/clientType`, METHOD.GET).then(
+      (res) => (this.clientTypes = res.data)
+    )
+    request(`${BASE_URL}/api/country`, METHOD.GET).then(
+      (res) => (this.countries = res.data)
+    )
+  },
   methods: {
     updateInfos() {
       this.form.client_id = this.client.client_id || ''
-      this.form.clientstatus = this.client.clientstatus || ''
-      this.form.commercialname = this.client.commercialname || ''
+      this.form.status = !!this.client.clientstatus || false
+      this.form.commercialName = this.client.commercialname || ''
+      this.form.clientType = this.client.clientType || undefined
       this.form.country = this.client.country || ''
       this.form.begindate = this.client.begindate || ''
       this.form.description = this.client.description || ''
@@ -139,11 +177,19 @@ export default {
         if (valid) {
           this.$emit('updateClient', {
             ...this.form,
+            country: this.form.country.split(',')[0] || undefined
           })
         } else {
           return false
         }
       })
+    },
+    filterOptionCountry(input, option) {
+      return (
+        option.componentOptions.children[0].text
+          .toLowerCase()
+          .indexOf(input.toLowerCase()) >= 0
+      )
     },
   },
 }

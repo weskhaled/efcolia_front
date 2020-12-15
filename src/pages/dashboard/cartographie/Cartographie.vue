@@ -24,7 +24,7 @@
           />
           <a-spin
             :spinning="!!!treeClientsData.length"
-            style="position: absolute;top: 15px;right: 5px"
+            style="position: absolute;top: calc(50% - 13px);right: 5px"
           >
             <a-icon
               slot="indicator"
@@ -222,7 +222,8 @@
               class="overflow-hidden"
             >
               <template slot="title"
-                >{{ devices.length > 0 && devices.length }} {{ $t('devices') }}
+                >{{ (devices.length > 0 && devices.length) || 0 }}
+                {{ $t('devices') }}
                 <a-button
                   v-if="selectedClient"
                   class="self-center"
@@ -284,7 +285,7 @@
               :body-style="{ padding: 0 }"
             >
               <template slot="title"
-                >{{ alertes.length > 0 && alertes.length }}
+                >{{ (alertes.length > 0 && alertes.length) || 0 }}
                 {{ $t('devicesAlerts') }}
                 <a-button
                   class="self-center"
@@ -374,7 +375,7 @@
               :body-style="{ padding: '0px', overflowY: 'auto' }"
             >
               <template slot="title"
-                >{{ contacts.length > 0 && contacts.length }}
+                >{{ (contacts.length > 0 && contacts.length) || 0 }}
                 {{ $t('contactList') }}
                 <a-button
                   class="self-center"
@@ -430,12 +431,13 @@
             >
               <template slot="title"
                 >{{
-                  treeClientsData.filter(
+                  (treeClientsData.filter(
                     (c) => c.pId === selectedClient.client_id
                   ).length > 0 &&
                     treeClientsData.filter(
                       (c) => c.pId === selectedClient.client_id
-                    ).length
+                    ).length) ||
+                    0
                 }}
                 {{ $t('flotteList') }}
                 <a-button
@@ -975,7 +977,6 @@ export default {
       (res) => (this.welcome = res.data)
     )
     this.getClients()
-    console.log('add new alert', this.currUser)
   },
   mounted() {},
   methods: {
@@ -1211,8 +1212,10 @@ export default {
         content: 'Update Client',
         okText: 'Yes',
         onOk() {
-          return request(`${BASE_URL}/api/client/${client.client_id}`, METHOD.PUT, {
+          return request(`${BASE_URL}/api/client`, METHOD.PUT, {
             ...client,
+            id: client.client_id,
+            parentId: self.selectedClientValue,
           })
             .then(() => {
               self.getClients()
