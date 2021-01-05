@@ -7,7 +7,7 @@
   >
     <a-card-meta
       class="flex"
-      :title="client.title"
+      :title="client.commercialname"
       @click.stop="$emit('select', client)"
     >
     </a-card-meta>

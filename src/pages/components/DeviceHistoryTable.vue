@@ -44,7 +44,7 @@
           </div>
         </template>
         <a class="ant-dropdown-link" @click="(e) => e.preventDefault()">
-          select columns <a-icon type="down" />
+          Action <a-icon type="down" />
         </a>
       </a-popover>
     </span>
@@ -65,16 +65,10 @@
 import { format } from 'date-fns'
 const columnsHistory = [
   {
-    title: 'Id',
-    width: 120,
-    dataIndex: 'history_id',
-    fixed: 'left',
-    hidden: false,
-  },
-  {
     title: 'Nom du boitier',
     width: 120,
     dataIndex: 'name',
+    fixed: 'left',
     hidden: false,
   },
   {
@@ -201,7 +195,7 @@ const columnsHistory = [
   {
     key: 'action',
     fixed: 'right',
-    width: 160,
+    width: 90,
     slots: { title: 'customActionTitle' },
     scopedSlots: { customRender: 'action', hidden: true },
   },

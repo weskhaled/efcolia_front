@@ -431,13 +431,7 @@
             >
               <template slot="title"
                 >{{
-                  (treeClientsData.filter(
-                    (c) => c.pId === selectedClient.client_id
-                  ).length > 0 &&
-                    treeClientsData.filter(
-                      (c) => c.pId === selectedClient.client_id
-                    ).length) ||
-                    0
+                  (clientChildsData.length > 0 && clientChildsData.length) || 0
                 }}
                 {{ $t('flotteList') }}
                 <a-button
@@ -469,9 +463,7 @@
                   title="No Clients"
                   sub-title="Sorry, No clients for this client."
                   v-if="
-                    treeClientsData.filter(
-                      (c) => c.pId === selectedClient.client_id
-                    ).length === 0
+                    clientChildsData.length === 0
                   "
                 >
                 </a-result>
@@ -483,19 +475,17 @@
                 </div>
                 <div
                   class="mb-3"
-                  v-for="client in treeClientsData.filter(
-                    (c) => c.pId === selectedClient.client_id
-                  )"
+                  v-for="client in clientChildsData"
                   :key="client.id"
                 >
                   <client-card
                     :client="client"
                     :selected="
                       clientChildSelected !== null &&
-                        clientChildSelected.client_id === client.id
+                        clientChildSelected.client_id === client.client_id
                     "
                     @select="selectChildClient"
-                    @delete="(client) => deleteClient(client.id)"
+                    @delete="(client) => deleteClient(client.client_id)"
                   />
                 </div>
               </div>
@@ -925,6 +915,7 @@ export default {
       clientChildSelected: null,
       clientChildSelectedLoading: true,
       treeClientsData: [],
+      clientChildsData: [],
       devices: [],
       contacts: [],
       contactsLoaded: false,
@@ -1021,6 +1012,7 @@ export default {
       this.getDevicesByClientId(client_id)
       this.getAlertByClientId(client_id)
       this.getContactsByClientId(client_id)
+      this.getClientChilds(client_id)
 
       this.clientChildSelected = null
       this.clientChildSelectedLoading = true
@@ -1029,6 +1021,14 @@ export default {
         this.selectedClient = res.data
         this.clientChildSelected = { ...this.selectedClient }
       })
+    },
+    getClientChilds(clientId) {
+      request(`${BASE_URL}/api/client/${clientId}/childs`, METHOD.GET).then(
+        (res) => {
+          this.clientChildsData = res.data
+        }
+      )
+      console.log(clientId)
     },
     getDevicesByClientId(clientId) {
       this.devices = []

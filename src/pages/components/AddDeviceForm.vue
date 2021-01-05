@@ -116,20 +116,33 @@
         </div>
         <div>
           <a-form-model-item label="Client" prop="client">
-            <a-select
-              v-model="form.clientId"
-              placeholder="please select client"
-              show-search
-              :filter-option="filterOptionClient"
-            >
-              <a-select-option
-                v-for="client in clients"
-                :key="client.id"
-                :value="client.id"
+            <div class="flex flex-1 mb-4 md:mb-0 relative">
+              <a-tree-select
+                v-model="form.clientId"
+                treeNodeFilterProp="title"
+                class="self-center w-full"
+                placeholder="Please select a client"
+                show-search
+                tree-data-simple-mode
+                :disabled="!!!clients.length"
+                :class="!!!clients.length ? 'opacity-50' : ''"
+                :dropdown-style="{ maxHeight: '300px', overflow: 'auto' }"
+                :treeDefaultExpandAll="false"
+                :treeDefaultExpandedKeys="[1]"
+                :tree-data="clients"
+              />
+              <a-spin
+                :spinning="!!!clients.length"
+                style="position: absolute;top: calc(50% - 13px);right: 5px"
               >
-                {{ client.title }}
-              </a-select-option>
-            </a-select>
+                <a-icon
+                  slot="indicator"
+                  type="loading"
+                  style="font-size: 24px"
+                  spin
+                />
+              </a-spin>
+            </div>
           </a-form-model-item>
         </div>
         <div class="col-span-1">
@@ -188,8 +201,7 @@
           </a-form-model-item>
         </div>
       </div>
-      <div>
-      </div>
+      <div> </div>
     </div>
   </a-form-model>
 </template>
@@ -293,7 +305,7 @@ export default {
             findAddress: this.form.findAddress ? 1 : 0,
             creationdate: this.form.fromTo[0],
             enddate: this.form.fromTo[1],
-            fromTo: undefined
+            fromTo: undefined,
           })
         } else {
           return false

@@ -57,7 +57,7 @@
           :loading="conditionsLoading"
         >
           <span slot-scope="target" slot="targetRender">
-            {{ target.length > 3 && target.indexOf('{') > -1 && target.indexOf('}') > -1 ? $t(target.slice(0, -1).substring(1)) : target }}
+            {{ target.length > 3 && target.indexOf('{') === 0 && target.indexOf('}') === target.length - 1 ? $t(target.slice(0, -1).substring(1)) : target }}
           </span>
         </a-table>
       </a-tab-pane>
@@ -97,7 +97,7 @@ const columnsConditionsAlert = [
     dataIndex: 'type',
   },
   {
-    title: 'target',
+    title: 'cible',
     dataIndex: 'target',
     scopedSlots: { customRender: 'targetRender' },
   },
