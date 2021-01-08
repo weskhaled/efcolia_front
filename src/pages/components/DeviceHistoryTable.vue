@@ -4,7 +4,7 @@
     :columns="columnsHistory.filter((c) => !c.hidden)"
     :data-source="dataHistory"
     :rowKey="(record) => record.history_id"
-    :scroll="scroll"
+    :scroll="tableScroll"
     :pagination="{ pageSize: 25 }"
     size="small"
     class="table-history-device"
@@ -54,9 +54,10 @@
       /></a>
     </div>
     <span slot-scope="enginestate" slot="enginestate">
-      <a-badge
-        :status="enginestate === 1 ? 'processing' : 'error'"
-        :text="''"
+      <a-icon
+        :class="[enginestate === 3 ? 'text-green-500' : (enginestate === 1 && 'text-red-500' || 'text-grey-500')]"
+        key="edit"
+        type="poweroff"
       />
     </span>
   </a-table>
@@ -218,12 +219,14 @@ export default {
     return {
       columnsHistory,
       visibleSelectColumns: false,
-      scroll: { x: 1100, y: 455 },
+      tableScroll: { x: 1100, y: 455 },
     }
   },
   created() {
-    this.scroll.x = window.innerWidth - 340
-    this.scroll.y = window.innerHeight + 10
+    this.tableScroll = {
+      x: window.innerWidth - 340,
+      y: window.innerHeight > 556 ? window.innerHeight - 295 : 455,
+    }
   },
   methods: {
     formatDate: (date = new Date(), formatDate = 'yyyy-MM-dd') => {

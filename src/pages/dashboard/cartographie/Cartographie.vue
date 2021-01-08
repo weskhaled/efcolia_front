@@ -104,6 +104,7 @@
                         () => {
                           tab = 1
                           showHistoryInMap = false
+                          rightCardTabsKey = 'gMaps'
                           zoomeExtends(
                             devices.filter((d) => d.latitude && d.longitude)
                           )
@@ -462,9 +463,7 @@
                   status="404"
                   title="No Clients"
                   sub-title="Sorry, No clients for this client."
-                  v-if="
-                    clientChildsData.length === 0
-                  "
+                  v-if="clientChildsData.length === 0"
                 >
                 </a-result>
                 <div
@@ -501,17 +500,30 @@
           "
         >
           <transition-group name="fade-up" target="div" appear>
-            <!-- tab gmaps-map -->
             <a-card
-              class=""
               v-if="tab === 1 || tab === 3"
               key="1"
+              size="small"
               :loading="loading"
               :bordered="false"
-              :title="$t('geo')"
               :body-style="{ padding: 0 }"
+              :tab-list="
+                tab === 3
+                  ? rightCardTabsList
+                  : [
+                      {
+                        key: 'gMaps',
+                        tab: this.$t('geo'),
+                      },
+                    ]
+              "
+              :active-tab-key="rightCardTabsKey"
+              @tabChange="(key) => (rightCardTabsKey = key)"
             >
-              <div class="min-h-555 h-content bg-gray-200">
+              <div
+                v-if="rightCardTabsKey === 'gMaps'"
+                class="min-h-555 h-content bg-gray-200"
+              >
                 <gmaps-map :options="mapOptions" ref="devicesMap">
                   <template v-if="!showHistoryInMap">
                     <gmaps-popup
@@ -567,8 +579,24 @@
                   />
                 </gmaps-map>
               </div>
+              <div
+                v-else-if="rightCardTabsKey === 'historyStats'"
+                class="min-h-555 h-content bg-white"
+              >
+                <div id="chart-container" class="p2">
+                  <fusioncharts
+                    :type="type"
+                    width="100%"
+                    :height="height"
+                    :dataformat="dataFormat"
+                    :dataSource="dataSource"
+                  >
+                  </fusioncharts>
+                </div>
+              </div>
             </a-card>
-            <!-- alert details card -->
+            <!-- tab gmaps-map 
+            alert details card -->
             <a-card
               class=""
               v-if="tab === 2"
@@ -886,6 +914,136 @@ const iconFinish = {
   strokeColor: '#008000',
   strokeWeight: 3,
 }
+const dataSource = {
+  chart: {
+    caption: 'Quarterly Sales vs. Profit % in Last Year',
+    subcaption: "Product-wise Break-up - Harry's SuperMart",
+    xAxisName: 'Quarter',
+    pYAxisName: 'Sales',
+    sYAxisName: 'Profit %',
+    numberPrefix: '$',
+    numbersuffix: 'M',
+    sNumberSuffix: '%',
+    sYAxisMaxValue: '25',
+    theme: 'fusion',
+  },
+  categories: [
+    {
+      category: [
+        {
+          label: 'Q1',
+        },
+        {
+          label: 'Q2',
+        },
+        {
+          label: 'Q3',
+        },
+        {
+          label: 'Q4',
+        },
+      ],
+    },
+  ],
+  dataset: [
+    {
+      dataset: [
+        {
+          seriesname: 'Processed Food',
+          data: [
+            {
+              value: '30',
+            },
+            {
+              value: '26',
+            },
+            {
+              value: '33',
+            },
+            {
+              value: '31',
+            },
+          ],
+        },
+        {
+          seriesname: 'Un-Processed Food',
+          data: [
+            {
+              value: '21',
+            },
+            {
+              value: '28',
+            },
+            {
+              value: '39',
+            },
+            {
+              value: '41',
+            },
+          ],
+        },
+      ],
+    },
+    {
+      dataset: [
+        {
+          seriesname: 'Electronics',
+          data: [
+            {
+              value: '27',
+            },
+            {
+              value: '25',
+            },
+            {
+              value: '28',
+            },
+            {
+              value: '26',
+            },
+          ],
+        },
+        {
+          seriesname: 'Apparels',
+          data: [
+            {
+              value: '17',
+            },
+            {
+              value: '15',
+            },
+            {
+              value: '18',
+            },
+            {
+              value: '16',
+            },
+          ],
+        },
+      ],
+    },
+  ],
+  lineset: [
+    {
+      seriesname: 'Profit %',
+      showValues: '0',
+      data: [
+        {
+          value: '14',
+        },
+        {
+          value: '16',
+        },
+        {
+          value: '15',
+        },
+        {
+          value: '17',
+        },
+      ],
+    },
+  ],
+}
 export default {
   name: 'Cartographie',
   components: {
@@ -942,6 +1100,17 @@ export default {
         message: '',
       },
       tab: 1,
+      rightCardTabsList: [
+        {
+          key: 'gMaps',
+          tab: this.$t('geo'),
+        },
+        {
+          key: 'historyStats',
+          tab: 'Statistics',
+        },
+      ],
+      rightCardTabsKey: 'gMaps',
       mapOptions: {
         center: { lat: 48, lng: 2 },
         zoom: 2,
@@ -957,6 +1126,13 @@ export default {
         { icon: iconStart, offset: '0%' },
         { icon: iconFinish, offset: '100%' },
       ],
+      //test
+      type: 'msstackedcolumn2dlinedy',
+      renderAt: 'chart-container',
+      width: '550',
+      height: '350',
+      dataFormat: 'json',
+      dataSource,
     }
   },
   computed: {
@@ -1013,7 +1189,6 @@ export default {
       this.getAlertByClientId(client_id)
       this.getContactsByClientId(client_id)
       this.getClientChilds(client_id)
-
       this.clientChildSelected = null
       this.clientChildSelectedLoading = true
       request(`${BASE_URL}/api/client/${client_id}`, METHOD.GET).then((res) => {
@@ -1028,7 +1203,6 @@ export default {
           this.clientChildsData = res.data
         }
       )
-      console.log(clientId)
     },
     getDevicesByClientId(clientId) {
       this.devices = []
@@ -1138,9 +1312,11 @@ export default {
             })
           }
         }
+        this.zoomeExtends(
+          this.dataHistory.filter((d) => d.latitude && d.longitude)
+        )
       })
       this.selectedDevice = device
-      this.zoomeExtends(this.devices.filter((d) => d.latitude && d.longitude))
       this.devices.forEach((d) => (d.selected = false))
       this.tab = 3
     },
@@ -1153,7 +1329,7 @@ export default {
             lng: points[i].longitude,
           })
         }
-        if (this.tab === 1) {
+        if (this.tab === 1 || this.tab === 3) {
           setTimeout(() => {
             this.$refs.devicesMap.getMap().fitBounds(bounds)
           }, 20)
@@ -1280,14 +1456,14 @@ export default {
     async selectChildClient(client) {
       if (
         this.clientChildSelected &&
-        client.id === this.clientChildSelected.client_id
+        client.client_id === this.clientChildSelected.client_id
       ) {
         this.clientChildSelected = this.selectedClient
       } else {
         this.clientChildSelected = null
         this.clientChildSelectedLoading = true
         const { data } = await request(
-          `${BASE_URL}/api/client/${client.id}`,
+          `${BASE_URL}/api/client/${client.client_id}`,
           METHOD.GET
         )
         this.clientChildSelectedLoading = false
