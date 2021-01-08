@@ -1,66 +1,72 @@
 <template>
-  <a-table
-    :loading="dataHistoryLoading"
-    :columns="columnsHistory.filter((c) => !c.hidden)"
-    :data-source="dataHistory"
-    :rowKey="(record) => record.history_id"
-    :scroll="tableScroll"
-    :pagination="{ pageSize: 25 }"
-    size="small"
-    class="table-history-device"
-  >
-    <span slot="customActionTitle">
-      <a-popover placement="bottom" class="device-history">
-        <template slot="content">
-          <div class="h-64 overflow-y-auto">
-            <div
-              v-for="(column, index) in columnsHistory
-                .filter((c) => c.title)
-                .filter((c) => c.title !== 'Id')"
-              :key="index"
-              class="py-1"
-              :class="[
-                columnsHistory
+  <div class="h-full" ref="historyTableWrapper">
+    <a-table
+      :loading="dataHistoryLoading"
+      :columns="columnsHistory.filter((c) => !c.hidden)"
+      :data-source="dataHistory"
+      :rowKey="(record) => record.history_id"
+      :scroll="tableScroll"
+      :pagination="{ pageSize: 25 }"
+      size="small"
+      class="table-history-device"
+    >
+      <span slot="customActionTitle">
+        <a-popover placement="bottom" class="device-history">
+          <template slot="content">
+            <div class="h-64 overflow-y-auto">
+              <div
+                v-for="(column, index) in columnsHistory
                   .filter((c) => c.title)
-                  .filter((c) => c.title !== 'Id').length -
-                  1 >
-                index
-                  ? 'border-b border-gray-200'
-                  : '',
-              ]"
-            >
-              <a-checkbox
-                :checked="!column.hidden"
-                class="w-full"
-                @change="
-                  (e) => {
-                    column.hidden = !e.target.checked
-                  }
-                "
+                  .filter((c) => c.title !== 'Id')"
+                :key="index"
+                class="py-1"
+                :class="[
+                  columnsHistory
+                    .filter((c) => c.title)
+                    .filter((c) => c.title !== 'Id').length -
+                    1 >
+                  index
+                    ? 'border-b border-gray-200'
+                    : '',
+                ]"
               >
-                {{ column.title }}
-              </a-checkbox>
+                <a-checkbox
+                  :checked="!column.hidden"
+                  class="w-full"
+                  @change="
+                    (e) => {
+                      column.hidden = !e.target.checked
+                    }
+                  "
+                >
+                  {{ column.title }}
+                </a-checkbox>
+              </div>
             </div>
-          </div>
-        </template>
-        <a class="ant-dropdown-link" @click="(e) => e.preventDefault()">
-          Action <a-icon type="down" />
-        </a>
-      </a-popover>
-    </span>
-    <div slot="action" slot-scope="record">
-      <a v-if="record.latitude && record.longitude"
-        ><a-icon type="environment"
-      /></a>
-    </div>
-    <span slot-scope="enginestate" slot="enginestate">
-      <a-icon
-        :class="[enginestate === 3 ? 'text-green-500' : (enginestate === 1 && 'text-red-500' || 'text-grey-500')]"
-        key="edit"
-        type="poweroff"
-      />
-    </span>
-  </a-table>
+          </template>
+          <a class="ant-dropdown-link" @click="(e) => e.preventDefault()">
+            Action <a-icon type="down" />
+          </a>
+        </a-popover>
+      </span>
+      <div slot="action" slot-scope="record">
+        <a v-if="record.latitude && record.longitude"
+          ><a-icon type="environment"
+        /></a>
+      </div>
+      <span slot-scope="enginestate" slot="enginestate">
+        <a-icon
+          :class="[
+            enginestate === 3
+              ? 'text-green-500'
+              : (enginestate === 1 && 'text-red-500') || 'text-grey-500',
+          ]"
+          key="edit"
+          type="poweroff"
+        />
+      </span>
+    </a-table>
+  </div>
 </template>
 <script>
 import { format } from 'date-fns'
@@ -223,10 +229,13 @@ export default {
     }
   },
   created() {
-    this.tableScroll = {
-      x: window.innerWidth - 340,
-      y: window.innerHeight > 556 ? window.innerHeight - 295 : 455,
-    }
+    // this.tableScroll = {
+    //   x: window.innerWidth - 340,
+    //   y: window.innerHeight > 556 ? window.innerHeight - 295 : 455,
+    // }
+  },
+  mounted() {
+    this.tableScroll.y = this.$refs.historyTableWrapper.clientHeight - 94
   },
   methods: {
     formatDate: (date = new Date(), formatDate = 'yyyy-MM-dd') => {
