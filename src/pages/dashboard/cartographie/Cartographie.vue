@@ -88,7 +88,7 @@
       <div class="md:flex sm:block">
         <div class="w-full sm:w-full md:w-10 lg:w-12 overflow-hidden">
           <a-card :title="false" :bordered="false" :body-style="{ padding: 0 }">
-            <div class="px-0 left-tab overflow-hidden md:py-1">
+            <div class="px-0 left-tab overflow-hidden">
               <div class="flex md:block md:divide-y divide-gray-300">
                 <div
                   class="inline flex-auto md:flex-none flex flex-1 justify-center"
@@ -569,14 +569,104 @@
                       </div>
                     </gmaps-popup>
                   </template>
-                  <gmaps-polyline
-                    v-if="showHistoryInMap && historyPoints.length"
-                    :editable="false"
-                    :path="historyPoints"
-                    :icons="icons"
-                    strokeColor="dodgerblue"
-                    strokeWeight="3"
-                  />
+                  <template v-if="showHistoryInMap && historyPoints.length">
+                    <gmaps-polyline
+                      v-for="(hpts, index) in historyPoints"
+                      :key="`hpts-${index}`"
+                      :editable="false"
+                      :path="hpts.points"
+                      :strokeColor="
+                        hpts.speed > 100
+                          ? 'red'
+                          : hpts.speed > 80
+                          ? 'coral'
+                          : 'dodgerblue'
+                      "
+                      strokeOpacity="0.85"
+                      strokeWeight="7"
+                    />
+                  </template>
+                  <template v-if="showHistoryInMap">
+                    <gmaps-marker
+                      v-for="(startFinish, index) in dataHistory
+                        .filter((d) => d.latitude && d.longitude)
+                        .filter(
+                          (d, index) =>
+                            index === 0 ||
+                            index ===
+                              dataHistory.filter(
+                                (d) => d.latitude && d.longitude
+                              ).length -
+                                1
+                        )"
+                      :key="`startFinish-${index}`"
+                      :position="{
+                        lat: startFinish.latitude,
+                        lng: startFinish.longitude,
+                      }"
+                      @click="openGmapInfoStop(startFinish.history_id)"
+                      :icon="
+                        index === 0 && startFinish.enginestate === 1
+                          ? require('@/assets/img/finish.svg')
+                          : index !== 0
+                          ? require('@/assets/img/start.svg')
+                          : require('@/assets/img/arrow.svg')
+                      "
+                    />
+                    <gmaps-marker
+                      v-for="historyPoint in dataHistory
+                        .filter((d) => d.latitude && d.longitude)
+                        .filter((d) => d.enginestate === 1)
+                        .filter(
+                          (d, index) =>
+                            index !== 0 &&
+                            index !==
+                              dataHistory.filter(
+                                (d) => d.latitude && d.longitude
+                              ).length -
+                                1
+                        )"
+                      :key="historyPoint.history_id"
+                      :position="{
+                        lat: historyPoint.latitude,
+                        lng: historyPoint.longitude,
+                      }"
+                      :icon="require('@/assets/img/stop.svg')"
+                      @click="openGmapInfoStop(historyPoint.history_id)"
+                    />
+                    <gmaps-info-window
+                      v-for="historyPoint in Object.values(
+                        dataHistory.reduce(
+                          (acc, cur) =>
+                            Object.assign(acc, { [cur.history_id]: cur }),
+                          {}
+                        )
+                      ).filter((d) => d.latitude && d.longitude)"
+                      :key="`info-window-${historyPoint.history_id}`"
+                      :ref="`infoWindowRef-${historyPoint.history_id}`"
+                      :options="{
+                        hidden: true,
+                        position: {
+                          lat: historyPoint.latitude,
+                          lng: historyPoint.longitude,
+                        },
+                      }"
+                    >
+                      <div>
+                        <div class="mb-1">
+                          <span class="font-medium">Raport Time: </span>
+                          <span>{{ historyPoint.appdate }}</span>
+                        </div>
+                        <div class="mb-1">
+                          <span class="font-medium">Adress: </span>
+                          <span
+                            >{{ historyPoint.latitude }},
+                            {{ historyPoint.longitude }}</span
+                          >
+                        </div>
+                      </div>
+                    </gmaps-info-window>
+                  </template>
                 </gmaps-map>
               </div>
               <div
@@ -888,7 +978,13 @@ import { format } from 'date-fns'
 import PageLayout from '@/layouts/PageLayout'
 import { mapState } from 'vuex'
 import { request, METHOD } from '@/utils/request'
-import { gmapsMap, gmapsPopup, gmapsPolyline } from '@/plugins/myGmap'
+import {
+  gmapsMap,
+  gmapsInfoWindow,
+  gmapsMarker,
+  gmapsPopup,
+  gmapsPolyline,
+} from '@/plugins/myGmap'
 import {
   DeviceCard,
   UserCard,
@@ -905,354 +1001,32 @@ import {
 } from '../../components'
 const BASE_URL = process.env.VUE_APP_API_BASE_URL
 const iconStart = {
-  path: 'M -2,-2 2,2 M 2,-2 -2,2',
-  strokeColor: '#f00',
-  strokeWeight: 3,
+  path: 'M 0, 0 m -5, 0 a 5,5 0 1,0 10,0 a 5,5 0 1,0 -10,0',
+  strokeOpacity: 0.7,
+  strokeWeight: 4,
+  strokeColor: '#0bd60b',
+  fillColor: '#fff',
+  fillOpacity: 0.8,
+  scale: 1,
 }
 const iconFinish = {
-  path: 'M 0, 0 m -1.5, 0 a 1.5,1.5 0 1,0 2,0 a 1,2 0 3,0 -3,0',
-  strokeColor: '#008000',
-  strokeWeight: 3,
+  path: 'M 0, 0 m -5, 0 a 5,5 0 1,0 10,0 a 5,5 0 1,0 -10,0',
+  strokeOpacity: 0.7,
+  strokeWeight: 4,
+  strokeColor: '#f00',
+  fillColor: '#fff',
+  fillOpacity: 0.8,
+  scale: 1,
 }
-const dataSource = {
-  chart: {
-    caption: 'Revenues and Profits',
-    subCaption: '(FY 2012 to FY 2013)',
-    xAxisname: 'Month',
-    pYAxisName: 'Amount (In USD)',
-    sYAxisName: 'Profit %',
-    numberPrefix: '$',
-    sNumberSuffix: '%',
-    sYAxisMaxValue: '50',
-    showValues: '1',
-    numVisiblePlot: '12',
-    flatScrollBars: '1',
-    scrollheight: '10',
-    theme: 'fusion',
-  },
-  categories: [
-    {
-      category: [
-        {
-          label: 'Jan 2012',
-        },
-        {
-          label: 'Feb 2012',
-        },
-        {
-          label: 'Mar 2012',
-        },
-        {
-          label: 'Apr 2012',
-        },
-        {
-          label: 'May 2012',
-        },
-        {
-          label: 'Jun 2012',
-        },
-        {
-          label: 'Jul 2012',
-        },
-        {
-          label: 'Aug 2012',
-        },
-        {
-          label: 'Sep 2012',
-        },
-        {
-          label: 'Oct 2012',
-        },
-        {
-          label: 'Nov 2012',
-        },
-        {
-          label: 'Dec 2012',
-        },
-        {
-          label: 'Jan 2013',
-        },
-        {
-          label: 'Feb 2013',
-        },
-        {
-          label: 'Mar 2013',
-        },
-        {
-          label: 'Apr 2013',
-        },
-        {
-          label: 'May 2013',
-        },
-        {
-          label: 'Jun 2013',
-        },
-        {
-          label: 'Jul 2013',
-        },
-        {
-          label: 'Aug 2013',
-        },
-        {
-          label: 'Sep 2013',
-        },
-        {
-          label: 'Oct 2013',
-        },
-        {
-          label: 'Nov 2013',
-        },
-        {
-          label: 'Dec 2013',
-        },
-      ],
-    },
-  ],
-  dataset: [
-    {
-      seriesName: 'Revenues',
-      data: [
-        {
-          value: '16000',
-        },
-        {
-          value: '20000',
-        },
-        {
-          value: '18000',
-        },
-        {
-          value: '19000',
-        },
-        {
-          value: '15000',
-        },
-        {
-          value: '21000',
-        },
-        {
-          value: '16000',
-        },
-        {
-          value: '20000',
-        },
-        {
-          value: '17000',
-        },
-        {
-          value: '22000',
-        },
-        {
-          value: '19000',
-        },
-        {
-          value: '23000',
-        },
-        {
-          value: '24000',
-        },
-        {
-          value: '25000',
-        },
-        {
-          value: '26000',
-        },
-        {
-          value: '24000',
-        },
-        {
-          value: '19000',
-        },
-        {
-          value: '22000',
-        },
-        {
-          value: '18000',
-        },
-        {
-          value: '19000',
-        },
-        {
-          value: '22000',
-        },
-        {
-          value: '21000',
-        },
-        {
-          value: '23000',
-        },
-        {
-          value: '24000',
-        },
-      ],
-    },
-    {
-      seriesName: 'Profits',
-      renderAs: 'area',
-      showValues: '0',
-      data: [
-        {
-          value: '4000',
-        },
-        {
-          value: '5000',
-        },
-        {
-          value: '3000',
-        },
-        {
-          value: '4000',
-        },
-        {
-          value: '1000',
-        },
-        {
-          value: '7000',
-        },
-        {
-          value: '1000',
-        },
-        {
-          value: '4000',
-        },
-        {
-          value: '1000',
-        },
-        {
-          value: '8000',
-        },
-        {
-          value: '2000',
-        },
-        {
-          value: '7000',
-        },
-        {
-          value: '6000',
-        },
-        {
-          value: '7000',
-        },
-        {
-          value: '4000',
-        },
-        {
-          value: '5000',
-        },
-        {
-          value: '3000',
-        },
-        {
-          value: '9000',
-        },
-        {
-          value: '2000',
-        },
-        {
-          value: '6000',
-        },
-        {
-          value: '2000',
-        },
-        {
-          value: '7000',
-        },
-        {
-          value: '4000',
-        },
-        {
-          value: '6000',
-        },
-      ],
-    },
-    {
-      seriesName: 'Profit %',
-      parentYAxis: 'S',
-      renderAs: 'line',
-      showValues: '0',
-      data: [
-        {
-          value: '25',
-        },
-        {
-          value: '25',
-        },
-        {
-          value: '16.66',
-        },
-        {
-          value: '21.05',
-        },
-        {
-          value: '6.66',
-        },
-        {
-          value: '33.33',
-        },
-        {
-          value: '6.25',
-        },
-        {
-          value: '25',
-        },
-        {
-          value: '5.88',
-        },
-        {
-          value: '36.36',
-        },
-        {
-          value: '10.52',
-        },
-        {
-          value: '30.43',
-        },
-        {
-          value: '25',
-        },
-        {
-          value: '28',
-        },
-        {
-          value: '15.38',
-        },
-        {
-          value: '20.83',
-        },
-        {
-          value: '15.79',
-        },
-        {
-          value: '40.91',
-        },
-        {
-          value: '11.11',
-        },
-        {
-          value: '31.58',
-        },
-        {
-          value: '9.09',
-        },
-        {
-          value: '33.33',
-        },
-        {
-          value: '17.39',
-        },
-        {
-          value: '25',
-        },
-      ],
-    },
-  ],
-}
+
 export default {
   name: 'Cartographie',
   components: {
     PageLayout,
     gmapsMap,
     gmapsPopup,
+    gmapsMarker,
+    gmapsInfoWindow,
     gmapsPolyline,
     DeviceCard,
     UserCard,
@@ -1335,7 +1109,7 @@ export default {
       width: '100%',
       height: '550',
       dataFormat: 'json',
-      dataSource,
+      dataSource: {},
     }
   },
   computed: {
@@ -1507,17 +1281,86 @@ export default {
       ).then((res) => {
         this.dataHistory = res.data
         this.dataHistoryLoading = false
-        for (let i = 0; i < res.data.length; i++) {
-          if (res.data[i].latitude && res.data[i].longitude) {
+        const dataHistoryPoints = res.data.filter(
+          (d) => +d.latitude && +d.longitude
+        )
+        for (let i = 0; i <= dataHistoryPoints.length - 1; i++) {
+          if (
+            res.data[i].latitude &&
+            res.data[i].longitude &&
+            res.data[i + 1].latitude &&
+            res.data[i + 1].longitude
+          ) {
             this.historyPoints.push({
-              lat: res.data[i].latitude,
-              lng: res.data[i].longitude,
+              speed:
+                (res.data[i + 1].speed || 0) + (res.data[i]?.speed || 0) / 2,
+              points: [
+                {
+                  lat: +res.data[i].latitude,
+                  lng: +res.data[i].longitude,
+                },
+                {
+                  lat: +res.data[i + 1].latitude,
+                  lng: +res.data[i + 1].longitude,
+                },
+              ],
             })
           }
         }
-        this.zoomeExtends(
-          this.dataHistory.filter((d) => d.latitude && d.longitude)
-        )
+        this.zoomeExtends(dataHistoryPoints)
+        this.dataSource = {
+          chart: {
+            caption: 'Temperature1 et Speed',
+            subCaption: `${new Date(
+              filter.from && filter.from ? filter.from : new Date()
+            ).toLocaleString('fr-fr', {
+              month: 'long',
+              year: 'numeric',
+              day: 'numeric',
+            })} to ${new Date(
+              filter.from && filter.from ? filter.to : new Date()
+            ).toLocaleString('fr-fr', {
+              month: 'long',
+              year: 'numeric',
+              day: 'numeric',
+            })}`,
+            xAxisname: 'Month',
+            pYAxisName: 'Temperature',
+            sYAxisName: 'Speed K/H',
+            numberPrefix: '',
+            sNumberSuffix: '',
+            sYAxisMaxValue: '50',
+            showValues: '1',
+            numVisiblePlot: '12',
+            flatScrollBars: '1',
+            scrollheight: '10',
+            theme: 'fusion',
+          },
+          categories: [
+            {
+              category: this.dataHistory.map((hd) => ({
+                label: new Date(hd.appdate).toLocaleString('fr-fr', {
+                  hour: 'numeric',
+                }),
+              })),
+            },
+          ],
+          dataset: [
+            {
+              seriesName: 'Temperature1',
+              renderAs: 'area',
+              showValues: '0',
+              data: this.dataHistory.map((hd) => ({ value: hd.temperature1 })),
+            },
+            {
+              seriesName: 'Speed',
+              parentYAxis: 'S',
+              renderAs: 'line',
+              showValues: '0',
+              data: this.dataHistory.map((hd) => ({ value: hd.speed })),
+            },
+          ],
+        }
       })
       this.selectedDevice = device
       this.devices.forEach((d) => (d.selected = false))
@@ -1533,9 +1376,10 @@ export default {
           })
         }
         if (this.tab === 1 || this.tab === 3) {
-          setTimeout(() => {
-            this.$refs.devicesMap.getMap().fitBounds(bounds)
-          }, 20)
+          this.$nextTick(() => {
+            this.$refs.devicesMap?.getMap() &&
+              this.$refs.devicesMap.getMap().fitBounds(bounds)
+          })
         }
       }
     },
@@ -1712,6 +1556,10 @@ export default {
             5
           )
         )
+    },
+    openGmapInfoStop(historyId) {
+      this.$refs[`infoWindowRef-${historyId}`][0] &&
+        this.$refs[`infoWindowRef-${historyId}`][0].open()
     },
   },
 }
