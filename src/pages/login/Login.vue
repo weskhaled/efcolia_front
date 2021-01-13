@@ -27,7 +27,7 @@
               <a-input
                 autocomplete="autocomplete"
                 size="large"
-                placeholder="amine94"
+                placeholder="username"
                 v-decorator="[
                   'name',
                   {
@@ -47,7 +47,7 @@
             <a-form-item>
               <a-input
                 size="large"
-                placeholder="98565618Am"
+                placeholder="password"
                 autocomplete="autocomplete"
                 type="password"
                 v-decorator="[
