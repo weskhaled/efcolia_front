@@ -3,9 +3,7 @@
     <div class="top">
       <div class="header">
         <img alt="logo" class="logo inline-block" src="@/assets/img/logo.png" />
-        <span class="title">{{ systemName }}</span>
       </div>
-      <div class="desc">{{ systemName }}</div>
     </div>
     <div class="login">
       <a-form @submit="onSubmit" :form="form">
@@ -183,15 +181,12 @@ export default {
   .top {
     text-align: center;
     .header {
-      height: 44px;
-      line-height: 44px;
       a {
         text-decoration: none;
       }
       .logo {
-        height: 44px;
+        height: 145px;
         vertical-align: top;
-        margin-right: 16px;
       }
       .title {
         font-size: 33px;
