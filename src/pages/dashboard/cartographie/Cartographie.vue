@@ -61,26 +61,8 @@
               icon="search"
             />
           </div>
-          <div
-            class="inline flex-auto md:flex-none flex flex-1 justify-center mx-1"
-          >
-            <a-button
-              class="self-center"
-              type="primary"
-              shape="circle"
-              icon="user"
-            />
-          </div>
-          <div
-            class="inline flex-auto md:flex-none flex flex-1 justify-center mx-1 mr-0"
-          >
-            <a-button
-              class="self-center"
-              type="primary"
-              shape="circle"
-              icon="message"
-            />
-          </div>
+
+
         </div>
       </div>
     </template>
@@ -95,7 +77,7 @@
                 >
                   <a-tooltip placement="rightTop">
                     <template slot="title">
-                      Liste des boitiers
+                      {{$t('ListeBoitiers')}}
                     </template>
                     <a
                       class="flex justify-center w-full md:w-12 h-12"
@@ -124,7 +106,8 @@
                 >
                   <a-tooltip placement="rightTop">
                     <template slot="title">
-                      Liste des alertes
+                      {{$t('ListeAlert')}}
+
                     </template>
 
                     <a
@@ -151,7 +134,7 @@
                 >
                   <a-tooltip placement="rightTop">
                     <template slot="title">
-                      Liste des contacts
+                      {{$t('ListeContacts')}}
                     </template>
                     <a
                       class="flex justify-center w-full md:w-12 h-12"
@@ -177,7 +160,7 @@
                 >
                   <a-tooltip placement="rightTop">
                     <template slot="title">
-                      Liste des sociétés
+                      {{$t('ListeSociétés')}}
                     </template>
                     <a
                       class="flex justify-center w-full md:w-12 h-12"
@@ -238,7 +221,7 @@
               <a slot="extra">
                 <a-input-search
                   class="self-center w-48 invisible md:visible"
-                  placeholder="search device"
+                  :placeholder="$t('FiltreBoitier')"
                   @search="onSearchDevice"
                 />
               </a>

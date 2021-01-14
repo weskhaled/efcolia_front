@@ -10,11 +10,6 @@ const timeList = [
     US: 'Good morning',
   },
   {
-    CN: '上午好',
-    FR: 'Bonjour',
-    US: 'Good morning',
-  },
-  {
     CN: '中午好',
     FR: 'Bonne après-midi',
     US: 'Good afternoon',

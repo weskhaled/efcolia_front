@@ -130,7 +130,7 @@ export default {
           `${BASE_URL}/api/request/user`,
           METHOD.GET
         ).then((res) => ({
-          message: 'Welcome ，Welcome back',
+          message: 'Welcome',
           data: {
             user: {
               name: res.data.lastname,
@@ -139,8 +139,8 @@ export default {
               address: '@CITY',
               position: {
                 CN: '前端工程师 | 蚂蚁金服-计算服务事业群-VUE平台',
-                FR: 'Front-end engineer | VUE platform',
-                US: 'Front-end engineer | VUE platform',
+                FR: 'welcome',
+                US: 'welcome',
               },
               permissions: res.data.permissions
             },

@@ -24,6 +24,13 @@ module.exports = {
       flotteList: 'Sociétés',
       contactList: 'Contactes',
       enginestate: 'Etat moteur',
+      ListeBoitiers: 'Liste des boitiers',
+      ListeAlert:'Liste des alertes',
+      ListeContacts:'Liste des contacts',
+      ListeSociétés:'Liste des sociétés',
+      FiltreBoitier:'Filtrer les boitiers'
+
+
     },
     US: {
       project: 'Project',
@@ -37,17 +44,22 @@ module.exports = {
       team: 'Team',
       add: 'Add',
       geo: 'Geolocalisation',
-      devices: 'List of devices',
+      devices: 'devices',
       selectClientFirst: 'Please select client first',
       noGeoForDevice: 'This device has not a geoLocation',
       alert: 'alert',
-      devicesAlerts: 'Alert list',
+      devicesAlerts: 'Alert',
       alertDetails: 'Alert details',
       deviceHistory: 'History',
       addNewDevice: 'add new device',
       flotteList: 'Companies',
       contactList: 'Contacts',
       enginestate: 'Engine State',
+      ListeBoitiers: 'Device list',
+      ListeAlert:'Alert list',
+      ListeContacts: 'Contact list',
+      ListeSociétés:'List of companies',
+      FiltreBoitier:'Search device'
     },
   }
 }

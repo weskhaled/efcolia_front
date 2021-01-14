@@ -67,9 +67,8 @@ export default {
   data() {
     return {
       langList: [
-        { key: 'FR', name: 'Française', alias: 'Frensh' },
+        { key: 'FR', name: 'Français', alias: 'Français' },
         { key: 'US', name: 'English', alias: 'English' },
-        { key: 'CN', name: '简体中文', alias: '简体' },
       ],
       searchActive: false,
     }
