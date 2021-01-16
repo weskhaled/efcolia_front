@@ -205,7 +205,7 @@
           {{ device.name }}
         </div>
         <div class="font-light text-sm text-gray-700">
-          {{ formatDate(new Date(device.appdate), 'dd/MM/yy HH:mm:ss') }}
+          {{ formatDate(new Date(device.localizationdate), 'dd/MM/yy HH:mm:ss') }}
         </div>
       </div>
       <div slot="description">

@@ -4,6 +4,7 @@ import TabsView from '@/layouts/tabs/TabsView'
 
 // 路由配置
 const options = {
+  mode: "history",
   routes: [
     {
       path: '/login',

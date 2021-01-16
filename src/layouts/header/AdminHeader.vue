@@ -1,13 +1,18 @@
 <template>
   <a-layout-header :class="[headerTheme, 'admin-header']">
-    <div :class="['admin-header-wide', layout, pageWidth]">
+    <div class="px-1 md:px-4" :class="['admin-header-wide', layout, pageWidth]">
       <router-link
         v-if="isMobile || layout === 'head'"
         to="/"
+        class="md:w-24"
         :class="['logo', isMobile ? null : 'pc', headerTheme]"
       >
-        <!-- <img width="32" src="@/assets/img/logo.png" /> -->
-        <h1 v-if="!isMobile">{{ systemName }}</h1>
+        <img
+          v-if="!isMobile"
+          class="mx-auto my-auto h-full p-1"
+          src="@/assets/img/logo.png"
+        />
+        <h1 v-if="isMobile">{{ systemName }}</h1>
       </router-link>
       <a-divider v-if="isMobile" type="vertical" />
       <a-icon
@@ -31,7 +36,7 @@
       </div>
       <div :class="['admin-header-right', headerTheme]">
         <a-tooltip class="header-item" title="Help document" placement="bottom">
-          <a href="" target="_blank">
+          <a href="" target="_blank" class="hidden md:block">
             <a-icon type="question-circle-o" />
           </a>
         </a-tooltip>

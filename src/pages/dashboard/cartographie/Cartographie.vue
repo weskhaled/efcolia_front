@@ -1,7 +1,7 @@
 <template>
   <page-layout :avatar="currUser.avatar">
     <div slot="headerContent">
-      <div class="title">{{ welcome.timeFix[lang] }}，{{ currUser.name }}</div>
+      <div class="title">{{ currUser.name }}</div>
       <div>{{ currUser.position[lang] }}</div>
     </div>
     <template slot="extra">
@@ -61,8 +61,6 @@
               icon="search"
             />
           </div>
-
-
         </div>
       </div>
     </template>
@@ -77,7 +75,7 @@
                 >
                   <a-tooltip placement="rightTop">
                     <template slot="title">
-                      {{$t('ListeBoitiers')}}
+                      {{ $t('ListeBoitiers') }}
                     </template>
                     <a
                       class="flex justify-center w-full md:w-12 h-12"
@@ -87,7 +85,7 @@
                           tab = 1
                           showHistoryInMap = false
                           rightCardTabsKey = 'gMaps'
-                          zoomeExtends(
+                          zoomExtends(
                             devices.filter((d) => d.latitude && d.longitude)
                           )
                         }
@@ -106,8 +104,7 @@
                 >
                   <a-tooltip placement="rightTop">
                     <template slot="title">
-                      {{$t('ListeAlert')}}
-
+                      {{ $t('ListeAlert') }}
                     </template>
 
                     <a
@@ -134,7 +131,7 @@
                 >
                   <a-tooltip placement="rightTop">
                     <template slot="title">
-                      {{$t('ListeContacts')}}
+                      {{ $t('ListeContacts') }}
                     </template>
                     <a
                       class="flex justify-center w-full md:w-12 h-12"
@@ -160,7 +157,7 @@
                 >
                   <a-tooltip placement="rightTop">
                     <template slot="title">
-                      {{$t('ListeSociétés')}}
+                      {{ $t('ListeSociétés') }}
                     </template>
                     <a
                       class="flex justify-center w-full md:w-12 h-12"
@@ -203,7 +200,7 @@
               key="1"
               :bordered="false"
               :body-style="{ padding: 0 }"
-              class="overflow-hidden"
+              class="devices-card overflow-hidden"
             >
               <template slot="title"
                 >{{ (devices.length > 0 && devices.length) || 0 }}
@@ -222,13 +219,14 @@
                 <a-input-search
                   class="self-center w-48 invisible md:visible"
                   :placeholder="$t('FiltreBoitier')"
-                  @search="onSearchDevice"
+                  v-model="devicesSearch"
                 />
               </a>
               <div>
                 <div
                   class="p-3 overflow-scroll min-h-555 h-content"
                   style="border-right: 1px solid rgb(226, 232, 240);"
+                  v-on:scroll="devicesScroll"
                 >
                   <a-result
                     v-if="
@@ -250,7 +248,27 @@
                   >
                     <a-spin class="self-center" />
                   </div>
-                  <div class="mb-3" v-for="device in devices" :key="device.id">
+                  <div
+                    class="mb-3 device"
+                    v-for="device in devicesSearch === ''
+                      ? devices
+                      : devices.filter(
+                          (d) =>
+                            new RegExp(
+                              `${devicesSearch
+                                .replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')
+                                .toLocaleLowerCase()}`,
+                              'i'
+                            ).test(d.name + ''.toLocaleLowerCase()) ||
+                            new RegExp(
+                              `${devicesSearch
+                                .replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')
+                                .toLocaleLowerCase()}`,
+                              'i'
+                            ).test(d.simcardNumber + ''.toLocaleLowerCase())
+                        )"
+                    :key="device.id"
+                  >
                     <device-card
                       :device="device"
                       @select="selecteDevice"
@@ -332,6 +350,30 @@
               </template>
               <template slot="extra">
                 <a-range-picker
+                  :show-time="{ format: 'HH:mm' }"
+                  format="DD-MM-YYYY HH:mm"
+                  :default-value="[
+                    moment(
+                      new Date(
+                        new Date().getFullYear(),
+                        new Date().getMonth(),
+                        new Date().getDate(),
+                        0,
+                        0
+                      ),
+                      'DD-MM-YYYY HH:mm'
+                    ),
+                    moment(
+                      new Date(
+                        new Date().getFullYear(),
+                        new Date().getMonth(),
+                        new Date().getDate(),
+                        23,
+                        59
+                      ),
+                      'DD-MM-YYYY HH:mm'
+                    ),
+                  ]"
                   :disabled="dataHistoryLoading"
                   @change="dataHistoryDateChange"
                 />
@@ -501,7 +543,16 @@
                     ]
               "
               :active-tab-key="rightCardTabsKey"
-              @tabChange="(key) => (rightCardTabsKey = key)"
+              @tabChange="
+                (key) => {
+                  rightCardTabsKey = key
+                  key === 'gMaps' && tab === 1
+                    ? zoomExtends(
+                        devices.filter((d) => d.latitude && d.longitude)
+                      )
+                    : tab === 3 && zoomExtends(dataHistoryPoints)
+                }
+              "
             >
               <div
                 v-if="rightCardTabsKey === 'gMaps'"
@@ -958,6 +1009,7 @@
 
 <script>
 import { format } from 'date-fns'
+import moment from 'moment'
 import PageLayout from '@/layouts/PageLayout'
 import { mapState } from 'vuex'
 import { request, METHOD } from '@/utils/request'
@@ -1035,6 +1087,7 @@ export default {
       treeClientsData: [],
       clientChildsData: [],
       devices: [],
+      devicesSearch: '',
       contacts: [],
       contactsLoaded: false,
       contactsLoading: false,
@@ -1049,6 +1102,7 @@ export default {
       selectedDevice: null,
       deviceTypes: [],
       dataHistory: [],
+      dataHistoryPoints: [],
       showHistoryInMap: false,
       dataHistoryLoading: true,
       devicesLoaded: false,
@@ -1075,11 +1129,12 @@ export default {
         center: { lat: 48, lng: 2 },
         zoom: 2,
         fullscreenControl: false,
-        mapTypeControl: false,
+        mapTypeControl: true,
         rotateControl: false,
         scaleControl: true,
         streetViewControl: false,
         zoomControl: true,
+        // mapTypeId: 'satellite',
       },
       historyPoints: [],
       icons: [
@@ -1100,9 +1155,6 @@ export default {
     ...mapState('setting', ['lang']),
   },
   created() {
-    request('/user/welcome', METHOD.GET).then(
-      (res) => (this.welcome = res.data)
-    )
     this.getClients()
   },
   mounted() {},
@@ -1110,18 +1162,18 @@ export default {
     formatDate: (date = new Date(), formatDate = 'yyyy-MM-dd') => {
       return format(date, formatDate)
     },
+    moment,
     getClients() {
       this.loading = true
       this.treeClientsData = []
       request(`${BASE_URL}/api/client`, METHOD.GET).then((res) => {
         // this.selectedClient = res.data.find((c) => !c.pId)
         this.treeClientsData = res.data
-        this.selectClient(res.data.find((c) => !c.pId).id)
-        this.selectedClientValue = res.data.find((c) => !c.pId).id
+        this.selectClient(res.data[0].id)
+        this.selectedClientValue = res.data[0].id
       })
       this.loading = false
     },
-    onSearchDevice() {},
     selecteDevice(device) {
       device.selected = !device.selected
       this.devices
@@ -1138,7 +1190,7 @@ export default {
         this.selectedDevice = null
       }
       if (this.devices.every((d) => !d.selected)) {
-        this.zoomeExtends(this.devices.filter((d) => d.latitude && d.longitude))
+        this.zoomExtends(this.devices.filter((d) => d.latitude && d.longitude))
       }
     },
     selectClient(client_id) {
@@ -1164,23 +1216,24 @@ export default {
         }
       )
     },
-    getDevicesByClientId(clientId) {
-      this.devices = []
+    getDevicesByClientId(clientId, skip = 0) {
+      skip === 0 && (this.devices = [])
       this.devicesLoaded = false
       this.devicesLoading = true
-      request(`${BASE_URL}/api/device/byClientId/${clientId}`, METHOD.GET).then(
-        (res) => {
-          this.devices = res.data
-          this.devicesLoaded = true
-          this.devicesLoading = false
-          if (this.tab === 1) {
-            this.showHistoryInMap = false
-            this.zoomeExtends(
-              this.devices.filter((d) => d.latitude && d.longitude)
-            )
-          }
+      request(
+        `${BASE_URL}/api/device/byClientId/${clientId}?skip=${skip}`,
+        METHOD.GET
+      ).then((res) => {
+        this.devices.push(...res.data)
+        this.devicesLoaded = true
+        this.devicesLoading = false
+        if (this.tab === 1) {
+          this.showHistoryInMap = false
+          this.zoomExtends(
+            this.devices.filter((d) => d.latitude && d.longitude)
+          )
         }
-      )
+      })
     },
     getAlertByClientId(clientId) {
       this.alertes = []
@@ -1264,10 +1317,10 @@ export default {
       ).then((res) => {
         this.dataHistory = res.data
         this.dataHistoryLoading = false
-        const dataHistoryPoints = res.data.filter(
+        this.dataHistoryPoints = res.data.filter(
           (d) => +d.latitude && +d.longitude
         )
-        for (let i = 0; i <= dataHistoryPoints.length - 1; i++) {
+        for (let i = 0; i < this.dataHistoryPoints.length - 1; i++) {
           if (
             res.data[i].latitude &&
             res.data[i].longitude &&
@@ -1290,7 +1343,7 @@ export default {
             })
           }
         }
-        this.zoomeExtends(dataHistoryPoints)
+        this.zoomExtends(this.dataHistoryPoints)
         this.dataSource = {
           chart: {
             caption: 'Temperature1 et Speed',
@@ -1322,7 +1375,7 @@ export default {
           categories: [
             {
               category: this.dataHistory.map((hd) => ({
-                label: new Date(hd.appdate).toLocaleString('fr-fr', {
+                label: new Date(hd.localizationdate).toLocaleString('fr-fr', {
                   hour: 'numeric',
                 }),
               })),
@@ -1349,7 +1402,7 @@ export default {
       this.devices.forEach((d) => (d.selected = false))
       this.tab = 3
     },
-    zoomeExtends(points) {
+    zoomExtends(points) {
       let bounds = new window.google.maps.LatLngBounds()
       if (points.length > 0) {
         for (let i = 0; i < points.length; i++) {
@@ -1359,10 +1412,10 @@ export default {
           })
         }
         if (this.tab === 1 || this.tab === 3) {
-          this.$nextTick(() => {
+          setTimeout(() => {
             this.$refs.devicesMap?.getMap() &&
               this.$refs.devicesMap.getMap().fitBounds(bounds)
-          })
+          }, 20)
         }
       }
     },
@@ -1544,6 +1597,14 @@ export default {
       this.$refs[`infoWindowRef-${historyId}`][0] &&
         this.$refs[`infoWindowRef-${historyId}`][0].open()
     },
+    devicesScroll($event) {
+      const { offsetHeight, scrollTop, scrollHeight } = $event.target
+      const { devices } = this
+      if (offsetHeight + scrollTop === scrollHeight) {
+       (this.devicesLoaded && !this.devicesLoading) && this.getDevicesByClientId(this.selectedClientValue, devices.length)
+        console.log('load more devices with skip', devices.length)
+      }
+    },
   },
 }
 </script>
@@ -1591,7 +1652,7 @@ export default {
 @media only screen and (min-width: 768px) {
   .left-tab {
     min-height: 609px;
-    height: calc(100vh - 151px);
+    height: calc(100vh - 146px);
     border-right: solid 1px #e2e8f0;
     > div > div > a.active {
       box-shadow: inset -2px 0 0px 0px #1c90ff;
