@@ -1,5 +1,5 @@
 <template>
-  <a-dropdown :trigger="['click']" v-model="show">
+  <a-dropdown :trigger="['click']" v-model="show" overlayClassName="header-dropdown">
     <div slot="overlay">
       <a-spin :spinning="loading">
         <a-tabs class="dropdown-tabs" :tabBarStyle="{textAlign: 'center'}" :style="{width: '297px'}">
@@ -90,7 +90,7 @@ export default {
       min-height: 250px;
     }
   }
-  body.header-fixed .ant-dropdown.ant-dropdown-placement-bottomRight {
+  body.header-fixed .ant-dropdown.header-dropdown {
     position: fixed;
     top: 4.2rem!important;
   }

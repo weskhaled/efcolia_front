@@ -6,7 +6,7 @@
     :bodyStyle="{ padding: '.5rem .5rem' }"
     :class="device.selected ? 'bg-blue-200' : ''"
   >
-    <template slot="actions" class="ant-card-actions p-0">
+    <template slot="actions" class="ant-card-actions p-0 relative">
       <a-tooltip>
         <template slot="title">
           battery connected
@@ -154,30 +154,6 @@
           >
         </span>
       </a-tooltip>
-      <!-- <a-tooltip>
-        <template slot="title">
-          Last update
-          {{
-            formatDate(new Date(device.localizationdate), 'dd/MM/yyyy HH:mm:ss')
-          }}
-        </template>
-        <span>
-          <a-badge
-            :color="
-              formatDate(new Date(), 'dd') - formatDate(new Date(), 'dd') < 1 &&
-              formatDate(new Date(), 'MM/yyyy') ===
-                formatDate(new Date(device.localizationdate), 'MM/yyyy') &&
-              formatDate(new Date(), 'HH') -
-                formatDate(new Date(device.localizationdate), 'HH') <
-                8
-                ? 'green'
-                : 'red'
-            "
-          >
-            <a-icon class="" key="edit" type="sync" />
-          </a-badge>
-        </span>
-      </a-tooltip> -->
       <a-dropdown>
         <a class="ant-dropdown-link" @click="(e) => e.preventDefault()">
           <a-icon class="" key="edit" type="setting" />
@@ -189,6 +165,11 @@
                 $emit('history-device', { id: device.id, name: device.name })
               "
               ><a-icon class="mr-1" type="history" /> Historique</span
+            >
+          </a-menu-item>
+          <a-menu-item>
+            <span @click.stop="$emit('edit-device', device.id)"
+              ><a-icon class="mr-1" type="edit" /> Edit Device</span
             >
           </a-menu-item>
           <a-menu-item>
@@ -205,7 +186,9 @@
           {{ device.name }}
         </div>
         <div class="font-light text-sm text-gray-700">
-          {{ formatDate(new Date(device.localizationdate), 'dd/MM/yy HH:mm:ss') }}
+          {{
+            formatDate(new Date(device.localizationdate), 'dd/MM/yy HH:mm:ss')
+          }}
         </div>
       </div>
       <div slot="description">
@@ -242,13 +225,12 @@
           </div>
           <div class="self-center flex-auto text-left">
             <div>
-              <span v-if="device.description"
-                >{{ device.description }}</span
-              >
+              <span v-if="device.description">{{ device.description }}</span>
               <span class="float-right">{{ device.latitude }}</span>
             </div>
             <div>
-              {{ device.serialnumber }}{{ device.simcardNumber && ' | +' + device.simcardNumber}}
+              {{ device.serialnumber
+              }}{{ device.simcardNumber && ' | +' + device.simcardNumber }}
               <span class="float-right">{{ device.longitude }}</span>
             </div>
           </div>

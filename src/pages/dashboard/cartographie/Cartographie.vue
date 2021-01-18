@@ -808,6 +808,7 @@
         </div>
       </div>
     </template>
+    <!-- modal add new alert -->
     <a-modal
       :title="
         `${$t('addNewAlert')} #${
@@ -857,6 +858,7 @@
         @submit="addNewAlert"
       />
     </a-modal>
+    <!-- modal add new contact -->
     <a-modal
       :title="
         `${$t('addNewContact')} #${
@@ -906,6 +908,7 @@
         @submit="addNewContact"
       />
     </a-modal>
+    <!-- modal add new device -->
     <a-modal
       :title="
         `${$t('addNewDevice')} #${
@@ -956,6 +959,7 @@
         @submit="addNewDevice"
       />
     </a-modal>
+    <!-- modal add new client -->
     <a-modal
       :title="
         `${$t('addNewClient')} #${
@@ -1224,7 +1228,13 @@ export default {
         `${BASE_URL}/api/device/byClientId/${clientId}?skip=${skip}`,
         METHOD.GET
       ).then((res) => {
-        this.devices.push(...res.data)
+        // just for check if exisit
+        const { data } = res
+        const uniqDevices = data.filter((d) =>
+          !this.devices.find((cd) => cd.id === d.id)
+        )
+        this.devices.push(...uniqDevices)
+        // this.devices.push(...data)
         this.devicesLoaded = true
         this.devicesLoading = false
         if (this.tab === 1) {
@@ -1601,7 +1611,9 @@ export default {
       const { offsetHeight, scrollTop, scrollHeight } = $event.target
       const { devices } = this
       if (offsetHeight + scrollTop === scrollHeight) {
-       (this.devicesLoaded && !this.devicesLoading) && this.getDevicesByClientId(this.selectedClientValue, devices.length)
+        this.devicesLoaded &&
+          !this.devicesLoading &&
+          this.getDevicesByClientId(this.selectedClientValue, devices.length)
         console.log('load more devices with skip', devices.length)
       }
     },
