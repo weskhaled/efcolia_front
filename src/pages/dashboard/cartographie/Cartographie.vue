@@ -212,8 +212,8 @@
                   size="small"
                   @click="
                     () => {
-                      modalDeviceVisible = true
                       device = null
+                      modalDeviceVisible = true
                     }
                   "
                 />
@@ -229,6 +229,7 @@
                 <div
                   class="p-3 overflow-scroll min-h-555 h-content"
                   style="border-right: 1px solid rgb(226, 232, 240);"
+                  ref="listDevicesRef"
                   v-on:scroll="devicesScroll"
                 >
                   <a-result
@@ -1180,8 +1181,8 @@ export default {
       request(`${BASE_URL}/api/client`, METHOD.GET).then((res) => {
         // this.selectedClient = res.data.find((c) => !c.pId)
         this.treeClientsData = res.data
-        this.selectClient(res.data[0].id)
-        this.selectedClientValue = res.data[0].id
+        this.selectClient(this.currUser.clientId)
+        this.selectedClientValue = this.currUser.clientId
       })
       this.loading = false
     },
@@ -1242,6 +1243,7 @@ export default {
         )
         this.devices.push(...uniqDevices)
         // this.devices.push(...data)
+        this.$refs.listDevicesRef.scrollTop = this.$refs.listDevicesRef.scrollTop - 1
         this.devicesLoaded = true
         this.devicesLoading = false
         if (this.tab === 1) {
@@ -1505,10 +1507,7 @@ export default {
         .then(() => {
           this.addingLoading = false
           this.getContactsByClientId(this.selectedClientValue)
-          this.$message.success(
-            `${user.lastname}, User has been updated`,
-            5
-          )
+          this.$message.success(`${user.lastname}, User has been updated`, 5)
         })
         .catch((error) => {
           this.addingLoading = false
@@ -1657,7 +1656,11 @@ export default {
       const { offsetHeight, scrollTop, scrollHeight } = $event.target
       if (offsetHeight + scrollTop === scrollHeight) {
         this.devicesLoaded &&
-          this.getDevicesByClientId(this.selectedClientValue, this.devices.length)
+          this.getDevicesByClientId(
+            this.selectedClientValue,
+            this.devices.length
+          )
+        // $event.target.scrollTop = $event.target.scrollTop - 10
         console.log('load more devices with skip', this.devices.length)
       }
     },

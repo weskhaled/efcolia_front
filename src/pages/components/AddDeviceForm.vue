@@ -228,17 +228,6 @@ export default {
             required: true,
             message: 'Please input serialNumber',
           },
-          {
-            min: 1,
-            max: 15,
-            message: 'Length should be 1 to 15',
-          },
-        ],
-        device_id2: [
-          {
-            required: true,
-            message: 'Please input Identifiant',
-          },
         ],
         deviceTypeId: [
           {
@@ -261,12 +250,17 @@ export default {
       }
     },
   },
-  created() {
+  mounted() {
     if (this.device) {
       this.fillInputs()
     } else {
       this.resetForm()
     }
+  },
+  created() {
+    // request(`${BASE_URL}/api/getdevice/${this.device.id}`, METHOD.GET).then(
+    //   (res) => (console.log(res.data))
+    // )
     request(`${BASE_URL}/api/deviceType`, METHOD.GET).then(
       (res) => (this.deviceTypes = res.data)
     )
@@ -294,6 +288,10 @@ export default {
           this.$emit('submit', {
             ...this.form,
             id: this.device.id || undefined,
+            simCardId: this.device.id ? this.form.simcard : undefined,
+            timezone: this.device.id
+              ? this.form.timezone || 'Europe/Paris'
+              : undefined,
             deviceTypeId: +this.form.deviceTypeId,
             deviceSubtypeId: +this.form.deviceSubtypeId,
             status: this.form.status ? 1 : 0,
@@ -326,15 +324,15 @@ export default {
     },
     fillInputs() {
       this.form.name = this.device.name
-      this.form.deviceTypeId = this.device.deviceTypeId
-      this.form.deviceSubtypeId = this.device.deviceSubtypeId
+      this.form.deviceTypeId = this.device.devicetype_id
+      this.form.deviceSubtypeId = this.device.devicesubtype_id
       this.form.device_id2 = this.device.device_id2
       this.form.imei = this.device.imei
       this.form.serialNumber = this.device.serialnumber
       this.form.fromTo = this.device.fromTo
       this.form.status = !!this.device.status
       this.form.clientId = this.device.clientId
-      this.form.findAddress = !!this.device.findAddress
+      this.form.findAddress = !!this.device.findaddress
       this.form.desc = this.device.description
     },
   },

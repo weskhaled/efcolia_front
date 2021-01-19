@@ -113,7 +113,12 @@ export default {
           this.logging = true
           const name = this.form.getFieldValue('name')
           const password = this.form.getFieldValue('password')
-          login(name, password).then(this.afterLogin)
+          login(name, password)
+            .then(this.afterLogin)
+            .catch((error) => {
+              console.error(error)
+              this.logging = false
+            })
         }
       })
     },
@@ -121,10 +126,10 @@ export default {
       this.logging = false
       const loginRes = res.data
       if (loginRes) {
-        const now = new Date();
+        const now = new Date()
         setAuthorization({
           token: loginRes.token,
-          expireAt: new Date(now.getTime() + loginRes.expires*1000),
+          expireAt: new Date(now.getTime() + loginRes.expires * 1000),
         })
         const userData = await request(
           `${BASE_URL}/api/request/user`,
@@ -135,6 +140,7 @@ export default {
             user: {
               id: res.data.user_id,
               name: res.data.lastname,
+              clientId: res.data.client_id,
               avatar:
                 'https://gw.alipayobjects.com/zos/rmsportal/cnrhVkzwxjPwAaCfPbdc.png',
               address: '@CITY',
@@ -143,7 +149,7 @@ export default {
                 FR: 'welcome',
                 US: 'welcome',
               },
-              permissions: res.data.permissions
+              permissions: res.data.permissions,
             },
             permissions: [{ id: 'queryForm', operation: ['add', 'edit'] }],
             roles: [{ id: 'admin', operation: ['add', 'edit', 'delete'] }],
@@ -161,7 +167,7 @@ export default {
                 router: 'cartographie',
                 name: 'cartographie',
                 icon: 'dashboard',
-              }
+              },
             ],
           },
         ]
