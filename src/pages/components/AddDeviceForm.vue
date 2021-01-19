@@ -118,9 +118,9 @@
           </a-form-model-item>
         </div>
         <div class="col-span-1">
-          <a-form-model-item label="Description" prop="desc">
+          <a-form-model-item label="Description" prop="description">
             <a-input
-              v-model="form.desc"
+              v-model="form.description"
               type="textarea"
               :auto-size="{ minRows: 7, maxRows: 12 }"
             />
@@ -212,8 +212,9 @@ export default {
         status: false,
         clientId: undefined,
         findAddress: false,
+        privacy: '',
         simcard: undefined,
-        desc: '',
+        description: '',
       },
       rules: {
         name: [
@@ -251,6 +252,7 @@ export default {
     },
   },
   mounted() {
+    console.log('mounted')
     if (this.device) {
       this.fillInputs()
     } else {
@@ -258,12 +260,15 @@ export default {
     }
   },
   created() {
+    console.log('created')
     // request(`${BASE_URL}/api/getdevice/${this.device.id}`, METHOD.GET).then(
     //   (res) => (console.log(res.data))
     // )
-    request(`${BASE_URL}/api/deviceType`, METHOD.GET).then(
-      (res) => (this.deviceTypes = res.data)
-    )
+    request(`${BASE_URL}/api/deviceType`, METHOD.GET).then((res) => {
+      this.deviceTypes = res.data
+      this.device.devicesubtype_id &&
+        this.selectDeviceType(this.device.devicetype_id)
+    })
     request(`${BASE_URL}/api/simcard/${this.clientId}`, METHOD.GET).then(
       (res) => {
         this.simCards = res.data
@@ -333,7 +338,8 @@ export default {
       this.form.status = !!this.device.status
       this.form.clientId = this.device.clientId
       this.form.findAddress = !!this.device.findaddress
-      this.form.desc = this.device.description
+      this.form.description = this.device.description
+      this.form.simcard = this.device.simcard_id
     },
   },
 }

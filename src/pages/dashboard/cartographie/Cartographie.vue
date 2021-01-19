@@ -928,6 +928,7 @@
       :visible="modalDeviceVisible"
       @cancel="
         () => {
+          device = null
           $refs.addDeviceFormRef.resetForm()
           modalDeviceVisible = false
         }
@@ -939,6 +940,7 @@
           key="cancel"
           @click="
             () => {
+              device = null
               $refs.addDeviceFormRef.resetForm()
               modalDeviceVisible = false
             }
