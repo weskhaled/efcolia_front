@@ -112,10 +112,6 @@ const columnsConditionsAlert = [
 ]
 const columnsAlertDeviceAndFlotte = [
   {
-    title: 'Alert Id',
-    dataIndex: 'alertId',
-  },
-  {
     title: 'Alert Name',
     dataIndex: 'alertName',
   },
@@ -126,10 +122,6 @@ const columnsAlertDeviceAndFlotte = [
   {
     title: 'Flotte Name',
     dataIndex: 'flotteName',
-  },
-  {
-    title: 'Object Id',
-    dataIndex: 'objectId',
   },
   {
     title: 'Object Type',

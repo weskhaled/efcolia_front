@@ -1,83 +1,216 @@
 <template>
-  <a-form-model ref="ruleForm" :model="form">
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-      <div>
+  <div class="grid h-full">
+    <div class="ant-form ant-form-horizontal flex flex-grow-1">
+      <div class="w-full">
         <div>
-          <a-form-model-item ref="firstname" label="firstname" prop="firstname">
-            <a-input
-              v-model="form.firstname"
-              @blur="
-                () => {
-                  $refs.firstname.onFieldBlur()
-                }
-              "
-            />
-          </a-form-model-item>
+          <a-form-model ref="ruleForm" :model="form">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              <div>
+                <div>
+                  <a-form-model-item
+                    ref="firstname"
+                    label="firstname"
+                    prop="firstname"
+                  >
+                    <a-input
+                      v-model="form.firstname"
+                      @blur="
+                        () => {
+                          $refs.firstname.onFieldBlur()
+                        }
+                      "
+                    />
+                  </a-form-model-item>
+                </div>
+                <div>
+                  <a-form-model-item
+                    ref="lastname"
+                    label="lastname"
+                    prop="lastname"
+                  >
+                    <a-input
+                      v-model="form.lastname"
+                      @blur="
+                        () => {
+                          $refs.lastname.onFieldBlur()
+                        }
+                      "
+                    />
+                  </a-form-model-item>
+                </div>
+              </div>
+              <div>
+                <div>
+                  <a-form-model-item
+                    ref="jobtitle"
+                    label="jobtitle"
+                    prop="jobtitle"
+                  >
+                    <a-input
+                      v-model="form.jobtitle"
+                      @blur="
+                        () => {
+                          $refs.jobtitle.onFieldBlur()
+                        }
+                      "
+                    />
+                  </a-form-model-item>
+                </div>
+                <div class="col-span-1">
+                  <a-form-model-item label="description" prop="description">
+                    <a-input v-model="form.description" type="textarea" />
+                  </a-form-model-item>
+                </div>
+              </div>
+            </div>
+          </a-form-model>
         </div>
         <div>
-          <a-form-model-item ref="lastname" label="lastname" prop="lastname">
-            <a-input
-              v-model="form.lastname"
-              @blur="
-                () => {
-                  $refs.lastname.onFieldBlur()
-                }
-              "
-            />
-          </a-form-model-item>
-        </div>
-        <div>
-          <a-form-model-item ref="jobtitle" label="jobtitle" prop="jobtitle">
-            <a-input
-              v-model="form.jobtitle"
-              @blur="
-                () => {
-                  $refs.jobtitle.onFieldBlur()
-                }
-              "
-            />
-          </a-form-model-item>
-        </div>
-        <!-- <div>
-          <a-form-model-item label="Client Type" prop="clientTypeId">
-            <a-select v-model="form.clientId">
-              <a-select-option
-                v-for="client in clients"
-                :key="client.client_id"
-                :value="client.client_id"
+          <a-tabs default-active-key="1">
+            <a-tab-pane key="1" tab="Permissions">
+              <a-table
+                :columns="columnsUserPermissions"
+                :scroll="{ y: 160 }"
+                :pagination="false"
+                :data-source="permissions"
+                :loading="userPermissionsLoading"
+                rowKey="objecttype"
+                size="small"
               >
-                {{ client.commercialname }}
-              </a-select-option>
-            </a-select>
-          </a-form-model-item>
-        </div> -->
-      </div>
-      <div>
-        <div class="col-span-1">
-          <a-form-model-item label="description" prop="description">
-            <a-input v-model="form.description" type="textarea" />
-          </a-form-model-item>
+                <span slot-scope="r, record" slot="consultRender">
+                  <a-switch
+                    v-model="record.r"
+                    size="small"
+                    :default-checked="r"
+                    @change="
+                      (e) => {
+                        record.allPermissions =
+                          e && record.n && record.m && record.d
+                      }
+                    "
+                  />
+                </span>
+                <span slot-scope="n, record" slot="createRender">
+                  <a-switch
+                    v-model="record.n"
+                    size="small"
+                    :default-checked="n"
+                    @change="
+                      (e) => {
+                        record.allPermissions =
+                          e && record.r && record.m && record.d
+                      }
+                    "
+                  />
+                </span>
+                <span slot-scope="m, record" slot="updateRender">
+                  <a-switch
+                    v-model="record.m"
+                    size="small"
+                    :default-checked="m"
+                    @change="
+                      (e) => {
+                        record.allPermissions =
+                          e && record.n && record.r && record.d
+                      }
+                    "
+                  />
+                </span>
+                <span slot-scope="d, record" slot="deleteRender">
+                  <a-switch
+                    v-model="record.d"
+                    size="small"
+                    :default-checked="d"
+                    @change="
+                      (e) => {
+                        record.allPermissions =
+                          e && record.r && record.m && record.n
+                      }
+                    "
+                  />
+                </span>
+                <span slot-scope="allPermissions, record" slot="allRender">
+                  <a-switch
+                    v-model="record.allPermissions"
+                    size="small"
+                    :default-checked="allPermissions"
+                    @change="(e) => selectAllPermission(e, record)"
+                  />
+                </span>
+              </a-table>
+            </a-tab-pane>
+            <a-tab-pane key="2" tab="Addresses">
+              Addresses
+            </a-tab-pane>
+          </a-tabs>
         </div>
       </div>
     </div>
-  </a-form-model>
+    <div class="flex h-10 items-center justify-end self-end mx-1">
+      <a-button key="back" @click="updateInfos">
+        Reset
+      </a-button>
+      <a-button
+        key="submit"
+        type="primary"
+        :loading="loading"
+        @click="onSubmit"
+        class="ml-2"
+      >
+        Update
+      </a-button>
+    </div>
+  </div>
 </template>
 <script>
-// import { request, METHOD } from '@/utils/request'
-// const BASE_URL = process.env.VUE_APP_API_BASE_URL
+import { mapState } from 'vuex'
+import { request, METHOD } from '@/utils/request'
+const BASE_URL = process.env.VUE_APP_API_BASE_URL
 
+const columnsUserPermissions = [
+  {
+    title: 'Function',
+    dataIndex: 'objecttype',
+    width: '180px',
+  },
+  {
+    title: 'Consult',
+    dataIndex: 'r',
+    scopedSlots: { customRender: 'consultRender' },
+  },
+  {
+    title: 'Create',
+    dataIndex: 'n',
+    scopedSlots: { customRender: 'createRender' },
+  },
+  {
+    title: 'Modify',
+    dataIndex: 'm',
+    scopedSlots: { customRender: 'updateRender' },
+  },
+  {
+    title: 'Delete',
+    dataIndex: 'd',
+    scopedSlots: { customRender: 'deleteRender' },
+  },
+  {
+    title: 'All',
+    dataIndex: 'allPermission',
+    scopedSlots: { customRender: 'allRender' },
+  },
+]
 export default {
   name: 'UserInfos',
   props: {
     user: {
       type: Object,
       required: false,
-      default: () => ({
-        lastname: '',
-        firstname: '',
-        jobtitle: '',
-        description: '',
-      }),
+      default: () => null,
+    },
+    loading: {
+      type: Boolean,
+      required: false,
+      default: () => false,
     },
   },
   data() {
@@ -88,6 +221,9 @@ export default {
         jobtitle: '',
         description: '',
       },
+      permissions: [],
+      columnsUserPermissions,
+      userPermissionsLoading: true,
     }
   },
   watch: {
@@ -97,13 +233,72 @@ export default {
       }
     },
   },
-  mounted() {},
+  computed: {
+    ...mapState('account', { currUser: 'user' }),
+  },
+  created() {
+    this.getPermissions()
+    this.user && this.updateInfos()
+  },
   methods: {
     updateInfos() {
       this.form.lastname = this.user.lastname || ''
       this.form.firstname = this.user.firstname || ''
       this.form.jobtitle = this.user.jobtitle || ''
       this.form.description = this.user.description || ''
+    },
+    getPermissions() {
+      request(`${BASE_URL}/api/objectType`, METHOD.GET).then((res) => {
+        this.permissions = res.data.map((o) => ({
+          objecttype: o.objecttype,
+          r: false,
+          n: false,
+          m: false,
+          d: false,
+          allPermissions: false,
+        }))
+        this.userPermissionsLoading = false
+      })
+    },
+    selectAllPermission(value, record) {
+      record.r = value
+      record.n = value
+      record.m = value
+      record.d = value
+    },
+    convertToPermission(r, n, m, d) {
+      let s = ''
+      r && (s += 'r')
+      n && (s += 'n')
+      m && (s += 'm')
+      d && (s += 'd')
+      return s
+    },
+    onSubmit() {
+      this.$refs.ruleForm.validate((valid) => {
+        if (valid) {
+          this.$emit('submit', {
+            ...this.form,
+            id: +this.user.id,
+            permissions: this.permissions.map((p) => ({
+              objectType: p.objecttype,
+              permission: this.convertToPermission(p.r, p.n, p.m, p.d),
+            })),
+          })
+        } else {
+          return false
+        }
+      })
+    },
+    resetForm() {
+      this.$refs.ruleForm.resetFields()
+      this.permissions.forEach((o) => {
+        o.r = false
+        o.n = false
+        o.m = false
+        o.d = false
+        o.allPermissions = false
+      })
     },
   },
 }

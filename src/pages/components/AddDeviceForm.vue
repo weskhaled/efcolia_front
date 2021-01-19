@@ -15,14 +15,7 @@
         </div>
         <div>
           <a-form-model-item ref="name" label="Nom" prop="name">
-            <a-input
-              v-model="form.name"
-              @blur="
-                () => {
-                  $refs.name.onFieldBlur()
-                }
-              "
-            />
+            <a-input v-model="form.name" />
           </a-form-model-item>
         </div>
         <div>
@@ -64,26 +57,12 @@
             label="N° de série"
             prop="serialNumber"
           >
-            <a-input
-              v-model="form.serialNumber"
-              @blur="
-                () => {
-                  $refs.serialNumber.onFieldBlur()
-                }
-              "
-            />
+            <a-input v-model="form.serialNumber" />
           </a-form-model-item>
         </div>
         <div>
           <a-form-model-item ref="imei" label="IMEI" prop="imei">
-            <a-input
-              v-model="form.imei"
-              @blur="
-                () => {
-                  $refs.imei.onFieldBlur()
-                }
-              "
-            />
+            <a-input v-model="form.imei" />
           </a-form-model-item>
         </div>
         <div>
@@ -92,14 +71,7 @@
             label="Identifiant"
             prop="device_id2"
           >
-            <a-input
-              v-model="form.device_id2"
-              @blur="
-                () => {
-                  $refs.device_id2.onFieldBlur()
-                }
-              "
-            />
+            <a-input v-model="form.device_id2" />
           </a-form-model-item>
         </div>
       </div>
@@ -220,7 +192,7 @@ export default {
     device: {
       type: Object,
       required: false,
-      default: () => ({}),
+      default: () => null,
     },
     clientId: {
       type: Number,
@@ -280,12 +252,34 @@ export default {
       simCards: [],
     }
   },
+  watch: {
+    device: function(val) {
+      if (val) {
+        this.fillInputs()
+      } else {
+        this.resetForm()
+      }
+    },
+  },
   created() {
+    if (this.device) {
+      this.fillInputs()
+    } else {
+      this.resetForm()
+    }
     request(`${BASE_URL}/api/deviceType`, METHOD.GET).then(
       (res) => (this.deviceTypes = res.data)
     )
     request(`${BASE_URL}/api/simcard/${this.clientId}`, METHOD.GET).then(
-      (res) => (this.simCards = res.data)
+      (res) => {
+        this.simCards = res.data
+        if (this.device && this.device.simcard_id) {
+          this.form.simcard =
+            this.simCards.find(
+              (sc) => +sc.simcard_id === +this.device.simcard_id
+            )?.simcard_id || null
+        }
+      }
     )
   },
   methods: {
@@ -299,12 +293,13 @@ export default {
         if (valid) {
           this.$emit('submit', {
             ...this.form,
+            id: this.device.id || undefined,
             deviceTypeId: +this.form.deviceTypeId,
             deviceSubtypeId: +this.form.deviceSubtypeId,
             status: this.form.status ? 1 : 0,
             findAddress: this.form.findAddress ? 1 : 0,
-            creationdate: this.form.fromTo[0],
-            enddate: this.form.fromTo[1],
+            creationdate: (this.form.fromTo && this.form.fromTo[0]) || null,
+            enddate: (this.form.fromTo && this.form.fromTo[1]) || null,
             fromTo: undefined,
           })
         } else {
@@ -313,7 +308,7 @@ export default {
       })
     },
     resetForm() {
-      this.$refs.ruleForm.resetFields()
+      this.device?.id ? this.fillInputs() : this.$refs.ruleForm?.resetFields()
     },
     filterOptionClient(input, option) {
       return (
@@ -328,6 +323,19 @@ export default {
           .toLowerCase()
           .indexOf(input.toLowerCase()) >= 0
       )
+    },
+    fillInputs() {
+      this.form.name = this.device.name
+      this.form.deviceTypeId = this.device.deviceTypeId
+      this.form.deviceSubtypeId = this.device.deviceSubtypeId
+      this.form.device_id2 = this.device.device_id2
+      this.form.imei = this.device.imei
+      this.form.serialNumber = this.device.serialnumber
+      this.form.fromTo = this.device.fromTo
+      this.form.status = !!this.device.status
+      this.form.clientId = this.device.clientId
+      this.form.findAddress = !!this.device.findAddress
+      this.form.desc = this.device.description
     },
   },
 }

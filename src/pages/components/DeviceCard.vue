@@ -168,7 +168,7 @@
             >
           </a-menu-item>
           <a-menu-item>
-            <span @click.stop="$emit('edit-device', device.id)"
+            <span @click.stop="$emit('edit-device', device)"
               ><a-icon class="mr-1" type="edit" /> Edit Device</span
             >
           </a-menu-item>

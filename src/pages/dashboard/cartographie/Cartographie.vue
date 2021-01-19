@@ -138,8 +138,6 @@
                       :class="tab === 4 ? 'bg-blue-100 active' : null"
                       @click.prevent="
                         () => {
-                          selectedUser = null
-                          contacts.forEach((c) => (c.selected = false))
                           tab = 4
                         }
                       "
@@ -212,7 +210,12 @@
                   shape="circle"
                   icon="plus"
                   size="small"
-                  @click="() => (modalAddDeviceVisible = true)"
+                  @click="
+                    () => {
+                      modalDeviceVisible = true
+                      device = null
+                    }
+                  "
                 />
               </template>
               <a slot="extra">
@@ -273,6 +276,7 @@
                       :device="device"
                       @select="selecteDevice"
                       @history-device="historyDevice"
+                      @edit-device="editDevice"
                       @delete-device="deleteDevice"
                     />
                   </div>
@@ -471,7 +475,7 @@
                       .find((p) => p.objecttype === 'company')
                       .permission.indexOf('n') !== -1
                   "
-                  @click="() => (modalAddClientVisible = true)"
+                  @click="() => (modalClientVisible = true)"
                 />
               </template>
               <template slot="extra"> </template>
@@ -760,13 +764,15 @@
                   />
                   <user-infos
                     v-show="selectedUser"
-                    ref="selectedUserRef"
+                    ref="userInfosRef"
                     :user="selectedUser"
+                    :loading="addingLoading"
+                    @submit="updateUser"
                   />
                 </div>
               </div>
             </a-card>
-            <!-- user details card -->
+            <!-- clients childs details card -->
             <a-card
               class=""
               v-if="tab === 5"
@@ -911,18 +917,18 @@
     <!-- modal add new device -->
     <a-modal
       :title="
-        `${$t('addNewDevice')} #${
+        `${device ? $t('updateDevice') : $t('addNewDevice')} #${
           selectedClient ? selectedClient.commercialname : ''
         }`
       "
       class="add-evice-modal"
       width="65vw"
       :dialog-style="{ top: '20px' }"
-      :visible="modalAddDeviceVisible"
+      :visible="modalDeviceVisible"
       @cancel="
         () => {
           $refs.addDeviceFormRef.resetForm()
-          modalAddDeviceVisible = false
+          modalDeviceVisible = false
         }
       "
     >
@@ -933,7 +939,7 @@
           @click="
             () => {
               $refs.addDeviceFormRef.resetForm()
-              modalAddDeviceVisible = false
+              modalDeviceVisible = false
             }
           "
         >
@@ -952,11 +958,12 @@
         </a-button>
       </template>
       <add-device-form
+        ref="addDeviceFormRef"
+        :device="device"
         :deviceTypes="deviceTypes"
         :clients="treeClientsData"
         :clientId="selectedClientValue"
-        ref="addDeviceFormRef"
-        @submit="addNewDevice"
+        @submit="submitDevice"
       />
     </a-modal>
     <!-- modal add new client -->
@@ -969,11 +976,11 @@
       class="add-evice-modal"
       width="65vw"
       :dialog-style="{ top: '20px' }"
-      :visible="modalAddClientVisible"
+      :visible="modalClientVisible"
       @cancel="
         () => {
           $refs.addClientFormRef.resetForm()
-          modalAddClientVisible = false
+          modalClientVisible = false
         }
       "
     >
@@ -984,7 +991,7 @@
           @click="
             () => {
               $refs.addClientFormRef.resetForm()
-              modalAddClientVisible = false
+              modalClientVisible = false
             }
           "
         >
@@ -1091,15 +1098,16 @@ export default {
       treeClientsData: [],
       clientChildsData: [],
       devices: [],
+      device: null,
       devicesSearch: '',
       contacts: [],
       contactsLoaded: false,
       contactsLoading: false,
       selectedUser: null,
       alertes: [],
-      modalAddDeviceVisible: false,
+      modalDeviceVisible: false,
       modalAddAlertVisible: false,
-      modalAddClientVisible: false,
+      modalClientVisible: false,
       modalAddContactVisible: false,
       addingLoading: false,
       selectedAlert: null,
@@ -1161,7 +1169,6 @@ export default {
   created() {
     this.getClients()
   },
-  mounted() {},
   methods: {
     formatDate: (date = new Date(), formatDate = 'yyyy-MM-dd') => {
       return format(date, formatDate)
@@ -1230,8 +1237,8 @@ export default {
       ).then((res) => {
         // just for check if exisit
         const { data } = res
-        const uniqDevices = data.filter((d) =>
-          !this.devices.find((cd) => cd.id === d.id)
+        const uniqDevices = data.filter(
+          (d) => !this.devices.find((cd) => cd.id === d.id)
         )
         this.devices.push(...uniqDevices)
         // this.devices.push(...data)
@@ -1264,6 +1271,11 @@ export default {
       request(`${BASE_URL}/api/contact/${client_id}`, METHOD.GET).then(
         (res) => {
           this.contacts = res.data
+          const currentUser = this.contacts.find(
+            (cu) => cu.id === this.currUser.id
+          )
+          currentUser && (currentUser.selected = true)
+          this.selectedUser = currentUser
           this.contactsLoading = false
           this.contactsLoaded = true
         }
@@ -1429,6 +1441,38 @@ export default {
         }
       }
     },
+    submitDevice(device) {
+      this.addingLoading = true
+      request(`${BASE_URL}/api/device`, device.id ? METHOD.PUT : METHOD.POST, {
+        ...device,
+      })
+        .then(() => {
+          this.getDevicesByClientId(this.selectedClientValue)
+          this.$refs.addDeviceFormRef.resetForm()
+          this.modalDeviceVisible = false
+          this.addingLoading = false
+          this.$message.success(
+            `${device.name}, Device has been ${
+              device.id ? 'updated' : 'Adedd'
+            }`,
+            5
+          )
+          device.id && (this.device = null)
+        })
+        .catch((error) => {
+          this.addingLoading = false
+          this.$message.error(
+            `${device.name}, Sorry device can not ${
+              device.id ? 'updated' : 'created'
+            }, error: ${error.status}`,
+            5
+          )
+        })
+    },
+    editDevice(device) {
+      this.modalDeviceVisible = true
+      this.device = Object.assign(device, {})
+    },
     deleteDevice(deviceId) {
       const self = this
       this.$confirm({
@@ -1445,6 +1489,79 @@ export default {
               self.$destroyAll()
               self.$message.error(
                 `Sorry device not deleted, error: ${error.status}`,
+                5
+              )
+            })
+        },
+        cancelText: 'No',
+      })
+    },
+    updateUser(user) {
+      console.log(user)
+      this.addingLoading = true
+      request(`${BASE_URL}/api/user`, METHOD.PUT, {
+        ...user,
+      })
+        .then(() => {
+          this.addingLoading = false
+          this.getContactsByClientId(this.selectedClientValue)
+          this.$message.success(
+            `${user.lastname}, User has been updated`,
+            5
+          )
+        })
+        .catch((error) => {
+          this.addingLoading = false
+          this.$message.error(
+            `${user.lastname}, Sorry user can not updated, error: ${error.status}`,
+            5
+          )
+        })
+    },
+    addNewClient(client) {
+      this.addingLoading = true
+      request(`${BASE_URL}/api/client`, METHOD.POST, {
+        ...client,
+        parentId: this.selectedClientValue,
+      })
+        .then(() => {
+          this.getClients()
+          this.$refs.addClientFormRef.resetForm()
+          this.modalClientVisible = false
+          this.addingLoading = false
+          this.$message.success(
+            `${client.commercialName}, Client has been Adedd`,
+            5
+          )
+        })
+        .catch((error) => {
+          this.addingLoading = false
+          this.$message.error(
+            `${client.commercialName}, Sorry client not created, error: ${error.status}`,
+            5
+          )
+        })
+    },
+    updateClient(client) {
+      const self = this
+      this.$confirm({
+        content: 'Update Client',
+        okText: 'Yes',
+        onOk() {
+          return request(`${BASE_URL}/api/client`, METHOD.PUT, {
+            ...client,
+            id: client.client_id,
+            parentId: self.selectedClientValue,
+          })
+            .then(() => {
+              self.getClients()
+              self.$message.success(`Client has been Updated`, 5)
+              self.$destroyAll()
+            })
+            .catch((error) => {
+              self.$destroyAll()
+              self.$message.error(
+                `Sorry client not updated, error: ${error.status}`,
                 5
               )
             })
@@ -1474,77 +1591,6 @@ export default {
         },
         cancelText: 'No',
       })
-    },
-    updateClient(client) {
-      const self = this
-      this.$confirm({
-        content: 'Update Client',
-        okText: 'Yes',
-        onOk() {
-          return request(`${BASE_URL}/api/client`, METHOD.PUT, {
-            ...client,
-            id: client.client_id,
-            parentId: self.selectedClientValue,
-          })
-            .then(() => {
-              self.getClients()
-              self.$message.success(`Client has been Updated`, 5)
-              self.$destroyAll()
-            })
-            .catch((error) => {
-              self.$destroyAll()
-              self.$message.error(
-                `Sorry client not updated, error: ${error.status}`,
-                5
-              )
-            })
-        },
-        cancelText: 'No',
-      })
-    },
-    addNewDevice(device) {
-      this.addingLoading = true
-      request(`${BASE_URL}/api/device`, METHOD.POST, {
-        ...device,
-      })
-        .then(() => {
-          this.getDevicesByClientId(this.selectedClientValue)
-          this.$refs.addDeviceFormRef.resetForm()
-          this.modalAddDeviceVisible = false
-          this.addingLoading = false
-          this.$message.success(`${device.name}, Device has been Adedd`, 5)
-        })
-        .catch((error) => {
-          this.addingLoading = false
-          this.$message.error(
-            `${device.name}, Sorry device not created, error: ${error.status}`,
-            5
-          )
-        })
-    },
-    addNewClient(client) {
-      this.addingLoading = true
-      request(`${BASE_URL}/api/client`, METHOD.POST, {
-        ...client,
-        parentId: this.selectedClientValue,
-      })
-        .then(() => {
-          this.getClients()
-          this.$refs.addClientFormRef.resetForm()
-          this.modalAddClientVisible = false
-          this.addingLoading = false
-          this.$message.success(
-            `${client.commercialName}, Client has been Adedd`,
-            5
-          )
-        })
-        .catch((error) => {
-          this.addingLoading = false
-          this.$message.error(
-            `${client.commercialName}, Sorry client not created, error: ${error.status}`,
-            5
-          )
-        })
     },
     async selectChildClient(client) {
       if (
@@ -1609,12 +1655,10 @@ export default {
     },
     devicesScroll($event) {
       const { offsetHeight, scrollTop, scrollHeight } = $event.target
-      const { devices } = this
       if (offsetHeight + scrollTop === scrollHeight) {
         this.devicesLoaded &&
-          !this.devicesLoading &&
-          this.getDevicesByClientId(this.selectedClientValue, devices.length)
-        console.log('load more devices with skip', devices.length)
+          this.getDevicesByClientId(this.selectedClientValue, this.devices.length)
+        console.log('load more devices with skip', this.devices.length)
       }
     },
   },

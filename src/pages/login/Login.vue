@@ -133,6 +133,7 @@ export default {
           message: 'Welcome',
           data: {
             user: {
+              id: res.data.user_id,
               name: res.data.lastname,
               avatar:
                 'https://gw.alipayobjects.com/zos/rmsportal/cnrhVkzwxjPwAaCfPbdc.png',
