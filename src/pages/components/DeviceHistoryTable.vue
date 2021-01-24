@@ -6,7 +6,12 @@
       :data-source="dataHistory"
       :rowKey="(record) => record.history_id"
       :scroll="tableScroll"
-      :pagination="{ pageSize: 25 }"
+      :pagination="{
+        pageSize: 25,
+        pageSizeOptions: ['25', '50', '100'],
+        showSizeChanger: true,
+        showTotal: (total) => `Total ${total} items`,
+      }"
       size="small"
       class="table-history-device"
     >
@@ -36,6 +41,7 @@
                   @change="
                     (e) => {
                       column.hidden = !e.target.checked
+                      saveToLocal()
                     }
                   "
                 >
@@ -195,8 +201,8 @@ const columnsHistory = [
   },
   {
     title: 'Adresse',
-    width: 120,
-    dataIndex: 'devicehistory_id',
+    width: 280,
+    dataIndex: 'adress',
     hidden: false,
   },
   {
@@ -228,18 +234,36 @@ export default {
       tableScroll: { x: 1100, y: 455 },
     }
   },
-  created() {
-    // this.tableScroll = {
-    //   x: window.innerWidth - 340,
-    //   y: window.innerHeight > 556 ? window.innerHeight - 295 : 455,
-    // }
-  },
+  created() {},
   mounted() {
-    this.tableScroll.y = this.$refs.historyTableWrapper.clientHeight - 94
+    this.tableScroll.y = this.$refs.historyTableWrapper.clientHeight - 85
+    this.getFromLocal()
   },
   methods: {
     formatDate: (date = new Date(), formatDate = 'yyyy-MM-dd') => {
       return format(date, formatDate)
+    },
+    getFromLocal() {
+      const historyColumns = localStorage.getItem('historyColumnsHidden')
+      if (historyColumns && JSON.parse(historyColumns)) {
+        const savedHistoryColumnsHidden = JSON.parse(historyColumns)
+        this.columnsHistory.forEach(
+          (c) =>
+            (c.hidden = savedHistoryColumnsHidden.find(
+              (sc) => sc.title === c.title
+            ).value || false)
+        )
+      }
+    },
+    saveToLocal() {
+      const historyColumnsHidden = this.columnsHistory.map((ch) => ({
+        title: ch.title,
+        value: ch.hidden,
+      }))
+      localStorage.setItem(
+        'historyColumnsHidden',
+        JSON.stringify(historyColumnsHidden)
+      )
     },
   },
 }

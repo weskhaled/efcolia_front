@@ -24,7 +24,7 @@
           />
           <a-spin
             :spinning="!!!treeClientsData.length"
-            style="position: absolute;top: calc(50% - 13px);right: 5px"
+            style="position: absolute; top: calc(50% - 13px); right: 5px"
           >
             <a-icon
               slot="indicator"
@@ -36,11 +36,7 @@
         </div>
         <div class="flex">
           <div
-            v-if="
-              currUser.permissions
-                .find((p) => p.objecttype === 'company')
-                .permission.indexOf('d') !== -1
-            "
+            v-if="checkUserHasPermission(currUser.permissions, 'company', 'd')"
             class="inline flex-auto md:flex-none flex flex-1 justify-center mx-1"
           >
             <a-button
@@ -85,9 +81,16 @@
                           tab = 1
                           showHistoryInMap = false
                           rightCardTabsKey = 'gMaps'
-                          zoomExtends(
-                            devices.filter((d) => d.latitude && d.longitude)
-                          )
+                          checkUserHasPermission(
+                            currUser.permissions,
+                            'map',
+                            'r'
+                          ) &&
+                            zoomExtends(
+                              devices.listDevice.filter(
+                                (d) => d.latitude && d.longitude
+                              )
+                            )
                         }
                       "
                     >
@@ -201,7 +204,9 @@
               class="devices-card overflow-hidden"
             >
               <template slot="title"
-                >{{ (devices.length > 0 && devices.length) || 0 }}
+                >{{
+                  `${devices.listDevice.length || 0} / ${devices.count || 0}`
+                }}
                 {{ $t('devices') }}
                 <a-button
                   v-if="selectedClient"
@@ -222,13 +227,14 @@
                 <a-input-search
                   class="self-center w-48 invisible md:visible"
                   :placeholder="$t('FiltreBoitier')"
-                  v-model="devicesSearch"
+                  allowClear
+                  @search="searchDevice"
                 />
               </a>
               <div>
                 <div
                   class="p-3 overflow-scroll min-h-555 h-content"
-                  style="border-right: 1px solid rgb(226, 232, 240);"
+                  style="border-right: 1px solid rgb(226, 232, 240)"
                   ref="listDevicesRef"
                   v-on:scroll="devicesScroll"
                 >
@@ -248,29 +254,14 @@
                   </a-result>
                   <div
                     v-if="!devicesLoaded && devicesLoading"
-                    class="w-full h-full flex place-content-center content-center"
+                    class="w-full h-full flex place-content-center content-center absolute absolute z-10 bg-white bg-opacity-75"
+                    style="margin: -0.8rem"
                   >
                     <a-spin class="self-center" />
                   </div>
                   <div
                     class="mb-3 device"
-                    v-for="device in devicesSearch === ''
-                      ? devices
-                      : devices.filter(
-                          (d) =>
-                            new RegExp(
-                              `${devicesSearch
-                                .replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')
-                                .toLocaleLowerCase()}`,
-                              'i'
-                            ).test(d.name + ''.toLocaleLowerCase()) ||
-                            new RegExp(
-                              `${devicesSearch
-                                .replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')
-                                .toLocaleLowerCase()}`,
-                              'i'
-                            ).test(d.simcardNumber + ''.toLocaleLowerCase())
-                        )"
+                    v-for="device in filtredDevices"
                     :key="device.id"
                   >
                     <device-card
@@ -311,7 +302,7 @@
               </a>
               <div
                 class="p-3 overflow-scroll min-h-555 h-content"
-                style="border-right: 1px solid rgb(226, 232, 240);"
+                style="border-right: 1px solid rgb(226, 232, 240)"
               >
                 <a-result
                   v-if="
@@ -386,7 +377,7 @@
               <div>
                 <div
                   class="p-0 overflow-auto min-h-555 h-content"
-                  style="border-right: 1px solid rgb(226, 232, 240);"
+                  style="border-right: 1px solid rgb(226, 232, 240)"
                 >
                   <div class="relative w-full h-full">
                     <device-history-table
@@ -415,9 +406,7 @@
                   icon="plus"
                   size="small"
                   v-if="
-                    currUser.permissions
-                      .find((p) => p.objecttype === 'contact')
-                      .permission.indexOf('n') !== -1
+                    checkUserHasPermission(currUser.permissions, 'contact', 'n')
                   "
                   @click="() => (modalAddContactVisible = true)"
                 />
@@ -425,7 +414,7 @@
               <template slot="extra"> </template>
               <div
                 class="p-3 overflow-scroll min-h-555 h-content"
-                style="border-right: 1px solid rgb(226, 232, 240);"
+                style="border-right: 1px solid rgb(226, 232, 240)"
               >
                 <a-result
                   v-if="
@@ -482,7 +471,7 @@
               <template slot="extra"> </template>
               <div
                 class="p-3 overflow-scroll min-h-555 h-content"
-                style="border-right: 1px solid rgb(226, 232, 240);"
+                style="border-right: 1px solid rgb(226, 232, 240)"
               >
                 <a-result
                   v-if="!selectedClient"
@@ -511,7 +500,7 @@
                     :client="client"
                     :selected="
                       clientChildSelected !== null &&
-                        clientChildSelected.client_id === client.client_id
+                      clientChildSelected.client_id === client.client_id
                     "
                     @select="selectChildClient"
                     @delete="(client) => deleteClient(client.client_id)"
@@ -553,7 +542,9 @@
                   rightCardTabsKey = key
                   key === 'gMaps' && tab === 1
                     ? zoomExtends(
-                        devices.filter((d) => d.latitude && d.longitude)
+                        devices.listDevice.filter(
+                          (d) => d.latitude && d.longitude
+                        )
                       )
                     : tab === 3 && zoomExtends(dataHistoryPoints)
                 }
@@ -566,9 +557,15 @@
                 <gmaps-map :options="mapOptions" ref="devicesMap">
                   <template v-if="!showHistoryInMap">
                     <gmaps-popup
-                      v-for="device in devices.filter(
-                        (d) => d.latitude && d.longitude
-                      )"
+                      v-for="device in checkUserHasPermission(
+                        currUser.permissions,
+                        'map',
+                        'r'
+                      )
+                        ? devices.listDevice.filter(
+                            (d) => d.latitude && d.longitude
+                          )
+                        : []"
                       :key="'gmaps-popup-' + device.id"
                       :position="{
                         lat: Number(device.latitude),
@@ -787,7 +784,7 @@
                   <a-result
                     v-if="
                       !clientChildSelectedLoading &&
-                        clientChildSelected === null
+                      clientChildSelected === null
                     "
                     :title="$t('clientChildSelected')"
                   />
@@ -802,7 +799,7 @@
                   <client-infos
                     v-show="
                       clientChildSelected !== null &&
-                        !clientChildSelectedLoading
+                      !clientChildSelectedLoading
                     "
                     ref="clientChildSelectedRef"
                     :client="clientChildSelected"
@@ -817,11 +814,9 @@
     </template>
     <!-- modal add new alert -->
     <a-modal
-      :title="
-        `${$t('addNewAlert')} #${
-          selectedClient ? selectedClient.commercialname : ''
-        }`
-      "
+      :title="`${$t('addNewAlert')} #${
+        selectedClient ? selectedClient.commercialname : ''
+      }`"
       class="add-evice-modal"
       width="65vw"
       :dialog-style="{ top: '20px' }"
@@ -867,11 +862,9 @@
     </a-modal>
     <!-- modal add new contact -->
     <a-modal
-      :title="
-        `${$t('addNewContact')} #${
-          selectedClient ? selectedClient.commercialname : ''
-        }`
-      "
+      :title="`${$t('addNewContact')} #${
+        selectedClient ? selectedClient.commercialname : ''
+      }`"
       class="add-evice-modal"
       width="65vw"
       :dialog-style="{ top: '20px' }"
@@ -917,11 +910,9 @@
     </a-modal>
     <!-- modal add new device -->
     <a-modal
-      :title="
-        `${device ? $t('updateDevice') : $t('addNewDevice')} #${
-          selectedClient ? selectedClient.commercialname : ''
-        }`
-      "
+      :title="`${device ? $t('updateDevice') : $t('addNewDevice')} #${
+        selectedClient ? selectedClient.commercialname : ''
+      }`"
       class="add-evice-modal"
       width="65vw"
       :dialog-style="{ top: '20px' }"
@@ -971,11 +962,9 @@
     </a-modal>
     <!-- modal add new client -->
     <a-modal
-      :title="
-        `${$t('addNewClient')} #${
-          selectedClient ? selectedClient.commercialname : ''
-        }`
-      "
+      :title="`${$t('addNewClient')} #${
+        selectedClient ? selectedClient.commercialname : ''
+      }`"
       class="add-evice-modal"
       width="65vw"
       :dialog-style="{ top: '20px' }"
@@ -1067,6 +1056,11 @@ const iconFinish = {
   fillOpacity: 0.8,
   scale: 1,
 }
+const checkUserHasPermission = (permissions, objectType, permission) =>
+  permissions.find((p) => p.objecttype === objectType) &&
+  permissions
+    .find((p) => p.objecttype === objectType)
+    .permission?.indexOf(permission) !== -1
 
 export default {
   name: 'Cartographie',
@@ -1100,7 +1094,10 @@ export default {
       clientChildSelectedLoading: true,
       treeClientsData: [],
       clientChildsData: [],
-      devices: [],
+      devices: {
+        count: 0,
+        listDevice: [],
+      },
       device: null,
       devicesSearch: '',
       contacts: [],
@@ -1168,6 +1165,35 @@ export default {
   computed: {
     ...mapState('account', { currUser: 'user' }),
     ...mapState('setting', ['lang']),
+    filtredDevices: {
+      // getter
+      get: function () {
+        return this.devicesSearch === ''
+          ? this.devices.listDevice
+          : this.devices.listDevice.filter(
+              (d) =>
+                new RegExp(
+                  `${this.devicesSearch
+                    .replace(/[-\\^$*+?.()|[\]{}]/g, '\\$&')
+                    .toLocaleLowerCase()}`,
+                  'i'
+                ).test(d.name + ''.toLocaleLowerCase()) ||
+                new RegExp(
+                  `${this.devicesSearch
+                    .replace(/[-\\^$*+?.()|[\]{}]/g, '\\$&')
+                    .toLocaleLowerCase()}`,
+                  'i'
+                ).test(d.simcardNumber + ''.toLocaleLowerCase())
+            )
+      },
+      // setter
+      set: function (newValue) {
+        const uniqDevices = newValue.filter(
+          (d) => !this.devices.listDevice.find((cd) => cd.id === d.id)
+        )
+        newValue.length && this.devices.listDevice.push(...uniqDevices)
+      },
+    },
   },
   created() {
     this.getClients()
@@ -1177,6 +1203,7 @@ export default {
       return format(date, formatDate)
     },
     moment,
+    checkUserHasPermission,
     getClients() {
       this.loading = true
       this.treeClientsData = []
@@ -1190,7 +1217,7 @@ export default {
     },
     selecteDevice(device) {
       device.selected = !device.selected
-      this.devices
+      this.devices.listDevice
         .filter((d) => d.id !== device.id)
         .forEach((d) => (d.selected = false))
       if (device.selected) {
@@ -1203,8 +1230,11 @@ export default {
       } else {
         this.selectedDevice = null
       }
-      if (this.devices.every((d) => !d.selected)) {
-        this.zoomExtends(this.devices.filter((d) => d.latitude && d.longitude))
+      if (this.devices.listDevice.every((d) => !d.selected)) {
+        checkUserHasPermission(this.currUser.permissions, 'map', 'r') &&
+          this.zoomExtends(
+            this.devices.listDevice.filter((d) => d.latitude && d.longitude)
+          )
       }
     },
     selectClient(client_id) {
@@ -1231,7 +1261,7 @@ export default {
       )
     },
     getDevicesByClientId(clientId, skip = 0) {
-      skip === 0 && (this.devices = [])
+      skip === 0 && (this.devices = { count: 0, listDevice: [] })
       this.devicesLoaded = false
       this.devicesLoading = true
       request(
@@ -1240,19 +1270,21 @@ export default {
       ).then((res) => {
         // just for check if exisit
         const { data } = res
-        const uniqDevices = data.filter(
-          (d) => !this.devices.find((cd) => cd.id === d.id)
-        )
-        this.devices.push(...uniqDevices)
-        // this.devices.push(...data)
-        this.$refs.listDevicesRef.scrollTop = this.$refs.listDevicesRef.scrollTop - 1
+        skip === 0 && (this.devices.count = data.count)
+        skip === 0
+          ? (this.devices.listDevice = data.listDevice)
+          : this.devices.listDevice.push(...data.listDevice)
+        this.$refs.listDevicesRef &&
+          (this.$refs.listDevicesRef.scrollTop =
+            this.$refs.listDevicesRef.scrollTop - 1)
         this.devicesLoaded = true
         this.devicesLoading = false
         if (this.tab === 1) {
           this.showHistoryInMap = false
-          this.zoomExtends(
-            this.devices.filter((d) => d.latitude && d.longitude)
-          )
+          checkUserHasPermission(this.currUser.permissions, 'map', 'r') &&
+            this.zoomExtends(
+              this.devices.listDevice.filter((d) => d.latitude && d.longitude)
+            )
         }
       })
     },
@@ -1425,7 +1457,7 @@ export default {
         }
       })
       this.selectedDevice = device
-      this.devices.forEach((d) => (d.selected = false))
+      this.devices.listDevice.forEach((d) => (d.selected = false))
       this.tab = 3
     },
     zoomExtends(points) {
@@ -1658,12 +1690,44 @@ export default {
       const { offsetHeight, scrollTop, scrollHeight } = $event.target
       if (offsetHeight + scrollTop === scrollHeight) {
         this.devicesLoaded &&
+          this.devices.listDevice.length < this.devices.count &&
+          this.devicesSearch === '' &&
           this.getDevicesByClientId(
             this.selectedClientValue,
-            this.devices.length
+            this.devices.listDevice.length || 0
           )
-        // $event.target.scrollTop = $event.target.scrollTop - 10
-        console.log('load more devices with skip', this.devices.length)
+      }
+    },
+    async searchDevice(value) {
+      !value.length && (this.devicesSearch = '')
+      value.length > 4 && (this.devicesSearch = value)
+      const localFindedDevices = this.devices.listDevice.filter(
+        (d) =>
+          new RegExp(
+            `${this.devicesSearch
+              .replace(/[-\\^$*+?.()|[\]{}]/g, '\\$&')
+              .toLocaleLowerCase()}`,
+            'i'
+          ).test(d.name + ''.toLocaleLowerCase()) ||
+          new RegExp(
+            `${this.devicesSearch
+              .replace(/[-\\^$*+?.()|[\]{}]/g, '\\$&')
+              .toLocaleLowerCase()}`,
+            'i'
+          ).test(d.simcardNumber + ''.toLocaleLowerCase())
+      )
+      if (!localFindedDevices.length) {
+        this.devicesLoaded = false
+        this.devicesLoading = true
+        const { data } = await request(
+          `${BASE_URL}/api/device/byClientId/${this.selectedClientValue}/${value}`,
+          METHOD.GET
+        ).then((res) => res)
+        if (data.length) {
+          this.filtredDevices = data
+        }
+        this.devicesLoaded = true
+        this.devicesLoading = false
       }
     },
   },

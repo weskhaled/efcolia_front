@@ -284,7 +284,7 @@ export default {
   methods: {
     selectDeviceType(deviceTypeId) {
       request(`${BASE_URL}/api/deviceSubType/${deviceTypeId}`, METHOD.GET).then(
-        (res) => (this.deviceSubTypes = res.data)
+        (res) => (this.deviceSubTypes = res.data || [])
       )
     },
     onSubmit() {

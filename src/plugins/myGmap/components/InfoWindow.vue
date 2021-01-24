@@ -19,7 +19,7 @@ export default {
     options: {
       deep: true,
       handler() {
-        this.marker.setOptions(this.options)
+        this.marker && this.marker.setOptions(this.options)
       }
     }
   },
