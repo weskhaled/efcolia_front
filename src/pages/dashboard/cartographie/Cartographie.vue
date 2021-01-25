@@ -371,7 +371,7 @@
                     ),
                   ]"
                   :disabled="dataHistoryLoading"
-                  @change="dataHistoryDateChange"
+                  @ok="dataHistoryDateChange"
                 />
               </template>
               <div>
@@ -719,6 +719,12 @@
                   >
                   </fusioncharts>
                 </div>
+                <!-- <div
+                  v-else
+                  class="w-full h-full flex justify-center content-center"
+                >
+                  <h2 class="self-center">No History Founded</h2>
+                </div> -->
               </div>
             </a-card>
             <!-- tab gmaps-map 
@@ -1159,7 +1165,37 @@ export default {
       width: '100%',
       height: '550',
       dataFormat: 'json',
-      dataSource: {},
+      dataSource: {
+        chart: {
+          caption: 'Temperature1 et Speed',
+          subCaption: `${new Date().toLocaleString('fr-fr', {
+            month: 'long',
+            year: 'numeric',
+            day: 'numeric',
+          })} to ${new Date().toLocaleString('fr-fr', {
+            month: 'long',
+            year: 'numeric',
+            day: 'numeric',
+          })}`,
+          xAxisname: 'Month',
+          pYAxisName: 'Temperature',
+          sYAxisName: 'Speed K/H',
+          numberPrefix: '',
+          sNumberSuffix: '',
+          sYAxisMaxValue: '50',
+          showValues: '1',
+          numVisiblePlot: '12',
+          flatScrollBars: '1',
+          scrollheight: '10',
+          theme: 'fusion',
+        },
+        categories: [
+          {
+            category: [{ label: '00 h' }, { label: '23 h' }],
+          },
+        ],
+        dataset: [],
+      },
     }
   },
   computed: {
@@ -1224,8 +1260,10 @@ export default {
         if (device.latitude && device.longitude) {
           this.selectedDevice = device
           this.mapOptions.zoom = 20
-          this.mapOptions.center.lat = device.latitude
-          this.mapOptions.center.lng = device.longitude
+          if (checkUserHasPermission(this.currUser.permissions, 'map', 'r')) {
+            this.mapOptions.center.lat = device.latitude
+            this.mapOptions.center.lng = device.longitude
+          }
         }
       } else {
         this.selectedDevice = null
@@ -1273,7 +1311,11 @@ export default {
         skip === 0 && (this.devices.count = data.count)
         skip === 0
           ? (this.devices.listDevice = data.listDevice)
-          : this.devices.listDevice.push(...data.listDevice)
+          : this.devices.listDevice.push(
+              ...data.listDevice.filter(
+                (d) => !this.devices.listDevice.find((cd) => cd.id === d.id)
+              )
+            )
         this.$refs.listDevicesRef &&
           (this.$refs.listDevicesRef.scrollTop =
             this.$refs.listDevicesRef.scrollTop - 1)
@@ -1402,35 +1444,22 @@ export default {
           }
         }
         this.zoomExtends(this.dataHistoryPoints)
-        this.dataSource = {
-          chart: {
-            caption: 'Temperature1 et Speed',
-            subCaption: `${new Date(
-              filter.from && filter.from ? filter.from : new Date()
-            ).toLocaleString('fr-fr', {
-              month: 'long',
-              year: 'numeric',
-              day: 'numeric',
-            })} to ${new Date(
-              filter.from && filter.from ? filter.to : new Date()
-            ).toLocaleString('fr-fr', {
-              month: 'long',
-              year: 'numeric',
-              day: 'numeric',
-            })}`,
-            xAxisname: 'Month',
-            pYAxisName: 'Temperature',
-            sYAxisName: 'Speed K/H',
-            numberPrefix: '',
-            sNumberSuffix: '',
-            sYAxisMaxValue: '50',
-            showValues: '1',
-            numVisiblePlot: '12',
-            flatScrollBars: '1',
-            scrollheight: '10',
-            theme: 'fusion',
-          },
-          categories: [
+        if (this.dataHistory.length > 0) {
+          const data = Object.assign({}, this.dataSource) //clones data
+          data.chart.subCaption = `${new Date(
+            filter.from ? filter.from : new Date()
+          ).toLocaleString('fr-fr', {
+            month: 'long',
+            year: 'numeric',
+            day: 'numeric',
+          })} to ${new Date(
+            filter.from ? filter.to : new Date()
+          ).toLocaleString('fr-fr', {
+            month: 'long',
+            year: 'numeric',
+            day: 'numeric',
+          })}`
+          data.categories = [
             {
               category: this.dataHistory.map((hd) => ({
                 label: new Date(hd.localizationdate).toLocaleString('fr-fr', {
@@ -1438,13 +1467,15 @@ export default {
                 }),
               })),
             },
-          ],
-          dataset: [
+          ]
+          data.dataset = [
             {
               seriesName: 'Temperature1',
               renderAs: 'area',
               showValues: '0',
-              data: this.dataHistory.map((hd) => ({ value: hd.temperature1 })),
+              data: this.dataHistory.map((hd) => ({
+                value: hd.temperature1,
+              })),
             },
             {
               seriesName: 'Speed',
@@ -1453,7 +1484,17 @@ export default {
               showValues: '0',
               data: this.dataHistory.map((hd) => ({ value: hd.speed })),
             },
-          ],
+            {
+              seriesName: 'Battery level',
+              parentYAxis: 'S',
+              renderAs: 'line',
+              showValues: '0',
+              data: this.dataHistory.map((hd) => ({ value: hd.batterylevel })),
+            },
+          ]
+          this.dataSource = data
+        } else {
+          this.dataSource.dataset = []
         }
       })
       this.selectedDevice = device
@@ -1700,7 +1741,7 @@ export default {
     },
     async searchDevice(value) {
       !value.length && (this.devicesSearch = '')
-      value.length > 4 && (this.devicesSearch = value)
+      value.length > 3 && (this.devicesSearch = value)
       const localFindedDevices = this.devices.listDevice.filter(
         (d) =>
           new RegExp(
@@ -1716,19 +1757,18 @@ export default {
             'i'
           ).test(d.simcardNumber + ''.toLocaleLowerCase())
       )
-      if (!localFindedDevices.length) {
-        this.devicesLoaded = false
-        this.devicesLoading = true
-        const { data } = await request(
-          `${BASE_URL}/api/device/byClientId/${this.selectedClientValue}/${value}`,
-          METHOD.GET
-        ).then((res) => res)
-        if (data.length) {
-          this.filtredDevices = data
-        }
-        this.devicesLoaded = true
-        this.devicesLoading = false
+
+      this.devicesLoaded = false
+      this.devicesLoading = true
+      const { data } = await request(
+        `${BASE_URL}/api/device/byClientId/${this.selectedClientValue}/${value}`,
+        METHOD.GET
+      ).then((res) => res)
+      if (data.length && data.length > localFindedDevices.length) {
+        this.filtredDevices = data
       }
+      this.devicesLoaded = true
+      this.devicesLoading = false
     },
   },
 }
