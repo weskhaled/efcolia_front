@@ -690,11 +690,11 @@
                     >
                       <div>
                         <div class="mb-1">
-                          <span class="font-medium">Raport Time: </span>
+                          <span class="font-medium">Raport Time:</span>
                           <span>{{ historyPoint.appdate }}</span>
                         </div>
                         <div class="mb-1">
-                          <span class="font-medium">Adress: </span>
+                          <span class="font-medium">Adresse: </span>
                           <span
                             >{{ historyPoint.latitude }},
                             {{ historyPoint.longitude }}</span
@@ -845,10 +845,13 @@
             }
           "
         >
-          Cancel
+        {{$t('Cancel')}}
+
+          
         </a-button>
         <a-button key="back" @click="() => $refs.addAlertFormRef.resetForm()">
-          Reset
+                 {{$t('Reset')}}
+ 
         </a-button>
         <a-button
           key="submit"
@@ -856,7 +859,9 @@
           :loading="addingLoading"
           @click="() => $refs.addAlertFormRef.onSubmit()"
         >
-          Submit
+        {{$t('Submit')}}
+
+          
         </a-button>
       </template>
       <add-alert-form
@@ -893,10 +898,14 @@
             }
           "
         >
-          Cancel
+        {{$t('Cancel')}}
+
+          
         </a-button>
         <a-button key="back" @click="() => $refs.addContactFormRef.resetForm()">
-          Reset
+          {{$t('Reset')}}
+
+          
         </a-button>
         <a-button
           key="submit"
@@ -904,7 +913,9 @@
           :loading="addingLoading"
           @click="() => $refs.addContactFormRef.onSubmit()"
         >
-          Submit
+        {{$t('Submit')}}
+
+          
         </a-button>
       </template>
       <add-contact-form
@@ -943,10 +954,13 @@
             }
           "
         >
-          Cancel
+        {{$t('Cancel')}}
+
+          
         </a-button>
         <a-button key="back" @click="() => $refs.addDeviceFormRef.resetForm()">
-          Reset
+                 {{$t('Reset')}}
+ 
         </a-button>
         <a-button
           key="submit"
@@ -954,7 +968,8 @@
           :loading="addingLoading"
           @click="() => $refs.addDeviceFormRef.onSubmit()"
         >
-          Submit
+                         {{$t('Submit')}}
+
         </a-button>
       </template>
       <add-device-form
@@ -993,10 +1008,14 @@
             }
           "
         >
-          Cancel
+        {{$t('Cancel')}}
+
+          
         </a-button>
         <a-button key="back" @click="() => $refs.addClientFormRef.resetForm()">
-          Reset
+          {{$t('Reset')}}
+
+          
         </a-button>
         <a-button
           key="submit"
@@ -1004,7 +1023,9 @@
           :loading="addingLoading"
           @click="() => $refs.addClientFormRef.onSubmit()"
         >
-          Submit
+        {{$t('Submit')}}
+
+          
         </a-button>
       </template>
       <add-client-form
