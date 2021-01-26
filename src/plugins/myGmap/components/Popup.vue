@@ -16,7 +16,7 @@ export default {
   inject: ['getMap', 'handleError'],
   props: {
     background: { type: String, default: '#EEEEEE' },
-    width: { type: String, default: '200px' },
+    width: { type: String, default: 'none' },
     height: { type: String, default: '60px' },
     position: { type: Object, required: true },
     zIndex: { type: Number, default: 1 },

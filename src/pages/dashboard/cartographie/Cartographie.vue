@@ -574,14 +574,14 @@
                       :background="
                         device.selected
                           ? 'rgb(255 255 255 / 100%)'
-                          : 'rgb(0 0 0 / 25%)'
+                          : 'rgb(0 0 0 / 45%)'
                       "
                       :zIndex="device.selected ? 2 : 1"
                     >
                       <div :style="{ opacity: device.selected ? 1 : 0.25 }">
-                        <a-button
-                          class="self-center"
-                          :type="
+                        <button
+                          class="w-full p-1 flex items-center justify-center rounded-sm text-white focus:outline-none text-base"
+                          :class="[
                             formatDate(new Date(), 'dd') -
                               formatDate(new Date(), 'dd') <
                               1 &&
@@ -596,11 +596,11 @@
                                 'HH'
                               ) <
                               8
-                              ? 'primary'
-                              : 'danger'
-                          "
+                              ? 'bg-blue-600'
+                              : 'bg-red-600',
+                          ]"
                           @click="clickOnMapPin($event, device)"
-                          >{{ device.name }}</a-button
+                          >{{ device.name }}</button
                         >
                       </div>
                     </gmaps-popup>
@@ -1316,9 +1316,6 @@ export default {
                 (d) => !this.devices.listDevice.find((cd) => cd.id === d.id)
               )
             )
-        this.$refs.listDevicesRef &&
-          (this.$refs.listDevicesRef.scrollTop =
-            this.$refs.listDevicesRef.scrollTop - 1)
         this.devicesLoaded = true
         this.devicesLoading = false
         if (this.tab === 1) {
@@ -1729,7 +1726,7 @@ export default {
     },
     devicesScroll($event) {
       const { offsetHeight, scrollTop, scrollHeight } = $event.target
-      if (offsetHeight + scrollTop === scrollHeight) {
+      if (scrollHeight - (offsetHeight + scrollTop) < 50) {
         this.devicesLoaded &&
           this.devices.listDevice.length < this.devices.count &&
           this.devicesSearch === '' &&
