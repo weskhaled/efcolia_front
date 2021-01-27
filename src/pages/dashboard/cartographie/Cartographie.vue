@@ -233,7 +233,7 @@
               </a>
               <div>
                 <div
-                  class="p-3 overflow-scroll min-h-555 h-content"
+                  class="p-3 overflow-y-auto min-h-555 h-content"
                   style="border-right: 1px solid rgb(226, 232, 240)"
                   ref="listDevicesRef"
                   v-on:scroll="devicesScroll"
