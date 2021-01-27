@@ -145,9 +145,8 @@ export default {
                 'https://gw.alipayobjects.com/zos/rmsportal/cnrhVkzwxjPwAaCfPbdc.png',
               address: '@CITY',
               position: {
-                CN: '前端工程师 | 蚂蚁金服-计算服务事业群-VUE平台',
-                FR: 'welcome',
-                US: 'welcome',
+                FR: 'Bienvenu',
+                US: 'Welcome',
               },
               permissions: res.data.permissions,
             },
