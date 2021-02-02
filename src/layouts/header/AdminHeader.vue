@@ -1,5 +1,5 @@
 <template>
-  <a-layout-header :class="[headerTheme, 'admin-header']">
+  <a-layout-header :class="[headerTheme, 'admin-header print:hidden']">
     <div class="px-1 md:px-4" :class="['admin-header-wide', layout, pageWidth]">
       <router-link
         v-if="isMobile || layout === 'head'"

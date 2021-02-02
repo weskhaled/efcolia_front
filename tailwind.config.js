@@ -9,7 +9,7 @@ module.exports = {
           sky: '#0af',
         },
       },
-      height : {
+      height: {
         content: 'calc(100vh - 200px);'
       },
       minHeight: {
@@ -19,7 +19,7 @@ module.exports = {
         '3/4': '75%',
         'full': '100%',
         '555': '555px'
-       },
+      },
       maxHeight: {
         '0': '0',
         '1/4': '25%',
@@ -32,6 +32,9 @@ module.exports = {
         maxHeight: 'max-height',
         spacing: 'margin, padding',
       },
+      screens: {
+        'print': { 'raw': 'print' },
+      }
     },
   },
 }

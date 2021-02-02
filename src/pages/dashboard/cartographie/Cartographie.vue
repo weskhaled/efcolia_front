@@ -62,7 +62,7 @@
     </template>
     <template>
       <div class="md:flex sm:block">
-        <div class="w-full sm:w-full md:w-10 lg:w-12 overflow-hidden">
+        <div class="w-full sm:w-full md:w-10 lg:w-12 overflow-hidden print:hidden">
           <a-card :title="false" :bordered="false" :body-style="{ padding: 0 }">
             <div class="px-0 left-tab overflow-hidden">
               <div class="flex md:block md:divide-y divide-gray-300">
@@ -188,6 +188,7 @@
         </div>
         <!-- left card tabs -->
         <div
+          class="print:hidden"
           :class="
             tab === 3
               ? 'w-full sm:w-full md:w-3/6 lg:w-3/6 xl:w-3/6'
@@ -342,7 +343,18 @@
               :body-style="{ padding: '0px', overflowY: 'auto' }"
             >
               <template slot="title"
-                >{{ selectedDevice.name + ' ' + $t('deviceHistory') }}
+                ><span class="mr-1">
+                  {{ $t('deviceHistory') }}
+                </span>
+                <a-button
+                  type="primary"
+                  icon="download"
+                  size="small"
+                  @click="toXLSX"
+                  :disabled="!!!dataHistory.length"
+                >
+                  XLSX
+                </a-button>
               </template>
               <template slot="extra">
                 <a-range-picker
@@ -512,6 +524,7 @@
         </div>
         <!-- right card tabs -->
         <div
+          class="print:w-screen"
           :class="
             tab === 3
               ? 'w-full sm:w-full md:w-3/6 lg:w-3/6 xl:w-3/6 md:min-w-xl'
@@ -552,8 +565,16 @@
             >
               <div
                 v-if="rightCardTabsKey === 'gMaps'"
-                class="min-h-555 h-content bg-gray-200"
+                class="min-h-555 h-content bg-gray-200 relative"
               >
+                <div
+                  v-if="
+                    !checkUserHasPermission(currUser.permissions, 'map', 'r')
+                  "
+                  class="w-full h-full bg-white flex justify-center content-center items-center absolute z-40"
+                >
+                  <h3 class="text-center">You don't have permission for map</h3>
+                </div>
                 <gmaps-map :options="mapOptions" ref="devicesMap">
                   <template v-if="!showHistoryInMap">
                     <gmaps-popup
@@ -845,13 +866,10 @@
             }
           "
         >
-        {{$t('Cancel')}}
-
-          
+          {{ $t('Cancel') }}
         </a-button>
         <a-button key="back" @click="() => $refs.addAlertFormRef.resetForm()">
-                 {{$t('Reset')}}
- 
+          {{ $t('Reset') }}
         </a-button>
         <a-button
           key="submit"
@@ -859,9 +877,7 @@
           :loading="addingLoading"
           @click="() => $refs.addAlertFormRef.onSubmit()"
         >
-        {{$t('Submit')}}
-
-          
+          {{ $t('Submit') }}
         </a-button>
       </template>
       <add-alert-form
@@ -898,14 +914,10 @@
             }
           "
         >
-        {{$t('Cancel')}}
-
-          
+          {{ $t('Cancel') }}
         </a-button>
         <a-button key="back" @click="() => $refs.addContactFormRef.resetForm()">
-          {{$t('Reset')}}
-
-          
+          {{ $t('Reset') }}
         </a-button>
         <a-button
           key="submit"
@@ -913,9 +925,7 @@
           :loading="addingLoading"
           @click="() => $refs.addContactFormRef.onSubmit()"
         >
-        {{$t('Submit')}}
-
-          
+          {{ $t('Submit') }}
         </a-button>
       </template>
       <add-contact-form
@@ -954,13 +964,10 @@
             }
           "
         >
-        {{$t('Cancel')}}
-
-          
+          {{ $t('Cancel') }}
         </a-button>
         <a-button key="back" @click="() => $refs.addDeviceFormRef.resetForm()">
-                 {{$t('Reset')}}
- 
+          {{ $t('Reset') }}
         </a-button>
         <a-button
           key="submit"
@@ -968,8 +975,7 @@
           :loading="addingLoading"
           @click="() => $refs.addDeviceFormRef.onSubmit()"
         >
-                         {{$t('Submit')}}
-
+          {{ $t('Submit') }}
         </a-button>
       </template>
       <add-device-form
@@ -1008,14 +1014,10 @@
             }
           "
         >
-        {{$t('Cancel')}}
-
-          
+          {{ $t('Cancel') }}
         </a-button>
         <a-button key="back" @click="() => $refs.addClientFormRef.resetForm()">
-          {{$t('Reset')}}
-
-          
+          {{ $t('Reset') }}
         </a-button>
         <a-button
           key="submit"
@@ -1023,9 +1025,7 @@
           :loading="addingLoading"
           @click="() => $refs.addClientFormRef.onSubmit()"
         >
-        {{$t('Submit')}}
-
-          
+          {{ $t('Submit') }}
         </a-button>
       </template>
       <add-client-form
@@ -1064,6 +1064,8 @@ import {
   AddAlertForm,
   AddContactForm,
 } from '../../components'
+import xlsx from 'xlsx'
+
 const BASE_URL = process.env.VUE_APP_API_BASE_URL
 const iconStart = {
   path: 'M 0, 0 m -5, 0 a 5,5 0 1,0 10,0 a 5,5 0 1,0 -10,0',
@@ -1787,6 +1789,16 @@ export default {
       }
       this.devicesLoaded = true
       this.devicesLoading = false
+    },
+    async toXLSX() {
+      const data = this.dataHistory
+      /* make the worksheet */
+      const ws = xlsx.utils.json_to_sheet(data)
+      /* add to workbook */
+      const wb = xlsx.utils.book_new()
+      xlsx.utils.book_append_sheet(wb, ws, 'DeviceHistory')
+      /* generate an XLSX file */
+      xlsx.writeFile(wb, `deviceHistory.xlsx`)
     },
   },
 }

@@ -24,16 +24,16 @@
       "
       class="virtual-side"
     ></div>
-    <drawer v-if="!hideSetting" v-model="showSetting" placement="right">
+    <drawer v-if="!hideSetting" v-model="showSetting" placement="right" class="print:hidden">
       <div class="setting" slot="handler">
         <a-icon :type="showSetting ? 'close' : 'setting'" />
       </div>
       <setting />
     </drawer>
     <a-layout class="admin-layout-main beauty-scroll">
-      <admin-header :class="[{'fixed-tabs': fixedTabs, 'fixed-header': fixedHeader, 'multi-page': multiPage}]" :style="headerStyle" :menuData="headMenuData" :collapsed="collapsed" @toggleCollapse="toggleCollapse"/>
+      <admin-header class="print:hidden" :class="[{'fixed-tabs': fixedTabs, 'fixed-header': fixedHeader, 'multi-page': multiPage}]" :style="headerStyle" :menuData="headMenuData" :collapsed="collapsed" @toggleCollapse="toggleCollapse"/>
       <a-layout-header :class="['virtual-header', {'fixed-tabs' : fixedTabs, 'fixed-header': fixedHeader, 'multi-page': multiPage}]" v-show="fixedHeader"></a-layout-header>
-      <a-layout-content class="admin-layout-content">
+      <a-layout-content class="admin-layout-content print:p-0">
         <div :style="`min-height: ${minHeight}px; position: relative`">
           <slot></slot>
         </div>

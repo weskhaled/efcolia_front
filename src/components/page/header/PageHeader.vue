@@ -1,5 +1,5 @@
 <template>
-  <div :class="['page-header', layout, pageWidth]">
+  <div :class="['page-header print:hidden', layout, pageWidth]">
     <div class="page-header-wide">
       <div class="detail">
         <div class="main">
