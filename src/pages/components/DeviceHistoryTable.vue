@@ -251,14 +251,17 @@ export default {
           (c) =>
             (c.hidden = savedHistoryColumnsHidden.find(
               (sc) => sc.title === c.title
-            ).value || false)
+            ).value)
         )
+      } else {
+        this.saveToLocal()
       }
     },
     saveToLocal() {
-      const historyColumnsHidden = this.columnsHistory.map((ch) => ({
+      const historyColumnsHidden = this.columnsHistory.filter(c => c.key !== 'action').map((ch) => ({
         title: ch.title,
         value: ch.hidden,
+        dataIndex: ch.dataIndex
       }))
       localStorage.setItem(
         'historyColumnsHidden',
