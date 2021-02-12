@@ -500,6 +500,15 @@
               }
               "
             >
+              <a-button
+                slot="tabBarExtraContent"
+                type="primary"
+                class="print:hidden"
+                icon="printer"
+                size="small"
+                @click="printMap"
+                :disabled="!checkUserHasPermission(currUser.permissions, 'map', 'r')"
+              >Imprimer</a-button>
               <div
                 v-if="rightCardTabsKey === 'gMaps'"
                 class="min-h-555 h-content bg-gray-200 relative"
@@ -536,7 +545,7 @@
                       "
                       :zIndex="device.selected ? 2 : 1"
                     >
-                      <div :style="{ opacity: device.selected ? 1 : 0.25 }">
+                      <div :class="[device.selected ? 'opacity-100' : 'opacity-25', 'print:opacity-100']">
                         <button
                           class="w-full p-1 flex items-center justify-center rounded-sm text-white focus:outline-none text-base"
                           :class="[
@@ -1711,6 +1720,9 @@ export default {
         xlsx.writeFile(wb, `deviceHistory.xlsx`)
       }
     },
+    printMap() {
+      window.print()
+    }
   },
 }
 </script>

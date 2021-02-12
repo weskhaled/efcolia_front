@@ -21,9 +21,9 @@ const resp401 = {
    * @param options 应用配置 包含: {router, i18n, store, message}
    * @returns {Promise<never>}
    */
-  onRejected(error, options) {
-    const {message} = options
-    message.error(error.message)
+  onRejected(error) {
+    // const {message} = options
+    // message.error(error.message)
     return Promise.reject(error)
   }
 }

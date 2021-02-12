@@ -7,11 +7,7 @@
     </div>
     <div class="login">
       <a-form @submit="onSubmit" :form="form">
-        <a-tabs
-          size="large"
-          :tabBarStyle="{ textAlign: 'center' }"
-          style="padding: 0 2px;"
-        >
+        <a-tabs size="large" :tabBarStyle="{ textAlign: 'center' }" style="padding: 0 2px;">
           <a-tab-pane tab="Login" key="1">
             <a-alert
               type="error"
@@ -73,8 +69,7 @@
             size="large"
             htmlType="submit"
             type="primary"
-            >log in</a-button
-          >
+          >log in</a-button>
         </a-form-item>
       </a-form>
     </div>
@@ -116,7 +111,9 @@ export default {
           login(name, password)
             .then(this.afterLogin)
             .catch((error) => {
-              console.error(error)
+              if (error.response.status === 401) {
+                this.$message.error('userName or password invalid')
+              }
               this.logging = false
             })
         }
@@ -197,7 +194,7 @@ export default {
       .title {
         font-size: 33px;
         color: @title-color;
-        font-family: 'Myriad Pro', 'Helvetica Neue', Arial, Helvetica,
+        font-family: "Myriad Pro", "Helvetica Neue", Arial, Helvetica,
           sans-serif;
         font-weight: 600;
         position: relative;
