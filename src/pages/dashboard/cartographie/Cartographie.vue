@@ -1033,6 +1033,7 @@ export default {
         count: 0,
         listDevice: [],
       },
+      devicesInterval: null,
       device: null,
       devicesSearch: '',
       contacts: [],
@@ -1163,6 +1164,9 @@ export default {
   created() {
     this.getClients()
   },
+  beforeDestroy() {
+    clearInterval(this.devicesInterval)
+  },
   methods: {
     formatDate: (date = new Date(), formatDate = 'yyyy-MM-dd') => {
       return format(date, formatDate)
@@ -1207,7 +1211,14 @@ export default {
     selectClient(client_id) {
       // this.selectedClient = this.treeClientsData.find((c) => c.id === client_id)
       this.selectedClientValue = client_id
-
+      const getFreshDevice = (client_id) => {
+        request(`${BASE_URL}/api/device/synchro/${client_id}`, METHOD.GET).then((res) => {
+          const { data } = res
+          data.forEach(nd => this.devices.listDevice = this.devices.listDevice.map(d => d.id === nd.id ? nd : d))
+        })
+      }
+      clearInterval(this.devicesInterval)
+      this.devicesInterval = setInterval(() => getFreshDevice(client_id), 60000);
       this.getDevicesByClientId(client_id)
       this.getAlertByClientId(client_id)
       this.getContactsByClientId(client_id)
@@ -1333,6 +1344,7 @@ export default {
         )
     },
     historyDevice(device, filter = { from: null, to: null }) {
+      console.log(filter)
       this.dataHistory = []
       this.historyPoints = []
       this.dataHistoryLoading = true
@@ -1609,8 +1621,8 @@ export default {
     },
     dataHistoryDateChange(dates) {
       this.historyDevice(this.selectedDevice, {
-        from: dates[0].format('YYYY-MM-DD'),
-        to: dates[1].format('YYYY-MM-DD'),
+        from: dates[0].format('YYYY-MM-DD HH:mm:ss'),
+        to: dates[1].format('YYYY-MM-DD HH:mm:ss'),
       })
     },
     addNewAlert(alert) {

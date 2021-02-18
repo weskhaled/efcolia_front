@@ -251,7 +251,7 @@ export default {
           (c) =>
             (c.hidden = savedHistoryColumnsHidden.find(
               (sc) => sc.title === c.title
-            ).value)
+            )?.value)
         )
       } else {
         this.saveToLocal()
