@@ -34,8 +34,7 @@ export default {
     padding: 32px 0;
     flex: 1;
     @media (min-width: 768px){
-
-      padding: 112px 0 24px;
+      padding: 45px 0 24px;
     }
   }
 }

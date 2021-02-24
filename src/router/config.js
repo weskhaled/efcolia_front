@@ -12,6 +12,11 @@ const options = {
       component: () => import('@/pages/login')
     },
     {
+      path: '/reset',
+      name: 'resetPasswordPage',
+      component: () => import('@/pages/resetPassword')
+    },
+    {
       path: '*',
       name: '404',
       component: () => import('@/pages/exception/404'),

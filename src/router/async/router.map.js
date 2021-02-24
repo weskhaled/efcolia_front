@@ -12,9 +12,13 @@ const routerMap = {
     path: '/login',
     component: () => import('@/pages/login'),
   },
+  resetPassword: {
+    authority: '*',
+    path: '/reset-password',
+    component: () => import('@/pages/resetPassword'),
+  },
   root: {
     path: '/',
-    name: '首页',
     redirect: '/login',
     component: view.tabs,
   },

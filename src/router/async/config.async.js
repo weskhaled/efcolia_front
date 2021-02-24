@@ -4,6 +4,7 @@ import { parseRoutes } from '@/utils/routerUtil'
 // 异步路由配置
 const routesConfig = [
   'login',
+  'resetPassword',
   'root',
   {
     router: 'exp404',

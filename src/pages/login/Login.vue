@@ -1,22 +1,28 @@
 <template>
   <common-layout>
     <div class="top">
-      <div class="header">
+      <div class="header mb-4">
         <img alt="logo" class="logo inline-block" src="@/assets/img/logo.png" />
       </div>
     </div>
     <div class="login">
-      <a-form @submit="onSubmit" :form="form">
-        <a-tabs size="large" :tabBarStyle="{ textAlign: 'center' }" style="padding: 0 2px;">
-          <a-tab-pane tab="Login" key="1">
-            <a-alert
-              type="error"
-              :closable="true"
-              v-show="error"
-              :message="error"
-              showIcon
-              style="margin-bottom: 24px;"
-            />
+      <a-tabs
+        v-model="activeKey"
+        defaultActiveKey="1"
+        size="small"
+        :tabBarStyle="{ textAlign: 'center' }"
+        style="padding: 0 2px;"
+      >
+        <a-tab-pane tab="Login" key="1">
+          <a-alert
+            type="error"
+            :closable="true"
+            v-show="error"
+            :message="error"
+            showIcon
+            style="margin-bottom: 24px;"
+          />
+          <a-form @submit="onSubmitLogin" :form="formLogin">
             <a-form-item>
               <a-input
                 autocomplete="autocomplete"
@@ -60,18 +66,63 @@
                 <a-icon slot="prefix" type="lock" />
               </a-input>
             </a-form-item>
-          </a-tab-pane>
-        </a-tabs>
-        <a-form-item>
-          <a-button
-            :loading="logging"
-            style="width: 100%;margin-top: 24px"
-            size="large"
-            htmlType="submit"
-            type="primary"
-          >log in</a-button>
-        </a-form-item>
-      </a-form>
+            <a-form-item>
+              <a-button
+                :loading="logging"
+                style="width: 100%;margin-top: 24px"
+                size="large"
+                htmlType="submit"
+                type="primary"
+              >{{ activeKey === "1" ? 'Login' : 'Reset' }}</a-button>
+            </a-form-item>
+          </a-form>
+        </a-tab-pane>
+        <a-tab-pane tab="Reset password" key="2">
+          <a-alert
+            type="error"
+            :closable="true"
+            v-show="errorResetPassword"
+            :message="errorResetPassword"
+            showIcon
+            style="margin-bottom: 24px;"
+          />
+          <a-form @submit="onSubmitReset" :form="formReset">
+            <a-form-item>
+              <a-input
+                size="large"
+                placeholder="E-mail"
+                type="email"
+                v-decorator="[
+                  'email',
+                  {
+                    rules: [
+                      {
+                        type: 'email',
+                        message: 'The input is not valid E-mail!',
+                      },
+                      {
+                        required: true,
+                        message: 'Please input your E-mail!',
+                      },
+                    ],
+                  },
+                ]"
+              >
+                <a-icon slot="prefix" type="mail" />
+              </a-input>
+            </a-form-item>
+            <a-form-item>
+              <a-button
+                :loading="logging"
+                style="width: 100%;margin-top: 24px"
+                size="large"
+                htmlType="submit"
+                type="primary"
+              >Reset</a-button>
+            </a-form-item>
+          </a-form>
+        </a-tab-pane>
+      </a-tabs>
     </div>
   </common-layout>
 </template>
@@ -91,7 +142,10 @@ export default {
     return {
       logging: false,
       error: '',
-      form: this.$form.createForm(this),
+      formLogin: this.$form.createForm(this),
+      formReset: this.$form.createForm(this),
+      errorResetPassword: '',
+      activeKey: "1"
     }
   },
   computed: {
@@ -101,13 +155,13 @@ export default {
   },
   methods: {
     ...mapMutations('account', ['setUser', 'setPermissions', 'setRoles']),
-    onSubmit(e) {
+    onSubmitLogin(e) {
       e.preventDefault()
-      this.form.validateFields((err) => {
+      this.formLogin.validateFields((err) => {
         if (!err) {
           this.logging = true
-          const name = this.form.getFieldValue('name')
-          const password = this.form.getFieldValue('password')
+          const name = this.formLogin.getFieldValue('name')
+          const password = this.formLogin.getFieldValue('password')
           login(name, password)
             .then(this.afterLogin)
             .catch((error) => {
@@ -116,6 +170,15 @@ export default {
               }
               this.logging = false
             })
+        }
+      })
+    },
+    onSubmitReset(e) {
+      e.preventDefault()
+      this.formReset.validateFields((err) => {
+        if (!err) {
+          const email = this.formReset.getFieldValue('email')
+          console.log(email)
         }
       })
     },
