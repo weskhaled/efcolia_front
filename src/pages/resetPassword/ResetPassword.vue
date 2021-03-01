@@ -127,6 +127,7 @@ export default {
           setNewPassword(this.email, newPassword, this.token).then((res) => {
             if(res.status === 200) {
               this.$message.success(res.data, 3)
+              this.$router.push('/login')
             } else if(res.status === 303) {
               this.$message.error(res.data, 3)
             }
