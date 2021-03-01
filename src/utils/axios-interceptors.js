@@ -8,7 +8,7 @@ const resp401 = {
    * @returns {*}
    */
   onFulfilled(response, options) {
-    const {message, router} = options
+    const { message, router } = options
     if (response.statusCode === 401) {
       message.error('No permission for this interface')
       router.push('/')
@@ -30,7 +30,7 @@ const resp401 = {
 
 const resp403 = {
   onFulfilled(response, options) {
-    const {message} = options
+    const { message } = options
     if (response.statusCode === 403) {
       message.error(`Request denied`)
     }
@@ -46,9 +46,9 @@ const reqCommon = {
    * @returns {*}
    */
   onFulfilled(config, options) {
-    const {message, router} = options
-    const {url, xsrfCookieName} = config
-    if (url.indexOf('login') === -1 && xsrfCookieName && !Cookie.get(xsrfCookieName)) {
+    const { message, router } = options
+    const { url, xsrfCookieName } = config
+    if ((url.indexOf('login') === -1 && url.indexOf('reset-password') === -1) && xsrfCookieName && !Cookie.get(xsrfCookieName)) {
       message.warning('The authentication token has expired, please log in again')
       router.push('/')
     }
@@ -61,7 +61,7 @@ const reqCommon = {
    * @returns {Promise<never>}
    */
   onRejected(error, options) {
-    const {message} = options
+    const { message } = options
     message.error(error.message)
     return Promise.reject(error)
   }

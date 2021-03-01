@@ -73,9 +73,7 @@
 
 <script>
 import CommonLayout from '@/layouts/CommonLayout'
-// import { request, METHOD } from '@/utils/request'
-// import { loadRoutes } from '@/utils/routerUtil'
-// const BASE_URL = process.env.VUE_APP_API_BASE_URL
+import { setNewPassword } from '@/services/user'
 
 export default {
   name: 'ResetPassword',
@@ -86,15 +84,17 @@ export default {
       error: '',
       formReset: this.$form.createForm(this),
       errorResetPassword: '',
-      email: ''
+      email: '',
+      token: ''
     }
   },
   computed: {
   },
   mounted() {
     this.email = this.$route.query.email
-    if (!this.email) {
-      this.$message.error('email invalid')
+    this.token = this.$route.query.token
+    if (!this.email || !this.token) {
+      this.$message.error('email or token invalid')
       this.$router.push('/')
     }
   },
@@ -123,8 +123,11 @@ export default {
       this.formReset.validateFields((err) => {
         if (!err) {
           this.resetting = true
-          const newPassword = this.formReset.getFieldValue('newPassword')
-          console.log(newPassword)
+          const newPassword = this.formReset.getFieldValue('password')
+          setNewPassword(this.email, newPassword, this.token).then(() => {
+            this.$message.success('Your password changed', 3)
+            this.resetting = false
+          })
         }
       })
     }

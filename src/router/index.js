@@ -7,7 +7,7 @@ Vue.use(Router)
 // Route configuration without login interception
 const loginIgnore = {
   names: ['404', '403', 'resetPassword'],      //Match by route name
-  paths: ['/login'],   //According to routing fullPath matching
+  paths: ['/login', '/reset-password'],   //According to routing fullPath matching
   /**
    * Determine whether the route is included in the configuration
    * @param route vue-router 的 route 对象

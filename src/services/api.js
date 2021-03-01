@@ -4,5 +4,6 @@
 const BASE_URL = process.env.VUE_APP_API_BASE_URL
 module.exports = {
   LOGIN: `${BASE_URL}/api/auth/login`,
+  RESETPASSWORD: `${BASE_URL}/reset-password`,
   ROUTES: `${BASE_URL}/routes`
 }

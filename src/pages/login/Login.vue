@@ -91,18 +91,14 @@
               <a-input
                 size="large"
                 placeholder="E-mail"
-                type="email"
+                type="text"
                 v-decorator="[
-                  'email',
+                  'usernameOrEmail',
                   {
                     rules: [
                       {
-                        type: 'email',
-                        message: 'The input is not valid E-mail!',
-                      },
-                      {
                         required: true,
-                        message: 'Please input your E-mail!',
+                        message: 'Please input your E-mail or username!',
                       },
                     ],
                   },
@@ -113,12 +109,12 @@
             </a-form-item>
             <a-form-item>
               <a-button
-                :loading="logging"
+                :loading="reseting"
                 style="width: 100%;margin-top: 24px"
                 size="large"
                 htmlType="submit"
                 type="primary"
-              >Reset</a-button>
+              >Send</a-button>
             </a-form-item>
           </a-form>
         </a-tab-pane>
@@ -129,7 +125,7 @@
 
 <script>
 import CommonLayout from '@/layouts/CommonLayout'
-import { login } from '@/services/user'
+import { login, resetPassword } from '@/services/user'
 import { setAuthorization, request, METHOD } from '@/utils/request'
 import { loadRoutes } from '@/utils/routerUtil'
 import { mapMutations } from 'vuex'
@@ -141,6 +137,7 @@ export default {
   data() {
     return {
       logging: false,
+      reseting: false,
       error: '',
       formLogin: this.$form.createForm(this),
       formReset: this.$form.createForm(this),
@@ -173,12 +170,17 @@ export default {
         }
       })
     },
-    onSubmitReset(e) {
+    async onSubmitReset(e) {
       e.preventDefault()
       this.formReset.validateFields((err) => {
         if (!err) {
-          const email = this.formReset.getFieldValue('email')
-          console.log(email)
+          this.reseting = true
+          const usernameOrEmail = this.formReset.getFieldValue('usernameOrEmail')
+          resetPassword(usernameOrEmail).then(() => {
+            this.$message.success('check your email to validate you new password', 3)
+            this.reseting = false
+            this.activeKey = "1"
+          })
         }
       })
     },

@@ -1,4 +1,4 @@
-import {LOGIN, ROUTES} from '@/services/api'
+import {LOGIN, RESETPASSWORD, ROUTES} from '@/services/api'
 import {request, METHOD, removeAuthorization} from '@/utils/request'
 
 /**
@@ -27,8 +27,22 @@ export function logout() {
   localStorage.removeItem(process.env.VUE_APP_ROLES_KEY)
   removeAuthorization()
 }
+
+export async function resetPassword(usernameOrEmail) {
+  return request(RESETPASSWORD, METHOD.GET, {
+    email: usernameOrEmail,
+  })
+}
+
+export async function setNewPassword(email, password, token) {
+  return request(RESETPASSWORD, METHOD.POST, {
+    email, password, token
+  })
+}
+
 export default {
   login,
   logout,
-  getRoutesConfig
+  getRoutesConfig,
+  resetPassword
 }
