@@ -124,8 +124,13 @@ export default {
         if (!err) {
           this.resetting = true
           const newPassword = this.formReset.getFieldValue('password')
-          setNewPassword(this.email, newPassword, this.token).then(() => {
-            this.$message.success('Your password changed', 3)
+          setNewPassword(this.email, newPassword, this.token).then((res) => {
+            if(res.status === 200) {
+              this.$message.success(res.data, 3)
+            } else if(res.status === 303) {
+              this.$message.error(res.data, 3)
+            }
+            this.formReset.resetFields()
             this.resetting = false
           })
         }

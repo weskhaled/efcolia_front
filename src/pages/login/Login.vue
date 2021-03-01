@@ -176,10 +176,15 @@ export default {
         if (!err) {
           this.reseting = true
           const usernameOrEmail = this.formReset.getFieldValue('usernameOrEmail')
-          resetPassword(usernameOrEmail).then(() => {
-            this.$message.success('check your email to validate you new password', 3)
+          resetPassword(usernameOrEmail).then((res) => {
+            if (res.status === 200) {
+              this.$message.success(res.data, 3)
+              this.activeKey = "1"
+              this.formReset.resetFields()
+            } else if (res.status === 204) {
+              this.$message.error('Email not found', 3)
+            }
             this.reseting = false
-            this.activeKey = "1"
           })
         }
       })
