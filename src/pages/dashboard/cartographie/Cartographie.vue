@@ -545,7 +545,7 @@
                       "
                       :zIndex="device.selected ? 2 : 1"
                     >
-                      <div :class="[device.selected ? 'opacity-100' : 'opacity-25', 'print:opacity-100']">
+                      <div :class="[device.selected ? 'opacity-100' : 'opacity-75', 'print:opacity-100']">
                         <button
                           class="w-full p-1 flex items-center justify-center rounded-sm text-white focus:outline-none text-base"
                           :class="[

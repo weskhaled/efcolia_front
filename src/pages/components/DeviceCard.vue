@@ -8,9 +8,7 @@
   >
     <template slot="actions" class="ant-card-actions p-0 relative">
       <a-tooltip>
-        <template slot="title">
-          battery connected
-        </template>
+        <template slot="title"> battery connected </template>
         <span>
           <svg
             version="1.1"
@@ -50,7 +48,10 @@
         <span class="icon-wrp">
           <span
             class="battery"
-            :class="(device.batterylevel * 100) / 7 < 10 ? 'low' : ''"
+            :class="[
+              (device.batterylevel * 100) / 7 < 10 ? 'low' : '',
+              !device.batteryvoltage && 'inactive',
+            ]"
             :style="{
               '--battery-level': `${(device.batterylevel * 100) / 7}%`,
             }"
@@ -58,13 +59,13 @@
         </span>
       </a-tooltip>
       <a-tooltip>
-        <template slot="title">
-          Engine state
-        </template>
+        <template slot="title"> Engine state </template>
         <span>
-          <a-badge :color="device.status ? 'green' : 'red'">
+          <a-badge :color="device.enginestate === 3 ? 'green' : 'red'">
             <a-icon
-              :class="[device.status ? 'text-green-500' : 'text-red-500']"
+              :class="[
+                device.enginestate === 3 ? 'text-green-500' : 'text-red-500',
+              ]"
               key="edit"
               type="poweroff"
             />
@@ -72,17 +73,13 @@
         </span>
       </a-tooltip>
       <a-tooltip>
-        <template slot="title">
-          Speed
-        </template>
-        <span class="capitalize" style="font-size:0.7em">
+        <template slot="title"> Speed </template>
+        <span class="capitalize" style="font-size: 0.7em">
           {{ device.speed }} km/h
         </span>
       </a-tooltip>
       <a-tooltip>
-        <template slot="title">
-          Signal
-        </template>
+        <template slot="title"> Signal </template>
         <span>
           <div>
             <div class="signal">
@@ -123,9 +120,7 @@
         </span>
       </a-tooltip>
       <a-tooltip>
-        <template slot="title">
-          GPRS state
-        </template>
+        <template slot="title"> GPRS state </template>
         <span>
           <svg
             version="1.1"
@@ -148,7 +143,7 @@
             </g>
           </svg>
           <span
-            style="line-height: 0.7;align-self: flex-end;font-size: .65rem;"
+            style="line-height: 0.7; align-self: flex-end; font-size: 0.65rem"
             v-if="device.satsinuse !== null"
             >X{{ device.satsinuse }}</span
           >
@@ -209,7 +204,7 @@
     <div
       class="bg-white mt-1 border-t p-2 bg-opacity-50"
       :class="showInfos ? 'block' : 'hidden'"
-      style="margin: 0.5rem -.5rem -.5rem -.5rem;"
+      style="margin: 0.5rem -0.5rem -0.5rem -0.5rem"
     >
       <div>
         <div class="flex items-stretch">
@@ -242,6 +237,7 @@
 
 <script>
 import { format } from 'date-fns'
+import moment from 'moment'
 
 export default {
   name: 'DeviceCard',
@@ -258,29 +254,39 @@ export default {
   },
   computed: {
     btnPlusColor() {
-      if (
-        this.formatDate(new Date(), 'MM/yyyy') ===
-        this.formatDate(new Date(this.device.localizationdate), 'MM/yyyy')
-      ) {
-        const hours =
-          this.formatDate(new Date(), 'HH') -
-          this.formatDate(new Date(this.device.localizationdate), 'HH')
-        if (hours < 1)
-          return 'bg-green-500 border-green-500 hover:border-green-500 hover:bg-green-600 focus:border-green-500 focus:bg-green-600'
-        else if (1 < hours < 3)
-          return 'bg-yellow-500 border-yellow-500 hover:border-yellow-500 hover:bg-yellow-600 focus:border-yellow-500 focus:bg-yellow-600'
-        else if (3 < hours < 8)
-          return 'bg-red-500 border-red-500 hover:border-red-500 hover:bg-red-600 focus:border-red-500 focus:bg-red-600'
-        else
-          return 'bg-gray-500 border-gray-500 hover:border-gray-500 hover:bg-gray-500 focus:border-gray-500 focus:bg-gray-500'
+      let classes =
+        'bg-gray-500 border-gray-500 hover:border-gray-500 hover:bg-gray-500 focus:border-gray-500 focus:bg-gray-500'
+      const now = new Date()
+      const localizationDate = new Date(this.device.localizationdate)
+      const ms = moment(now, 'DD/MM/YYYY HH:mm:ss').diff(
+        moment(localizationDate, 'DD/MM/YYYY HH:mm:ss')
+      )
+      const d = moment.duration(ms)
+      const diffHours = d.asHours()
+      if (diffHours >= 8) {
+        classes =
+          'bg-gray-500 border-gray-500 hover:border-gray-500 hover:bg-gray-500 focus:border-gray-500 focus:bg-gray-500'
+      } else if (4 < diffHours < 8) {
+        classes =
+          'bg-red-500 border-red-500 hover:border-red-500 hover:bg-red-600 focus:border-red-500 focus:bg-red-600'
+      } else if (2 < diffHours <= 4) {
+        classes =
+          'bg-yellow-500 border-yellow-500 hover:border-yellow-500 hover:bg-yellow-600 focus:border-yellow-500 focus:bg-yellow-600'
+      } else if (1 <= diffHours <= 2) {
+        classes =
+          'bg-yellow-100 border-yellow-100 hover:border-yellow-100 hover:bg-yellow-200 focus:border-yellow-200 focus:bg-yellow-200'
+      } else if (1 > diffHours) {
+        classes =
+          'bg-green-500 border-green-500 hover:border-green-500 hover:bg-green-600 focus:border-green-600 focus:bg-green-600'
       }
-      return 'bg-red-500 border-red-500 hover:border-red-500 hover:bg-red-600 focus:border-red-500 focus:bg-red-600'
+      return classes
     },
   },
   methods: {
     formatDate: (date = new Date(), formatDate = 'yyyy-MM-dd HH:mm:ss') => {
       return format(date, formatDate)
     },
+    moment,
   },
 }
 </script>
@@ -326,6 +332,9 @@ export default {
   }
   &.low {
     color: rgb(255, 38, 0);
+  }
+  &.inactive {
+    color: #969696;
   }
 }
 
