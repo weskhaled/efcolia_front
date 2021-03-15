@@ -268,9 +268,9 @@ export default {
       } else if (diffHours <= 8 && diffHours > 4) {
         return 'bg-red-500 border-red-500 hover:border-red-500 hover:bg-red-600 focus:border-red-500 focus:bg-red-600'
       } else if (diffHours <= 4 && diffHours > 2) {
-        return 'bg-yellow-500 border-yellow-500 hover:border-yellow-500 hover:bg-yellow-600 focus:border-yellow-500 focus:bg-yellow-600'
+        return 'bg-yellow-500 border-yellow-500 hover:border-yellow-600 hover:bg-yellow-600 focus:border-yellow-500 focus:bg-yellow-600'
       } else if (diffHours <= 2 && diffHours >= 1) {
-        return 'bg-yellow-100 border-yellow-100 hover:border-yellow-100 hover:bg-yellow-200 focus:border-yellow-200 focus:bg-yellow-200'
+        return 'bg-yellow-300 border-yellow-300 hover:border-yellow-400 hover:bg-yellow-400 focus:border-yellow-400 focus:bg-yellow-400'
       } else if (1 > diffHours && diffHours < 2) {
         return 'bg-green-500 border-green-500 hover:border-green-500 hover:bg-green-600 focus:border-green-600 focus:bg-green-600'
       }
