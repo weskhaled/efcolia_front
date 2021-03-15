@@ -263,21 +263,16 @@ export default {
       )
       const d = moment.duration(ms)
       const diffHours = d.asHours()
-      if (diffHours >= 8) {
-        classes =
-          'bg-gray-500 border-gray-500 hover:border-gray-500 hover:bg-gray-500 focus:border-gray-500 focus:bg-gray-500'
-      } else if (4 < diffHours < 8) {
-        classes =
-          'bg-red-500 border-red-500 hover:border-red-500 hover:bg-red-600 focus:border-red-500 focus:bg-red-600'
-      } else if (2 < diffHours <= 4) {
-        classes =
-          'bg-yellow-500 border-yellow-500 hover:border-yellow-500 hover:bg-yellow-600 focus:border-yellow-500 focus:bg-yellow-600'
-      } else if (1 <= diffHours <= 2) {
-        classes =
-          'bg-yellow-100 border-yellow-100 hover:border-yellow-100 hover:bg-yellow-200 focus:border-yellow-200 focus:bg-yellow-200'
-      } else if (1 > diffHours) {
-        classes =
-          'bg-green-500 border-green-500 hover:border-green-500 hover:bg-green-600 focus:border-green-600 focus:bg-green-600'
+      if (diffHours > 8) {
+        return 'bg-gray-500 border-gray-500 hover:border-gray-500 hover:bg-gray-500 focus:border-gray-500 focus:bg-gray-500'
+      } else if (diffHours <= 8 && diffHours > 4) {
+        return 'bg-red-500 border-red-500 hover:border-red-500 hover:bg-red-600 focus:border-red-500 focus:bg-red-600'
+      } else if (diffHours <= 4 && diffHours > 2) {
+        return 'bg-yellow-500 border-yellow-500 hover:border-yellow-500 hover:bg-yellow-600 focus:border-yellow-500 focus:bg-yellow-600'
+      } else if (diffHours <= 2 && diffHours >= 1) {
+        return 'bg-yellow-100 border-yellow-100 hover:border-yellow-100 hover:bg-yellow-200 focus:border-yellow-200 focus:bg-yellow-200'
+      } else if (1 > diffHours && diffHours < 2) {
+        return 'bg-green-500 border-green-500 hover:border-green-500 hover:bg-green-600 focus:border-green-600 focus:bg-green-600'
       }
       return classes
     },
