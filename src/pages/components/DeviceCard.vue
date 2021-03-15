@@ -61,10 +61,10 @@
       <a-tooltip>
         <template slot="title"> Engine state </template>
         <span>
-          <a-badge :color="device.enginestate === 3 ? 'green' : 'red'">
+          <a-badge :color="device.enginestate ? (device.enginestate === 3 ? 'green' : 'red') : ''">
             <a-icon
               :class="[
-                device.enginestate === 3 ? 'text-green-500' : 'text-red-500',
+                device.enginestate ? (device.enginestate === 3 ? 'text-green-500' : 'text-red-500') : 'text-gray-400',
               ]"
               key="edit"
               type="poweroff"
