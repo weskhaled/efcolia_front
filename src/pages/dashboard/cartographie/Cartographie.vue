@@ -1713,9 +1713,10 @@ export default {
         let savedHistoryColumnsHidden = JSON.parse(historyColumns)
         savedHistoryColumnsHidden = savedHistoryColumnsHidden.filter(hc => hc.title && !hc.value)
         const myData = []
+        const engineState = (st) => st ? (st === 3 ? 'ON' : 'OFF') : ''
         const func = (names, object) => {
           let d = {}
-          names.forEach(nv => d[nv.split(' || ')[0]] = object[nv.split(' || ')[1]])
+          names.forEach(nv => nv.split(' || ')[1] === 'enginestate' ? d[nv.split(' || ')[0]] = engineState(object[nv.split(' || ')[1]]) : d[nv.split(' || ')[0]] = object[nv.split(' || ')[1]])
           return d
         }
         const items = savedHistoryColumnsHidden.map(na => ({ name: na.title, attr: na.dataIndex })).map(({ name, attr }) => `${name} || ${attr}`)
