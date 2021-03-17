@@ -1218,7 +1218,7 @@ export default {
         })
       }
       clearInterval(this.devicesInterval)
-      this.devicesInterval = setInterval(() => getFreshDevice(client_id), 60000);
+      this.devicesInterval = setInterval(() => getFreshDevice(client_id), 30000);
       this.getDevicesByClientId(client_id)
       this.getAlertByClientId(client_id)
       this.getContactsByClientId(client_id)

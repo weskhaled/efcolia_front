@@ -20,7 +20,7 @@
             width="16px"
             height="16px"
             xml:space="preserve"
-            :fill="device.batterystate ? '#48bb78' : '#6e6e6e'"
+            :fill="device.battery2state === 1 ? '#48bb78' : '#6e6e6e'"
           >
             <g>
               <g
