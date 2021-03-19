@@ -548,22 +548,8 @@
                       <div :class="[device.selected ? 'opacity-100' : 'opacity-75', 'print:opacity-100']">
                         <button
                           class="w-full p-1 flex items-center justify-center rounded-sm text-white focus:outline-none text-base"
-                          :class="[
-                            formatDate(new Date(), 'dd') -
-                              formatDate(new Date(), 'dd') <
-                              1 &&
-                              formatDate(new Date(), 'MM/yyyy') ===
-                              formatDate(
-                                new Date(device.localizationdate),
-                                'MM/yyyy'
-                              ) &&
-                              formatDate(new Date(), 'HH') -
-                              formatDate(
-                                new Date(device.localizationdate),
-                                'HH'
-                              ) <
-                              8
-                              ? 'bg-blue-600'
+                          :class="[device.enginestate === 3
+                              ? 'bg-green-600'
                               : 'bg-red-600',
                           ]"
                           @click="clickOnMapPin($event, device)"
@@ -1075,7 +1061,7 @@ export default {
       rightCardTabsKey: 'gMaps',
       mapOptions: {
         center: { lat: 48, lng: 2 },
-        zoom: 2,
+        zoom: 15,
         fullscreenControl: false,
         mapTypeControl: true,
         rotateControl: false,
@@ -1192,7 +1178,7 @@ export default {
       if (device.selected) {
         if (device.latitude && device.longitude) {
           this.selectedDevice = device
-          this.mapOptions.zoom = 20
+          this.mapOptions.zoom = 19
           if (checkUserHasPermission(this.currUser.permissions, 'map', 'r')) {
             this.mapOptions.center.lat = device.latitude
             this.mapOptions.center.lng = device.longitude
@@ -1214,7 +1200,9 @@ export default {
       const getFreshDevice = (client_id) => {
         request(`${BASE_URL}/api/device/synchro/${client_id}`, METHOD.GET).then((res) => {
           const { data } = res
-          data.forEach(nd => this.devices.listDevice = this.devices.listDevice.map(d => d.id === nd.id ? nd : d))
+          const selectedDevice = this.devices.listDevice.find(d => d.selected)
+          selectedDevice && this.zoomExtends([selectedDevice])
+          data.forEach(nd => this.devices.listDevice = this.devices.listDevice.map(d => d.id === nd.id ? (nd) => nd.id === selectedDevice.id ? {...nd, selected: true} : nd : d))
         })
       }
       clearInterval(this.devicesInterval)
@@ -1344,7 +1332,6 @@ export default {
         )
     },
     historyDevice(device, filter = { from: null, to: null }) {
-      console.log(filter)
       this.dataHistory = []
       this.historyPoints = []
       this.dataHistoryLoading = true
@@ -1510,7 +1497,6 @@ export default {
       })
     },
     updateUser(user) {
-      console.log(user)
       this.addingLoading = true
       request(`${BASE_URL}/api/user`, METHOD.PUT, {
         ...user,

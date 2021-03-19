@@ -6,37 +6,37 @@
           <a-form-model ref="ruleForm" :model="form">
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
               <div>
-                <div>
-                  <a-form-model-item
-                    ref="firstname"
-                    label="firstname"
-                    prop="firstname"
-                  >
-                    <a-input
-                      v-model="form.firstname"
-                      @blur="
-                        () => {
-                          $refs.firstname.onFieldBlur()
-                        }
-                      "
-                    />
-                  </a-form-model-item>
-                </div>
-                <div>
-                  <a-form-model-item
-                    ref="lastname"
-                    label="lastname"
-                    prop="lastname"
-                  >
-                    <a-input
-                      v-model="form.lastname"
-                      @blur="
-                        () => {
-                          $refs.lastname.onFieldBlur()
-                        }
-                      "
-                    />
-                  </a-form-model-item>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-1">
+                  <div>
+                    <a-form-model-item
+                      ref="lastname"
+                      label="lastname"
+                      prop="lastname"
+                    >
+                      <a-input
+                        v-model="form.lastname"
+                        @blur="
+                          () => {
+                            $refs.lastname.onFieldBlur()
+                          }
+                        "
+                      /> </a-form-model-item
+                  ></div>
+                  <div>
+                    <a-form-model-item
+                      ref="firstname"
+                      label="firstname"
+                      prop="firstname"
+                    >
+                      <a-input
+                        v-model="form.firstname"
+                        @blur="
+                          () => {
+                            $refs.firstname.onFieldBlur()
+                          }
+                        "
+                      /> </a-form-model-item
+                  ></div>
                 </div>
               </div>
               <div>
@@ -56,11 +56,37 @@
                     />
                   </a-form-model-item>
                 </div>
-                <div class="col-span-1">
-                  <a-form-model-item label="description" prop="description">
-                    <a-input v-model="form.description" type="textarea" />
-                  </a-form-model-item>
-                </div>
+              </div>
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+              <div>
+                <a-form-model-item ref="login" label="Login" prop="login">
+                  <a-input
+                    v-model="form.login"
+                    @blur="
+                      () => {
+                        $refs.login.onFieldBlur()
+                      }
+                    "
+                  />
+                </a-form-model-item>
+              </div>
+              <div>
+                <a-form-model-item
+                  ref="password"
+                  label="Password"
+                  prop="password"
+                >
+                  <a-input-password
+                    v-model="form.password"
+                    @blur="
+                      () => {
+                        $refs.password.onFieldBlur()
+                      }
+                    "
+                    placeholder="password"
+                  />
+                </a-form-model-item>
               </div>
             </div>
           </a-form-model>
@@ -139,17 +165,13 @@
                 </span>
               </a-table>
             </a-tab-pane>
-            <a-tab-pane key="2" tab="Addresses">
-              Addresses
-            </a-tab-pane>
+            <a-tab-pane key="2" tab="Addresses"> Addresses </a-tab-pane>
           </a-tabs>
         </div>
       </div>
     </div>
     <div class="flex h-10 items-center justify-end self-end mx-1">
-      <a-button key="back" @click="updateInfos">
-        Reset
-      </a-button>
+      <a-button key="back" @click="updateInfos"> Reset </a-button>
       <a-button
         key="submit"
         type="primary"
@@ -219,7 +241,8 @@ export default {
         lastname: '',
         firstname: '',
         jobtitle: '',
-        description: '',
+        login: '',
+        password: '',
       },
       permissions: [],
       columnsUserPermissions,
@@ -227,7 +250,7 @@ export default {
     }
   },
   watch: {
-    user: function(newVal) {
+    user: function (newVal) {
       if (newVal) {
         this.updateInfos()
       }
