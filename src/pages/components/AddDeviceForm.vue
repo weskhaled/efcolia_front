@@ -82,7 +82,7 @@
               v-model="form.fromTo"
               show-time
               :placeholder="['from', 'to']"
-              style="width: 100%;"
+              style="width: 100%"
             />
           </a-form-model-item>
         </div>
@@ -105,7 +105,7 @@
               />
               <a-spin
                 :spinning="!!!clients.length"
-                style="position: absolute;top: calc(50% - 13px);right: 5px"
+                style="position: absolute; top: calc(50% - 13px); right: 5px"
               >
                 <a-icon
                   slot="indicator"
@@ -160,15 +160,9 @@
               v-model="form.privacy"
               placeholder="please select Vie privee"
             >
-              <a-select-option value="aucun">
-                Aucun
-              </a-select-option>
-              <a-select-option value="input1">
-                Input 1
-              </a-select-option>
-              <a-select-option value="input2">
-                Input 2
-              </a-select-option>
+              <a-select-option value="aucun"> Aucun </a-select-option>
+              <a-select-option value="input1"> Input 1 </a-select-option>
+              <a-select-option value="input2"> Input 2 </a-select-option>
             </a-select>
           </a-form-model-item>
         </div>
@@ -243,34 +237,32 @@ export default {
     }
   },
   watch: {
-    device: function(val) {
-      if (val) {
-        this.fillInputs()
-      } else {
+    device: function () {
+      this.$nextTick(() => {
         this.resetForm()
-      }
+      })
     },
   },
   mounted() {
-    console.log('mounted')
-    if (this.device) {
-      this.fillInputs()
-    } else {
-      this.resetForm()
-    }
+    this.getDeviceTypes()
+    this.getSimCards()
   },
-  created() {
-    console.log('created')
-    // request(`${BASE_URL}/api/getdevice/${this.device.id}`, METHOD.GET).then(
-    //   (res) => (console.log(res.data))
-    // )
-    request(`${BASE_URL}/api/deviceType`, METHOD.GET).then((res) => {
-      this.deviceTypes = res.data
-      this.device.devicesubtype_id &&
-        this.selectDeviceType(this.device.devicetype_id)
-    })
-    request(`${BASE_URL}/api/simcard/${this.clientId}`, METHOD.GET).then(
-      (res) => {
+  // created() {
+  //   deviceSubType
+  // },
+  methods: {
+    getDeviceTypes() {
+      request(`${BASE_URL}/api/deviceType`, METHOD.GET).then((res) => {
+        this.deviceTypes = res.data
+        this.device?.devicesubtype_id &&
+          this.selectDeviceType(this.device.devicetype_id)
+      })
+    },
+    getSimCards() {
+      request(
+        `${BASE_URL}/api/simcard/${this.clientId}`,
+        METHOD.GET
+      ).then((res) => {
         this.simCards = res.data
         if (this.device && this.device.simcard_id) {
           this.form.simcard =
@@ -278,10 +270,8 @@ export default {
               (sc) => +sc.simcard_id === +this.device.simcard_id
             )?.simcard_id || null
         }
-      }
-    )
-  },
-  methods: {
+      })
+    },
     selectDeviceType(deviceTypeId) {
       request(`${BASE_URL}/api/deviceSubType/${deviceTypeId}`, METHOD.GET).then(
         (res) => (this.deviceSubTypes = res.data || [])
@@ -292,11 +282,9 @@ export default {
         if (valid) {
           this.$emit('submit', {
             ...this.form,
-            id: this.device.id || undefined,
-            simCardId: this.device.id ? this.form.simcard : undefined,
-            timezone: this.device.id
-              ? this.form.timezone || 'Europe/Paris'
-              : undefined,
+            id: this.device?.id || undefined,
+            simCardId: this.form.simcard,
+            timezone: 'Europe/Paris',
             deviceTypeId: +this.form.deviceTypeId,
             deviceSubtypeId: +this.form.deviceSubtypeId,
             status: this.form.status ? 1 : 0,
@@ -328,18 +316,20 @@ export default {
       )
     },
     fillInputs() {
-      this.form.name = this.device.name
-      this.form.deviceTypeId = this.device.devicetype_id
-      this.form.deviceSubtypeId = this.device.devicesubtype_id
-      this.form.device_id2 = this.device.device_id2
-      this.form.imei = this.device.imei
-      this.form.serialNumber = this.device.serialnumber
-      this.form.fromTo = this.device.fromTo
-      this.form.status = !!this.device.status
-      this.form.clientId = this.device.clientId
-      this.form.findAddress = !!this.device.findaddress
-      this.form.description = this.device.description
-      this.form.simcard = this.device.simcard_id
+      this.form.name = this.device?.name || ''
+      this.form.deviceTypeId = this.device?.devicetype_id || ''
+      this.form.deviceSubtypeId = this.device?.devicesubtype_id || ''
+      this.form.device_id2 = this.device?.device_id2 || ''
+      this.form.imei = this.device?.imei || ''
+      this.form.serialNumber = this.device?.serialnumber || ''
+      this.form.fromTo = this.device?.fromTo || ''
+      this.form.status = !!this.device?.status || ''
+      this.form.clientId = this.device?.clientId || ''
+      this.form.findAddress = !!this.device?.findaddress || ''
+      this.form.description = this.device?.description || ''
+      this.form.simcard = this.device?.simcard_id || ''
+      this.getDeviceTypes()
+      this.getSimCards()
     },
   },
 }

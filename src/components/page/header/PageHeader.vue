@@ -9,17 +9,8 @@
           </div>
           <div class="row">
             <div
-              v-if="this.$slots.content"
-              class="content mr-0 mb-4 md:block w-full md:w-auto sm:mb-4 md:mb-0 md:mr-2"
-            >
-              <div v-if="avatar" class="avatar mr-2 sm:mr-0 lg:mr-2 sm:mr-2">
-                <a-avatar :src="avatar" :size="55" />
-              </div>
-              <slot name="content"></slot>
-            </div>
-            <div
               v-if="this.$slots.extra"
-              class="extra md:flex-1 w-full md:w-1/2 md:max-w-lg"
+              class="extra md:flex-1 w-full md:w-2/2 md:max-w-lg mx-auto"
             >
               <slot name="extra"></slot>
             </div>

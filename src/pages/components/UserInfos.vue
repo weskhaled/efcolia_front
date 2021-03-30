@@ -269,6 +269,7 @@ export default {
       this.form.firstname = this.user.firstname || ''
       this.form.jobtitle = this.user.jobtitle || ''
       this.form.description = this.user.description || ''
+      this.form.login = this.user.login || ''
     },
     getPermissions() {
       request(`${BASE_URL}/api/objectType`, METHOD.GET).then((res) => {

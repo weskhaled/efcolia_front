@@ -68,7 +68,22 @@ import { mapState, mapMutations } from 'vuex'
 export default {
   name: 'AdminHeader',
   components: { IMenu, HeaderAvatar, HeaderNotice },
-  props: ['collapsed', 'menuData'],
+  props: {
+    collapsed: {
+      required: false,
+    },
+    menuData: {
+      required: false,
+    },
+    logo: {
+      type: String,
+      required: false,
+    },
+    avatar: {
+      type: String,
+      required: false,
+    },
+  },
   data() {
     return {
       langList: [

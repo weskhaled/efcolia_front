@@ -31,7 +31,12 @@
       <setting />
     </drawer>
     <a-layout class="admin-layout-main beauty-scroll">
-      <admin-header class="print:hidden" :class="[{'fixed-tabs': fixedTabs, 'fixed-header': fixedHeader, 'multi-page': multiPage}]" :style="headerStyle" :menuData="headMenuData" :collapsed="collapsed" @toggleCollapse="toggleCollapse"/>
+      <admin-header class="print:hidden" :avatar="currUser.avatar" :class="[{'fixed-tabs': fixedTabs, 'fixed-header': fixedHeader, 'multi-page': multiPage}]" :style="headerStyle" :menuData="headMenuData" :collapsed="collapsed" @toggleCollapse="toggleCollapse">
+        <div slot="headerContent">
+          <div class="title">{{ currUser.name }}</div>
+          <div>{{ currUser.position[lang] }}</div>
+        </div>
+      </admin-header>
       <a-layout-header :class="['virtual-header', {'fixed-tabs' : fixedTabs, 'fixed-header': fixedHeader, 'multi-page': multiPage}]" v-show="fixedHeader"></a-layout-header>
       <a-layout-content class="admin-layout-content print:p-0">
         <div :style="`min-height: ${minHeight}px; position: relative`">
@@ -88,6 +93,7 @@ export default {
     },
   },
   computed: {
+    ...mapState('account', { currUser: 'user' }),
     ...mapState('setting', ['isMobile', 'theme', 'layout', 'footerLinks', 'copyright', 'fixedHeader', 'fixedSideBar',
       'fixedTabs', 'hideSetting', 'multiPage']),
     ...mapGetters('setting', ['firstMenu', 'subMenu', 'menuData']),
