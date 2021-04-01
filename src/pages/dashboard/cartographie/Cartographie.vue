@@ -1615,6 +1615,7 @@ export default {
       this.addingLoading = true
       request(`${BASE_URL}/api/user`, METHOD.PUT, {
         ...user,
+        clientId: this.selectedClientValue
       })
         .then(() => {
           this.addingLoading = false

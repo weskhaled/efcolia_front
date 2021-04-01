@@ -189,6 +189,12 @@ import { mapState } from 'vuex'
 import { request, METHOD } from '@/utils/request'
 const BASE_URL = process.env.VUE_APP_API_BASE_URL
 
+const checkUserHasPermission = (permissions, objectType, permission) =>
+  permissions.find((p) => p.objecttype === objectType) &&
+  permissions
+    .find((p) => p.objecttype === objectType)
+    .permission?.indexOf(permission) !== -1
+
 const columnsUserPermissions = [
   {
     title: 'Function',
@@ -253,6 +259,9 @@ export default {
     user: function (newVal) {
       if (newVal) {
         this.updateInfos()
+        if (this.currUser.id === newVal.id) {
+          this.getPermissions()
+        } else this.getUserById(newVal.id)
       }
     },
   },
@@ -271,18 +280,66 @@ export default {
       this.form.description = this.user.description || ''
       this.form.login = this.user.login || ''
     },
-    getPermissions() {
-      request(`${BASE_URL}/api/objectType`, METHOD.GET).then((res) => {
-        this.permissions = res.data.map((o) => ({
-          objecttype: o.objecttype,
-          r: false,
-          n: false,
-          m: false,
-          d: false,
-          allPermissions: false,
-        }))
-        this.userPermissionsLoading = false
+    getUserById(id) {
+      this.userPermissionsLoading = true
+      request(`${BASE_URL}/api/user/${id}`, METHOD.GET).then((res) => {
+        this.getPermissions(res.data)
       })
+    },
+    getPermissions(user = this.currUser) {
+      this.userPermissionsLoading = true
+      if (this.permissions.length) {
+        this.permissions.forEach((ps) => {
+          ps.r =
+            user.permissions
+              .find((p) => p.objecttype === ps.objecttype)
+              ?.permission?.indexOf('r') > -1
+          ps.n =
+            user.permissions
+              .find((p) => p.objecttype === ps.objecttype)
+              ?.permission?.indexOf('n') > -1
+          ps.m =
+            user.permissions
+              .find((p) => p.objecttype === ps.objecttype)
+              ?.permission?.indexOf('m') > -1
+          ps.d =
+            user.permissions
+              .find((p) => p.objecttype === ps.objecttype)
+              ?.permission?.indexOf('d') > -1
+          ps.allPermissions =
+            user.permissions
+              .find((p) => p.objecttype === ps.objecttype)
+              ?.permission?.indexOf('rnmd') > -1
+        })
+        this.userPermissionsLoading = false
+      } else {
+        request(`${BASE_URL}/api/objectType`, METHOD.GET).then((res) => {
+          this.permissions = res.data.map((o) => ({
+            objecttype: o.objecttype,
+            r:
+              user.permissions
+                .find((p) => p.objecttype === o.objecttype)
+                ?.permission?.indexOf('r') > -1,
+            n:
+              user.permissions
+                .find((p) => p.objecttype === o.objecttype)
+                ?.permission?.indexOf('n') > -1,
+            m:
+              user.permissions
+                .find((p) => p.objecttype === o.objecttype)
+                ?.permission?.indexOf('m') > -1,
+            d:
+              user.permissions
+                .find((p) => p.objecttype === o.objecttype)
+                ?.permission?.indexOf('d') > -1,
+            allPermissions:
+              user.permissions
+                .find((p) => p.objecttype === o.objecttype)
+                ?.permission?.indexOf('rnmd') > -1,
+          }))
+          this.userPermissionsLoading = false
+        })
+      }
     },
     selectAllPermission(value, record) {
       record.r = value
@@ -324,6 +381,7 @@ export default {
         o.allPermissions = false
       })
     },
+    checkUserHasPermission,
   },
 }
 </script>
