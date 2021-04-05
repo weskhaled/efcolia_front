@@ -6,19 +6,35 @@
     :bodyStyle="{ padding: '.5rem .5rem' }"
     :class="user.selected ? 'bg-blue-200' : ''"
   >
-    <a-card-meta
-      class="flex"
-      :title="user.lastname"
-      :description="user.firstname"
-      @click.stop="$emit('select', user)"
+    <div slot="title" @click.stop="$emit('select', user)">
+      {{ user.lastname || '' }}
+    </div>
+    <template
+      slot="extra"
+      v-if="checkUserHasPermission(currUser.permissions, 'user', 'd')"
     >
-      <div slot="avatar" class="self-center"> </div>
-    </a-card-meta>
+      <a-popconfirm
+        title="Are you sure delete this user ?"
+        ok-text="Yes"
+        cancel-text="No"
+        @confirm="$emit('delete', user)"
+      >
+        <a-icon key="delete" type="delete" />
+      </a-popconfirm>
+    </template>
+    <a-card-meta v-if="user.firstname" class="flex" :title="user.firstname" @click.stop="$emit('select', user)"/>
   </a-card>
 </template>
 
 <script>
 import { format } from 'date-fns'
+import { mapState } from 'vuex'
+
+const checkUserHasPermission = (permissions, objectType, permission) =>
+  permissions.find((p) => p.objecttype === objectType) &&
+  permissions
+    .find((p) => p.objecttype === objectType)
+    .permission?.indexOf(permission) !== -1
 
 export default {
   name: 'UserCard',
@@ -33,7 +49,11 @@ export default {
       showInfos: false,
     }
   },
+  computed: {
+    ...mapState('account', { currUser: 'user' }),
+  },
   methods: {
+    checkUserHasPermission,
     formatDate: (date = new Date(), formatDate = 'yyyy-MM-dd HH:mm:ss') => {
       return format(date, formatDate)
     },

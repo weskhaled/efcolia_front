@@ -170,7 +170,7 @@
         </div>
       </div>
     </div>
-    <div class="flex h-10 items-center justify-end self-end mx-1">
+    <div v-if="checkUserHasPermission(currUser.permissions, 'user', 'm')" class="flex h-10 items-center justify-end self-end mx-1">
       <a-button key="back" @click="updateInfos"> Reset </a-button>
       <a-button
         key="submit"

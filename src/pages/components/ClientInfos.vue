@@ -60,7 +60,7 @@
               <a-form-model-item label="Client Type" prop="clientType">
                 <a-select
                   v-model="form.clientType"
-                  placeholder="please select your device type"
+                  placeholder="please select your client type"
                 >
                   <a-select-option
                     v-for="clientType in clientTypes"
@@ -131,6 +131,7 @@ export default {
         commercialName: '',
         country: '',
         begindate: '',
+        clientType: '',
         description: '',
       },
       updateLoading: false,
@@ -138,7 +139,14 @@ export default {
         commercialName: [
           {
             required: true,
-            message: 'Please input commercialname',
+            message: 'Please input commercial name',
+            trigger: 'blur',
+          },
+        ],
+        clientType: [
+          {
+            required: true,
+            message: 'Please input client type',
             trigger: 'blur',
           },
         ],

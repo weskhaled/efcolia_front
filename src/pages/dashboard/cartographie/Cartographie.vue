@@ -36,18 +36,6 @@
         </div>
         <div class="flex">
           <div
-            v-if="checkUserHasPermission(currUser.permissions, 'company', 'd')"
-            class="inline flex-auto md:flex-none flex flex-1 justify-center mx-1"
-          >
-            <a-button
-              class="self-center"
-              type="danger"
-              shape="circle"
-              icon="minus"
-              @click="() => deleteClient(selectedClientValue)"
-            />
-          </div>
-          <div
             class="inline flex-auto md:flex-none flex flex-1 justify-center mx-1"
           >
             <a-button
@@ -155,7 +143,11 @@
                 </div>
                 <div
                   v-if="
-                    checkUserHasPermission(currUser.permissions, 'ensemble', 'r')
+                    checkUserHasPermission(
+                      currUser.permissions,
+                      'ensemble',
+                      'r'
+                    )
                   "
                   class="md:flex-none flex flex-1 justify-center"
                 >
@@ -441,7 +433,11 @@
                   <a-spin class="self-center" />
                 </div>
                 <div class="mb-3" v-for="contact in contacts" :key="contact.id">
-                  <user-card :user="contact" @select="selecteUser" />
+                  <user-card
+                    :user="contact"
+                    @select="selecteUser"
+                    @delete="deleteUser"
+                  />
                 </div>
               </div>
             </a-card>
@@ -1615,7 +1611,7 @@ export default {
       this.addingLoading = true
       request(`${BASE_URL}/api/user`, METHOD.PUT, {
         ...user,
-        clientId: this.selectedClientValue
+        clientId: this.selectedClientValue,
       })
         .then(() => {
           this.addingLoading = false
@@ -1626,6 +1622,22 @@ export default {
           this.addingLoading = false
           this.$message.error(
             `${user.lastname}, Sorry user can not updated, error: ${error.status}`,
+            5
+          )
+        })
+    },
+    deleteUser(user) {
+      this.addingLoading = true
+      request(`${BASE_URL}/api/user/${user.id}`, METHOD.DELETE)
+        .then(() => {
+          this.addingLoading = false
+          this.getContactsByClientId(this.selectedClientValue)
+          this.$message.success(`${user.lastname}, User has been deleted`, 5)
+        })
+        .catch((error) => {
+          this.addingLoading = false
+          this.$message.error(
+            `${user.lastname}, Sorry user can not deleted, error: ${error.status}`,
             5
           )
         })
