@@ -1213,8 +1213,7 @@ export default {
     ...mapState('account', { currUser: 'user' }),
     ...mapState('setting', ['lang']),
     filtredDevices: {
-      // getter
-      get: function () {
+      get() {
         return this.devicesSearch === ''
           ? this.devices.listDevice
           : this.devices.listDevice.filter(
@@ -1233,8 +1232,7 @@ export default {
                 ).test(d.simcardNumber + ''.toLocaleLowerCase())
             )
       },
-      // setter
-      set: function (newValue) {
+      set(newValue) {
         const uniqDevices = newValue.filter(
           (d) => !this.devices.listDevice.find((cd) => cd.id === d.id)
         )
@@ -1249,7 +1247,7 @@ export default {
     clearInterval(this.devicesInterval)
   },
   methods: {
-    formatDate: (date = new Date(), formatDate = 'yyyy-MM-dd') => {
+    formatDate: (date = new Date(), formatDate = 'YYYY-MM-DD') => {
       return format(date, formatDate)
     },
     moment,

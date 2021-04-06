@@ -281,6 +281,7 @@ export default {
     },
     moment,
   },
+  mounted() {}
 }
 </script>
 
