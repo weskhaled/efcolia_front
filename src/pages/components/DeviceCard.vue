@@ -182,7 +182,7 @@
         </div>
         <div class="font-light text-sm text-gray-700">
           {{
-            formatDate(new Date(device.localizationdate), 'dd/MM/yy HH:mm:ss')
+            formatDate(new Date(device.localizationdate), 'dd/MM/yyyy HH:mm:ss')
           }}
         </div>
       </div>
@@ -276,7 +276,7 @@ export default {
     },
   },
   methods: {
-    formatDate: (date = new Date(), formatDate = 'yyyy-MM-dd HH:mm:ss') => {
+    formatDate: (date = new Date(), formatDate = 'dd/MM/yyyy HH:mm:ss') => {
       return format(date, formatDate)
     },
     moment,

@@ -1290,30 +1290,12 @@ export default {
     selectClient(client_id) {
       // this.selectedClient = this.treeClientsData.find((c) => c.id === client_id)
       this.selectedClientValue = client_id
-      const getFreshDevice = (client_id) => {
-        request(`${BASE_URL}/api/device/synchro/${client_id}`, METHOD.GET).then(
-          (res) => {
-            const { data } = res
-            const selectedDevice = this.devices.listDevice.find(
-              (d) => d.selected
-            )
-            selectedDevice && this.zoomExtends([selectedDevice])
-            data.forEach(
-              (nd) =>
-                (this.devices.listDevice = this.devices.listDevice.map((d) =>
-                  d.id === nd.id
-                    ? (nd) =>
-                        nd.id === selectedDevice.id
-                          ? { ...nd, selected: true }
-                          : nd
-                    : d
-                ))
-            )
-          }
-        )
-      }
       clearInterval(this.devicesInterval)
-      this.devicesInterval = setInterval(() => getFreshDevice(client_id), 30000)
+      this.devicesInterval = setInterval(
+        () => this.getFreshDevice(client_id),
+        30000
+      )
+      this.devicesSearch = ''
       this.getDevicesByClientId(client_id)
       this.getAlertByClientId(client_id)
       this.getContactsByClientId(client_id)
@@ -1326,6 +1308,24 @@ export default {
         this.clientChildSelected = { ...this.selectedClient }
       })
     },
+    getFreshDevice(client_id) {
+      request(`${BASE_URL}/api/device/synchro/${client_id}`, METHOD.GET).then(
+        (res) => {
+          const { data } = res
+          const selectedDevice = this.devices.listDevice.find((d) => d.selected)
+          selectedDevice && this.zoomExtends([selectedDevice])
+          data.forEach((nd) => {
+            const findedDeviceIndex = this.devices.listDevice.findIndex(
+              (oldDevice) => oldDevice.id === nd.id
+            )
+            if (findedDeviceIndex > -1) {
+              this.devices.listDevice[findedDeviceIndex] =
+                nd.id === selectedDevice?.id ? { ...nd, selected: true } : nd
+            }
+          })
+        }
+      )
+    },
     getClientChilds(clientId) {
       request(`${BASE_URL}/api/client/${clientId}/childs`, METHOD.GET).then(
         (res) => {
@@ -1337,6 +1337,7 @@ export default {
       skip === 0 && (this.devices = { count: 0, listDevice: [] })
       this.devicesLoaded = false
       this.devicesLoading = true
+      clearInterval(this.devicesInterval)
       request(
         `${BASE_URL}/api/device/byClientId/${clientId}?skip=${skip}`,
         METHOD.GET
@@ -1360,6 +1361,10 @@ export default {
               this.devices.listDevice.filter((d) => d.latitude && d.longitude)
             )
         }
+        this.devicesInterval = setInterval(
+          () => this.getFreshDevice(this.selectedClientValue),
+          30000
+        )
       })
     },
     getAlertByClientId(clientId) {
@@ -1788,35 +1793,40 @@ export default {
       }
     },
     async searchDevice(value) {
-      !value.length && (this.devicesSearch = '')
-      value.length > 3 && (this.devicesSearch = value)
-      const localFindedDevices = this.devices.listDevice.filter(
-        (d) =>
-          new RegExp(
-            `${this.devicesSearch
-              .replace(/[-\\^$*+?.()|[\]{}]/g, '\\$&')
-              .toLocaleLowerCase()}`,
-            'i'
-          ).test(d.name + ''.toLocaleLowerCase()) ||
-          new RegExp(
-            `${this.devicesSearch
-              .replace(/[-\\^$*+?.()|[\]{}]/g, '\\$&')
-              .toLocaleLowerCase()}`,
-            'i'
-          ).test(d.simcardNumber + ''.toLocaleLowerCase())
-      )
-
-      this.devicesLoaded = false
-      this.devicesLoading = true
-      const { data } = await request(
-        `${BASE_URL}/api/device/byClientId/${this.selectedClientValue}/${value}`,
-        METHOD.GET
-      ).then((res) => res)
-      if (data.length && data.length > localFindedDevices.length) {
-        this.filtredDevices = data
+      if (value.length <= 3) {
+        this.devicesSearch = ''
+        return
+      } else {
+        this.devicesSearch = value
+        const localFindedDevices = this.devices.listDevice.filter(
+          (d) =>
+            new RegExp(
+              `${this.devicesSearch
+                .replace(/[-\\^$*+?.()|[\]{}]/g, '\\$&')
+                .toLocaleLowerCase()}`,
+              'i'
+            ).test(d.name + ''.toLocaleLowerCase()) ||
+            new RegExp(
+              `${this.devicesSearch
+                .replace(/[-\\^$*+?.()|[\]{}]/g, '\\$&')
+                .toLocaleLowerCase()}`,
+              'i'
+            ).test(d.simcardNumber + ''.toLocaleLowerCase())
+        )
+        this.devicesLoaded = false
+        this.devicesLoading = true
+        if (value.length > 3) {
+          const { data } = await request(
+            `${BASE_URL}/api/device/byClientId/${this.selectedClientValue}/${value}`,
+            METHOD.GET
+          ).then((res) => res)
+          if (data.length && data.length > localFindedDevices.length) {
+            this.filtredDevices = data
+          }
+        }
+        this.devicesLoaded = true
+        this.devicesLoading = false
       }
-      this.devicesLoaded = true
-      this.devicesLoading = false
     },
     async toXLSX() {
       const data = this.dataHistory
