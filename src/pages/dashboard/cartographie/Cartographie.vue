@@ -1156,7 +1156,7 @@ export default {
       rightCardTabsKey: 'gMaps',
       mapOptions: {
         center: { lat: 48, lng: 2 },
-        zoom: 15,
+        zoom: 16,
         fullscreenControl: false,
         mapTypeControl: true,
         rotateControl: false,
@@ -1271,7 +1271,7 @@ export default {
       if (device.selected) {
         if (device.latitude && device.longitude) {
           this.selectedDevice = device
-          this.mapOptions.zoom = 19
+          this.mapOptions.zoom = 16
           if (checkUserHasPermission(this.currUser.permissions, 'map', 'r')) {
             this.mapOptions.center.lat = device.latitude
             this.mapOptions.center.lng = device.longitude
@@ -1293,7 +1293,7 @@ export default {
       clearInterval(this.devicesInterval)
       this.devicesInterval = setInterval(
         () => this.getFreshDevice(client_id),
-        30000
+        20000
       )
       this.devicesSearch = ''
       this.getDevicesByClientId(client_id)
@@ -1313,16 +1313,24 @@ export default {
         (res) => {
           const { data } = res
           const selectedDevice = this.devices.listDevice.find((d) => d.selected)
-          selectedDevice && this.zoomExtends([selectedDevice])
           data.forEach((nd) => {
-            const findedDeviceIndex = this.devices.listDevice.findIndex(
-              (oldDevice) => oldDevice.id === nd.id
+            this.devices.listDevice = this.devices.listDevice.map((d) =>
+              d.id === nd.id
+                ? { ...nd, selected: !!(nd.id === selectedDevice.id) }
+                : d
             )
-            if (findedDeviceIndex > -1) {
-              this.devices.listDevice[findedDeviceIndex] =
-                nd.id === selectedDevice?.id ? { ...nd, selected: true } : nd
-            }
           })
+          if (selectedDevice) {
+            this.$nextTick(() => {
+              const newGeo = (({ latitude, longitude }) => ({
+                latitude,
+                longitude,
+              }))(this.devices.listDevice.find((d) => d.selected))
+              this.mapOptions.center.lat = newGeo.latitude
+              this.mapOptions.center.lng = newGeo.longitude
+              // this.zoomExtends([newGeo])
+            })
+          }
         }
       )
     },
@@ -1363,7 +1371,7 @@ export default {
         }
         this.devicesInterval = setInterval(
           () => this.getFreshDevice(this.selectedClientValue),
-          30000
+          20000
         )
       })
     },
