@@ -45,7 +45,7 @@ module.exports = (env = {}) => ({
             loader: 'postcss-loader',
             options: {
               ident: 'postcss',
-              plugins: [require('tailwindcss'), require('autoprefixer')],
+              plugins: [],
             },
           },
         ],

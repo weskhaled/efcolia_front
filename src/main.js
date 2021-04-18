@@ -1,5 +1,4 @@
 import Vue from 'vue'
-import VueCompositionAPI from '@vue/composition-api'
 import App from './App.vue'
 import { initRouter } from './router'
 import 'animate.css/source/animate.css'
@@ -25,7 +24,6 @@ import FusionTheme from 'fusioncharts/themes/fusioncharts.theme.fusion'
 const router = initRouter(store.state.setting.asyncRoutes)
 const i18n = initI18n('US', 'FR', 'CN')
 
-Vue.use(VueCompositionAPI)
 Vue.use(Antd)
 Vue.use(FormModel)
 Vue.config.productionTip = false

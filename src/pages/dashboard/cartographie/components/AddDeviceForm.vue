@@ -173,6 +173,7 @@
 </template>
 <script>
 import { request, METHOD } from '@/utils/request'
+// import { moment } from 'moment'
 const BASE_URL = process.env.VUE_APP_API_BASE_URL
 
 export default {
@@ -202,7 +203,7 @@ export default {
         device_id2: '',
         imei: '',
         serialNumber: '',
-        fromTo: undefined,
+        fromTo: [],
         status: false,
         clientId: undefined,
         findAddress: false,
@@ -237,19 +238,27 @@ export default {
     }
   },
   watch: {
-    device: function () {
+    device: function (newVal) {
+      console.log(newVal)
       this.$nextTick(() => {
         this.resetForm()
       })
-    },
+    }
+    // device: (val) => {
+    //   console.log(val)
+    //   !val && this.resetForm()
+    //   // this.$nextTick(() => {
+    //   //   !val && this.resetForm()
+    //   // })
+    // },
   },
   mounted() {
     this.getDeviceTypes()
     this.getSimCards()
   },
-  // created() {
-  //   deviceSubType
-  // },
+  created() {
+    this.resetForm()
+  },
   methods: {
     getDeviceTypes() {
       request(`${BASE_URL}/api/deviceType`, METHOD.GET).then((res) => {
@@ -280,6 +289,7 @@ export default {
     onSubmit() {
       this.$refs.ruleForm.validate((valid) => {
         if (valid) {
+          console.log(this.form.fromTo[0])
           this.$emit('submit', {
             ...this.form,
             id: this.device?.id || undefined,
@@ -289,7 +299,7 @@ export default {
             deviceSubtypeId: +this.form.deviceSubtypeId,
             status: this.form.status ? 1 : 0,
             findAddress: this.form.findAddress ? 1 : 0,
-            creationdate: (this.form.fromTo && this.form.fromTo[0]) || null,
+            // creationdate: (this.form.fromTo[0] && this.form.fromTo[0]) || null,
             enddate: (this.form.fromTo && this.form.fromTo[1]) || null,
             fromTo: undefined,
           })
@@ -322,7 +332,8 @@ export default {
       this.form.device_id2 = this.device?.device_id2 || ''
       this.form.imei = this.device?.imei || ''
       this.form.serialNumber = this.device?.serialnumber || ''
-      this.form.fromTo = this.device?.fromTo || ''
+      this.form.fromTo = []
+      // this.form.fromTo = [this.device?.begindate ? moment(this.device?.begindate, 'DD/MM/YYYY HH:mm:ss') : null, this.device?.enddate ? moment(this.device?.enddate, 'DD/MM/YYYY HH:mm:ss') : null]
       this.form.status = !!this.device?.status || ''
       this.form.clientId = this.device?.clientId || ''
       this.form.findAddress = !!this.device?.findaddress || ''

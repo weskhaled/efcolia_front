@@ -107,7 +107,7 @@ const columnsConditionsAlert = [
   },
   {
     title: 'value',
-    dataIndex: 'value',
+    dataIndex: 'VALUE',
   },
 ]
 const columnsAlertDeviceAndFlotte = [
