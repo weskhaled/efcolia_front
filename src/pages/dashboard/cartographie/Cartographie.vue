@@ -86,6 +86,33 @@
                   </a>
                 </a-tooltip>
               </div>
+
+              <div
+                v-if="
+                  checkUserHasPermission(currUser.permissions, 'ensemble', 'r')
+                "
+                class="md:flex-none flex flex-1 justify-center"
+              >
+                <a-tooltip placement="rightTop">
+                  <template slot="title">Liste des Flottes</template>
+                  <a
+                    class="flex justify-center w-full md:w-12 h-12"
+                    :class="tab === 6 ? 'bg-blue-100 active' : null"
+                    :disabled="!!!selectedClient"
+                    @click.prevent="
+                      () => {
+                        tab = 6
+                      }
+                    "
+                  >
+                    <a-icon
+                      class="self-center"
+                      type="folder-open"
+                      :class="tab === 6 ? 'text-blue-600' : null"
+                    />
+                  </a>
+                </a-tooltip>
+              </div>
               <div
                 class="md:flex-none flex flex-1 justify-center"
                 v-if="
@@ -165,32 +192,6 @@
                       class="self-center"
                       type="home"
                       :class="tab === 5 ? 'text-blue-600' : null"
-                    />
-                  </a>
-                </a-tooltip>
-              </div>
-              <div
-                v-if="
-                  checkUserHasPermission(currUser.permissions, 'ensemble', 'r')
-                "
-                class="md:flex-none flex flex-1 justify-center"
-              >
-                <a-tooltip placement="rightTop">
-                  <template slot="title">Liste des Flottes</template>
-                  <a
-                    class="flex justify-center w-full md:w-12 h-12"
-                    :class="tab === 6 ? 'bg-blue-100 active' : null"
-                    :disabled="!!!selectedClient"
-                    @click.prevent="
-                      () => {
-                        tab = 6
-                      }
-                    "
-                  >
-                    <a-icon
-                      class="self-center"
-                      type="folder-open"
-                      :class="tab === 6 ? 'text-blue-600' : null"
                     />
                   </a>
                 </a-tooltip>
@@ -523,7 +524,11 @@
             </div>
           </a-card>
           <!-- flotte list -->
-          <flotteList key="6" v-if="tab === 6" :selectedClient="selectedClient"/>
+          <flotteList
+            key="6"
+            v-if="tab === 6"
+            :selectedClient="selectedClient"
+          />
         </transition-group>
       </div>
       <!-- right card tabs -->
@@ -1108,7 +1113,7 @@ export default {
     ClientInfos,
     AddAlertForm,
     AddContactForm,
-    flotteList
+    flotteList,
   },
   i18n: require('./i18n'),
   data() {
@@ -1319,7 +1324,7 @@ export default {
       })
     },
     getFreshDevice(client_id) {
-      if(this.tab !== 1) return
+      if (this.tab !== 1) return
       request(`${BASE_URL}/api/device/synchro/${client_id}`, METHOD.GET).then(
         (res) => {
           const { data } = res
@@ -1636,11 +1641,12 @@ export default {
         clientId: this.selectedClientValue,
       })
         .then(() => {
-          this.addingLoading = false
           this.getContactsByClientId(this.selectedClientValue)
           this.$message.success(`${user.lastname}, User has been updated`, 5)
+          this.addingLoading = false
         })
         .catch((error) => {
+          console.log(error)
           this.addingLoading = false
           this.$message.error(
             `${user.lastname}, Sorry user can not updated, error: ${error.status}`,
@@ -1788,12 +1794,16 @@ export default {
           this.getContactsByClientId(this.selectedClientValue)
           this.$message.success(`${user.firstname}, User has been added`, 5)
         })
-        .catch((error) =>
-          this.$message.error(
-            `${alert.name}, Sorry user not added, error: ${error.status}`,
-            5
-          )
-        )
+        .catch((error) => {
+          if (error.response.status === 400) {
+            this.$message.error(`user ${user.lastname} already exits`, 5)
+          } else {
+            this.$message.error(
+              `${alert.name}, Sorry user not added, error: ${error.status}`,
+              5
+            )
+          }
+        })
     },
     openGmapInfoStop(historyId) {
       this.$refs[`infoWindowRef-${historyId}`][0] &&
