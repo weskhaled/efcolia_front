@@ -172,6 +172,11 @@
               ><a-icon class="mr-1" type="delete" /> Delete Device</span
             >
           </a-menu-item>
+          <a-menu-item>
+            <span @click.stop="$emit('report-device', device.id)"
+              ><a-icon class="mr-1" type="read" /> Rapport Device</span
+            >
+          </a-menu-item>
         </a-menu>
       </a-dropdown>
     </template>

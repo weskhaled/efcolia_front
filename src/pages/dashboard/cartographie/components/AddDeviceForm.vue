@@ -61,8 +61,8 @@
           </a-form-model-item>
         </div>
         <div>
-          <a-form-model-item ref="imei" label="IMEI" prop="imei">
-            <a-input v-model="form.imei" />
+          <a-form-model-item ref="csq" label="IMEI" prop="csq">
+            <a-input v-model="form.csq" />
           </a-form-model-item>
         </div>
         <div>
@@ -173,7 +173,7 @@
 </template>
 <script>
 import { request, METHOD } from '@/utils/request'
-// import { moment } from 'moment'
+import moment from 'moment'
 const BASE_URL = process.env.VUE_APP_API_BASE_URL
 
 export default {
@@ -201,9 +201,9 @@ export default {
         deviceTypeId: undefined,
         deviceSubtypeId: undefined,
         device_id2: '',
-        imei: '',
+        csq: '',
         serialNumber: '',
-        fromTo: [],
+        fromTo: [null, null],
         status: false,
         clientId: undefined,
         findAddress: false,
@@ -238,19 +238,11 @@ export default {
     }
   },
   watch: {
-    device: function (newVal) {
-      console.log(newVal)
+    device: function () {
       this.$nextTick(() => {
         this.resetForm()
       })
-    }
-    // device: (val) => {
-    //   console.log(val)
-    //   !val && this.resetForm()
-    //   // this.$nextTick(() => {
-    //   //   !val && this.resetForm()
-    //   // })
-    // },
+    },
   },
   mounted() {
     this.getDeviceTypes()
@@ -268,18 +260,17 @@ export default {
       })
     },
     getSimCards() {
-      request(
-        `${BASE_URL}/api/simcard/${this.clientId}`,
-        METHOD.GET
-      ).then((res) => {
-        this.simCards = res.data
-        if (this.device && this.device.simcard_id) {
-          this.form.simcard =
-            this.simCards.find(
-              (sc) => +sc.simcard_id === +this.device.simcard_id
-            )?.simcard_id || null
+      request(`${BASE_URL}/api/simcard/${this.clientId}`, METHOD.GET).then(
+        (res) => {
+          this.simCards = res.data
+          if (this.device && this.device.simcard_id) {
+            this.form.simcard =
+              this.simCards.find(
+                (sc) => +sc.simcard_id === +this.device.simcard_id
+              )?.simcard_id || null
+          }
         }
-      })
+      )
     },
     selectDeviceType(deviceTypeId) {
       request(`${BASE_URL}/api/deviceSubType/${deviceTypeId}`, METHOD.GET).then(
@@ -289,7 +280,6 @@ export default {
     onSubmit() {
       this.$refs.ruleForm.validate((valid) => {
         if (valid) {
-          console.log(this.form.fromTo[0])
           this.$emit('submit', {
             ...this.form,
             id: this.device?.id || undefined,
@@ -299,7 +289,7 @@ export default {
             deviceSubtypeId: +this.form.deviceSubtypeId,
             status: this.form.status ? 1 : 0,
             findAddress: this.form.findAddress ? 1 : 0,
-            // creationdate: (this.form.fromTo[0] && this.form.fromTo[0]) || null,
+            begindate: (this.form.fromTo && this.form.fromTo[0]) || null,
             enddate: (this.form.fromTo && this.form.fromTo[1]) || null,
             fromTo: undefined,
           })
@@ -309,7 +299,7 @@ export default {
       })
     },
     resetForm() {
-      this.device?.id ? this.fillInputs() : this.$refs.ruleForm?.resetFields()
+      this.fillInputs()
     },
     filterOptionClient(input, option) {
       return (
@@ -326,22 +316,24 @@ export default {
       )
     },
     fillInputs() {
+      this.deviceTypes.length === 0 && this.getDeviceTypes()
+      this.getSimCards()
       this.form.name = this.device?.name || ''
       this.form.deviceTypeId = this.device?.devicetype_id || ''
       this.form.deviceSubtypeId = this.device?.devicesubtype_id || ''
       this.form.device_id2 = this.device?.device_id2 || ''
-      this.form.imei = this.device?.imei || ''
+      this.form.imei = this.device?.csq || ''
       this.form.serialNumber = this.device?.serialnumber || ''
-      this.form.fromTo = []
-      // this.form.fromTo = [this.device?.begindate ? moment(this.device?.begindate, 'DD/MM/YYYY HH:mm:ss') : null, this.device?.enddate ? moment(this.device?.enddate, 'DD/MM/YYYY HH:mm:ss') : null]
+      this.form.fromTo = [null, null]
+      this.device?.begindate && (this.form.fromTo[0] = this.moment(new Date(this.device?.begindate)))
+      this.device?.enddate && (this.form.fromTo[1] = this.moment(new Date(this.device?.enddate)))
       this.form.status = !!this.device?.status || ''
       this.form.clientId = this.device?.clientId || ''
       this.form.findAddress = !!this.device?.findaddress || ''
       this.form.description = this.device?.description || ''
       this.form.simcard = this.device?.simcard_id || ''
-      this.getDeviceTypes()
-      this.getSimCards()
     },
+    moment,
   },
 }
 </script>

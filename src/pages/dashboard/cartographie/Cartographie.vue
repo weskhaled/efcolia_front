@@ -113,6 +113,7 @@
                   </a>
                 </a-tooltip>
               </div>
+
               <div
                 class="md:flex-none flex flex-1 justify-center"
                 v-if="
@@ -141,6 +142,7 @@
                   </a>
                 </a-tooltip>
               </div>
+
               <div
                 class="md:flex-none flex flex-1 justify-center"
                 v-if="
@@ -166,6 +168,7 @@
                   </a>
                 </a-tooltip>
               </div>
+
               <div
                 v-if="
                   checkUserHasPermission(currUser.permissions, 'ensemble', 'r')
@@ -222,7 +225,7 @@
               {{ `${devices.listDevice.length || 0} / ${devices.count || 0}` }}
               {{ $t('devices') }}
               <a-button
-                v-if="selectedClient"
+                v-show="selectedClient"
                 class="self-center"
                 type="primary"
                 shape="circle"
@@ -231,7 +234,7 @@
                 @click="
                   () => {
                     device = null
-                    modalDeviceVisible = true
+                    $nextTick(() => modalDeviceVisible = true)
                   }
                 "
               />
@@ -281,6 +284,7 @@
                     @history-device="historyDevice"
                     @edit-device="editDevice"
                     @delete-device="deleteDevice"
+                    @report-device="reportDevice"
                   />
                 </div>
               </div>
@@ -346,7 +350,7 @@
             v-if="tab === 3"
             key="3"
             :bordered="false"
-            :body-style="{ padding: '0px', overflowY: 'auto' }"
+            :body-style="{ padding: '0px', overflowY: 'hidden' }"
           >
             <template slot="title">
               <span class="mr-1">{{ $t('deviceHistory') }}</span>
@@ -391,7 +395,7 @@
             </template>
             <div>
               <div
-                class="p-0 overflow-auto min-h-555 h-content"
+                class="p-0 overflow-hidden min-h-555 h-content"
                 style="border-right: 1px solid rgb(226, 232, 240)"
               >
                 <div class="relative w-full h-full">
@@ -1034,6 +1038,25 @@
         @submit="addNewClient"
       />
     </a-modal>
+    <!-- modal report device -->
+    <a-modal
+      v-model="visibleReportDevice"
+      title="Device Report"
+      @ok="getDeviceReport"
+    >
+      <div class="text-center">
+        <a-radio-group
+          default-value="1day"
+          button-style="solid"
+          v-model="reportDuration"
+        >
+          <a-radio-button value="1day"> Un jour </a-radio-button>
+          <a-radio-button value="3days"> 3 jours </a-radio-button>
+          <a-radio-button value="1week"> 1 semaine </a-radio-button>
+          <a-radio-button value="month"> 1 mois </a-radio-button>
+        </a-radio-group>
+      </div>
+    </a-modal>
   </page-layout>
 </template>
 
@@ -1222,6 +1245,9 @@ export default {
         ],
         dataset: [],
       },
+      visibleReportDevice: false,
+      reportDeviceIdSelected: null,
+      reportDuration: '1day',
     }
   },
   computed: {
@@ -1524,7 +1550,11 @@ export default {
             {
               category: this.dataHistory.map((hd) => ({
                 label: new Date(hd.localizationdate).toLocaleString('fr-fr', {
-                  hour: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit',
+                  day: '2-digit',
+                  month: '2-digit',
+                  year: 'numeric',
                 }),
               })),
             },
@@ -1532,7 +1562,7 @@ export default {
           data.dataset = [
             {
               seriesName: 'Temperature1',
-              renderAs: 'area',
+              renderAs: 'line',
               showValues: '0',
               data: this.dataHistory.map((hd) => ({
                 value: hd.temperature1,
@@ -1550,7 +1580,7 @@ export default {
               parentYAxis: 'S',
               renderAs: 'line',
               showValues: '0',
-              data: this.dataHistory.map((hd) => ({ value: hd.batterylevel })),
+              data: this.dataHistory.map((hd) => ({ value: hd.batteryvoltage })),
             },
           ]
           this.dataSource = data
@@ -1633,6 +1663,19 @@ export default {
         },
         cancelText: 'No',
       })
+    },
+    reportDevice(deviceId) {
+      this.reportDeviceIdSelected = deviceId
+      this.visibleReportDevice = true
+    },
+    getDeviceReport() {
+      request(
+        `${BASE_URL}/api/rapport/${this.reportDeviceIdSelected}/${this.reportDuration}`,
+        METHOD.GET
+      ).then((res) => {
+        console.log(res.data)
+      })
+      this.visibleReportDevice = false
     },
     updateUser(user) {
       this.addingLoading = true
