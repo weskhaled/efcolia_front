@@ -231,12 +231,12 @@ export default {
     return {
       columnsHistory,
       visibleSelectColumns: false,
-      tableScroll: { x: 1100, y: 455 },
+      tableScroll: { x: 1280, y: 450 },
     }
   },
   created() {},
   mounted() {
-    this.tableScroll.y = this.$refs.historyTableWrapper.clientHeight - 85
+    this.tableScroll.y = this.$refs.historyTableWrapper.clientHeight - 100
     this.getFromLocal()
   },
   methods: {

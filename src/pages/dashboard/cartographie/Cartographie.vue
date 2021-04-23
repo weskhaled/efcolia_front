@@ -234,7 +234,7 @@
                 @click="
                   () => {
                     device = null
-                    $nextTick(() => modalDeviceVisible = true)
+                    $nextTick(() => (modalDeviceVisible = true))
                   }
                 "
               />
@@ -586,7 +586,7 @@
               :disabled="
                 !checkUserHasPermission(currUser.permissions, 'map', 'r')
               "
-              >Imprimer</a-button
+              ><span class="hiddden md:visible">Imprimer</span></a-button
             >
             <div
               v-if="rightCardTabsKey === 'gMaps'"
@@ -748,7 +748,7 @@
                   :type="type"
                   :width="width"
                   :height="height"
-                  :dataformat="dataFormat"
+                  :dataFormat="dataFormat"
                   :dataSource="dataSource"
                 ></fusioncharts>
               </div>
@@ -1089,6 +1089,7 @@ import {
 } from './components'
 import flotteList from './components/views/flotteList'
 import xlsx from 'xlsx'
+import FusionCharts from 'fusioncharts'
 
 const BASE_URL = process.env.VUE_APP_API_BASE_URL
 const iconStart = {
@@ -1209,41 +1210,50 @@ export default {
         { icon: iconFinish, offset: '100%' },
       ],
       //test
-      type: 'scrollcombidy2d',
-      renderAt: 'chart-container',
       width: '100%',
       height: '550',
+      type: 'timeseries',
       dataFormat: 'json',
       dataSource: {
-        chart: {
-          caption: 'Temperature1 et Speed',
-          subCaption: `${new Date().toLocaleString('fr-fr', {
-            month: 'long',
-            year: 'numeric',
-            day: 'numeric',
-          })} to ${new Date().toLocaleString('fr-fr', {
-            month: 'long',
-            year: 'numeric',
-            day: 'numeric',
-          })}`,
-          xAxisname: 'Month',
-          pYAxisName: 'Temperature',
-          sYAxisName: 'Speed K/H',
-          numberPrefix: '',
-          sNumberSuffix: '',
-          sYAxisMaxValue: '50',
-          showValues: '1',
-          numVisiblePlot: '12',
-          flatScrollBars: '1',
-          scrollheight: '10',
-          theme: 'fusion',
+        data: null,
+        chart: {},
+        caption: {
+          text: 'Device Battery Voltage & Temperature & Speed',
         },
-        categories: [
+        subcaption: {
+          text: 'Analysis of voltage, Temperature and device Speed',
+        },
+        yaxis: [
           {
-            category: [{ label: '00 h' }, { label: '23 h' }],
+            plot: [
+              {
+                value: 'voltage',
+                connectnulldata: true,
+              },
+            ],
+            title: 'voltage',
+          },
+          {
+            plot: [
+              {
+                value: 'speed',
+                connectnulldata: true,
+              },
+            ],
+            title: 'speed',
+            orientation: 'right',
+          },
+          {
+            plot: [
+              {
+                value: 'temperature',
+                connectnulldata: true,
+              },
+            ],
+            title: 'temperature',
+            orientation: 'left',
           },
         ],
-        dataset: [],
       },
       visibleReportDevice: false,
       reportDeviceIdSelected: null,
@@ -1532,61 +1542,93 @@ export default {
         }
         this.zoomExtends(this.dataHistoryPoints)
         if (this.dataHistory.length > 0) {
-          const data = Object.assign({}, this.dataSource) //clones data
-          data.chart.subCaption = `${new Date(
-            filter.from ? filter.from : new Date()
-          ).toLocaleString('fr-fr', {
-            month: 'long',
-            year: 'numeric',
-            day: 'numeric',
-          })} to ${new Date(
-            filter.from ? filter.to : new Date()
-          ).toLocaleString('fr-fr', {
-            month: 'long',
-            year: 'numeric',
-            day: 'numeric',
-          })}`
-          data.categories = [
+          const schema = [
             {
-              category: this.dataHistory.map((hd) => ({
-                label: new Date(hd.localizationdate).toLocaleString('fr-fr', {
-                  hour: '2-digit',
-                  minute: '2-digit',
-                  day: '2-digit',
-                  month: '2-digit',
-                  year: 'numeric',
-                }),
-              })),
+              name: 'Date',
+              type: 'date',
+              format: '%-d/%m/%Y, %H:%M:%S',
+            },
+            {
+              name: 'Battery Voltage',
+              type: 'number',
+            },
+            {
+              name: 'Speed',
+              type: 'number',
+            },
+            {
+              name: 'Temperature',
+              type: 'number',
             },
           ]
-          data.dataset = [
-            {
-              seriesName: 'Temperature1',
-              renderAs: 'line',
-              showValues: '0',
-              data: this.dataHistory.map((hd) => ({
-                value: hd.temperature1,
-              })),
-            },
-            {
-              seriesName: 'Speed',
-              parentYAxis: 'S',
-              renderAs: 'line',
-              showValues: '0',
-              data: this.dataHistory.map((hd) => ({ value: hd.speed })),
-            },
-            {
-              seriesName: 'Battery level',
-              parentYAxis: 'S',
-              renderAs: 'line',
-              showValues: '0',
-              data: this.dataHistory.map((hd) => ({ value: hd.batteryvoltage })),
-            },
-          ]
-          this.dataSource = data
-        } else {
-          this.dataSource.dataset = []
+          const data = this.dataHistory.map((hd) => [
+            new Date(hd.localizationdate).toLocaleString('fr-Fr'),
+            hd.batteryvoltage || 0,
+            hd.speed || 0,
+            hd.temperature1 || 0,
+          ])
+          const fusionTable = new FusionCharts.DataStore().createDataTable(
+            data,
+            schema
+          )
+          this.dataSource.data = fusionTable
         }
+        // if (this.dataHistory.length > 0) {
+        //   const data = Object.assign({}, this.dataSource) //clones data
+        //   data.chart.subCaption = `${new Date(
+        //     filter.from ? filter.from : new Date()
+        //   ).toLocaleString('fr-fr', {
+        //     month: 'long',
+        //     year: 'numeric',
+        //     day: 'numeric',
+        //   })} to ${new Date(
+        //     filter.from ? filter.to : new Date()
+        //   ).toLocaleString('fr-fr', {
+        //     month: 'long',
+        //     year: 'numeric',
+        //     day: 'numeric',
+        //   })}`
+        //   data.categories = [
+        //     {
+        //       category: this.dataHistory.map((hd) => ({
+        //         label: new Date(hd.localizationdate).toLocaleString('fr-fr', {
+        //           hour: '2-digit',
+        //           minute: '2-digit',
+        //           day: '2-digit',
+        //           month: '2-digit',
+        //           year: 'numeric',
+        //         }),
+        //       })),
+        //     },
+        //   ]
+        //   data.dataset = [
+        //     {
+        //       seriesName: 'Temperature1',
+        //       renderAs: 'line',
+        //       showValues: '0',
+        //       data: this.dataHistory.map((hd) => ({
+        //         value: hd.temperature1,
+        //       })),
+        //     },
+        //     {
+        //       seriesName: 'Speed',
+        //       parentYAxis: 'S',
+        //       renderAs: 'line',
+        //       showValues: '0',
+        //       data: this.dataHistory.map((hd) => ({ value: hd.speed })),
+        //     },
+        //     {
+        //       seriesName: 'Battery level',
+        //       parentYAxis: 'S',
+        //       renderAs: 'line',
+        //       showValues: '0',
+        //       data: this.dataHistory.map((hd) => ({ value: hd.batteryvoltage })),
+        //     },
+        //   ]
+        //   this.dataSource = data
+        // } else {
+        //   this.dataSource.dataset = []
+        // }
       })
       this.selectedDevice = device
       this.devices.listDevice.forEach((d) => (d.selected = false))
@@ -1673,7 +1715,7 @@ export default {
         `${BASE_URL}/api/rapport/${this.reportDeviceIdSelected}/${this.reportDuration}`,
         METHOD.GET
       ).then((res) => {
-        console.log(res.data)
+        res?.data?.url && window.open(res.data.url, '_blank').focus()
       })
       this.visibleReportDevice = false
     },

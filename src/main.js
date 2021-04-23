@@ -15,11 +15,7 @@ import bootstrap from '@/bootstrap'
 
 import VueFusionCharts from 'vue-fusioncharts'
 import FusionCharts from 'fusioncharts'
-import Column2D from 'fusioncharts/fusioncharts.charts';
-import Zoomlinedy from 'fusioncharts/fusioncharts.charts'
-
-//import the theme
-import FusionTheme from 'fusioncharts/themes/fusioncharts.theme.fusion'
+import TimeSeries from 'fusioncharts/fusioncharts.timeseries'
 
 const router = initRouter(store.state.setting.asyncRoutes)
 const i18n = initI18n('US', 'FR', 'CN')
@@ -30,7 +26,7 @@ Vue.config.productionTip = false
 Vue.use(Viser)
 Vue.use(Plugins)
 // register VueFusionCharts component
-Vue.use(VueFusionCharts, FusionCharts, Column2D, Zoomlinedy, FusionTheme)
+Vue.use(VueFusionCharts, FusionCharts, TimeSeries)
 
 bootstrap({ router, store, i18n, message: Vue.prototype.$message })
 
