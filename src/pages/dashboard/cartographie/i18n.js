@@ -23,7 +23,7 @@ module.exports = {
             addNewDevice: 'Ajouter un nouvel appareil',
             updateDevice: 'Modifier appareil',
             flotteList: 'Sociétés',
-            contactList: 'Contactes',
+            contactList: 'contacts',
             enginestate: 'Etat moteur',
             ListeBoitiers: 'Liste des boitiers',
             ListeAlert: 'Liste des alertes',

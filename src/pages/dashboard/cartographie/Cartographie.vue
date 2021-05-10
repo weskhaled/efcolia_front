@@ -430,7 +430,13 @@
                 @click="() => (modalAddContactVisible = true)"
               />
             </template>
-            <template slot="extra"></template>
+            <template slot="extra" v-if="checkUserHasPermission(currUser.permissions, 'user', 'd') && checkUserHasPermission(currUser.permissions, 'user', 'm')">
+              <a-radio-group default-value="all" v-model="filterActiveUser" size="small">
+                <a-radio-button value="all"> All </a-radio-button>
+                <a-radio-button value="active"> Active </a-radio-button>
+                <a-radio-button value="inactive"> Inactive </a-radio-button>
+              </a-radio-group>
+            </template>
             <div
               class="p-3 overflow-scroll min-h-555 h-content"
               style="border-right: 1px solid rgb(226, 232, 240)"
@@ -453,7 +459,7 @@
               >
                 <a-spin class="self-center" />
               </div>
-              <div class="mb-3" v-for="contact in contacts" :key="contact.id">
+              <div class="mb-3" v-for="contact in filterActiveUser === 'all' ? contacts : contacts.filter(c=> c.isActive === !!(filterActiveUser === 'active'))" :key="contact.id">
                 <user-card
                   :user="contact"
                   @select="selecteUser"
@@ -1066,6 +1072,7 @@ import moment from 'moment'
 import PageLayout from '@/layouts/PageLayout'
 import { mapState } from 'vuex'
 import { request, METHOD } from '@/utils/request'
+import { logout } from '@/services/user'
 import {
   gmapsMap,
   gmapsInfoWindow,
@@ -1258,6 +1265,7 @@ export default {
       visibleReportDevice: false,
       reportDeviceIdSelected: null,
       reportDuration: '1day',
+      filterActiveUser: 'all',
     }
   },
   computed: {
@@ -1573,62 +1581,6 @@ export default {
           )
           this.dataSource.data = fusionTable
         }
-        // if (this.dataHistory.length > 0) {
-        //   const data = Object.assign({}, this.dataSource) //clones data
-        //   data.chart.subCaption = `${new Date(
-        //     filter.from ? filter.from : new Date()
-        //   ).toLocaleString('fr-fr', {
-        //     month: 'long',
-        //     year: 'numeric',
-        //     day: 'numeric',
-        //   })} to ${new Date(
-        //     filter.from ? filter.to : new Date()
-        //   ).toLocaleString('fr-fr', {
-        //     month: 'long',
-        //     year: 'numeric',
-        //     day: 'numeric',
-        //   })}`
-        //   data.categories = [
-        //     {
-        //       category: this.dataHistory.map((hd) => ({
-        //         label: new Date(hd.localizationdate).toLocaleString('fr-fr', {
-        //           hour: '2-digit',
-        //           minute: '2-digit',
-        //           day: '2-digit',
-        //           month: '2-digit',
-        //           year: 'numeric',
-        //         }),
-        //       })),
-        //     },
-        //   ]
-        //   data.dataset = [
-        //     {
-        //       seriesName: 'Temperature1',
-        //       renderAs: 'line',
-        //       showValues: '0',
-        //       data: this.dataHistory.map((hd) => ({
-        //         value: hd.temperature1,
-        //       })),
-        //     },
-        //     {
-        //       seriesName: 'Speed',
-        //       parentYAxis: 'S',
-        //       renderAs: 'line',
-        //       showValues: '0',
-        //       data: this.dataHistory.map((hd) => ({ value: hd.speed })),
-        //     },
-        //     {
-        //       seriesName: 'Battery level',
-        //       parentYAxis: 'S',
-        //       renderAs: 'line',
-        //       showValues: '0',
-        //       data: this.dataHistory.map((hd) => ({ value: hd.batteryvoltage })),
-        //     },
-        //   ]
-        //   this.dataSource = data
-        // } else {
-        //   this.dataSource.dataset = []
-        // }
       })
       this.selectedDevice = device
       this.devices.listDevice.forEach((d) => (d.selected = false))
@@ -1726,8 +1678,18 @@ export default {
         clientId: this.selectedClientValue,
       })
         .then(() => {
-          this.getContactsByClientId(this.selectedClientValue)
-          this.$message.success(`${user.lastname}, User has been updated`, 5)
+          // this.getContactsByClientId(this.selectedClientValue)
+          if (user.id === this.currUser.id) {
+            this.$message.warn(
+              `${user.lastname}, User has been updated you should login again`,
+              15
+            )
+            logout()
+            this.$router.push('/login')
+          } else {
+            this.getContactsByClientId(this.selectedClientValue)
+            this.$message.success(`${user.lastname}, User has been updated`, 5)
+          }
           this.addingLoading = false
         })
         .catch((error) => {

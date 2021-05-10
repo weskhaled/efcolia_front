@@ -7,7 +7,7 @@
     :class="user.selected ? 'bg-blue-200' : ''"
   >
     <div slot="title" @click.stop="$emit('select', user)">
-      {{ user.lastname || '' }}
+      {{ user.firstname}} {{ user.lastname }}
     </div>
     <template
       slot="extra"
@@ -22,7 +22,6 @@
         <a-icon key="delete" type="delete" />
       </a-popconfirm>
     </template>
-    <a-card-meta v-if="user.firstname" class="flex" :title="user.firstname" @click.stop="$emit('select', user)"/>
   </a-card>
 </template>
 
