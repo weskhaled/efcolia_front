@@ -729,12 +729,12 @@
                     }"
                   >
                     <div>
-                      <div class="mb-1">
-                        <span class="font-medium">Raport Time:</span>
-                        <span>{{ historyPoint.appdate }}</span>
+                      <div class="mb-2 pb-2 border-gray-200 border-b">
+                        <span class="font-medium">Raport Time: </span>
+                        <span>{{ historyPoint.localizationdate }}</span>
                       </div>
                       <div class="mb-1">
-                        <span class="font-medium">Adresse:</span>
+                        <span class="font-medium">Adresse: </span>
                         <span>
                           {{ historyPoint.latitude }},
                           {{ historyPoint.longitude }}
