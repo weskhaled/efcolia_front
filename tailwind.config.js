@@ -1,11 +1,8 @@
-const { colors } = require('tailwindcss/defaultTheme')
-
 module.exports = {
   theme: {
     extend: {
       colors: {
         blue: {
-          ...colors.blue,
           sky: '#0af',
         },
       },
@@ -37,7 +34,5 @@ module.exports = {
       }
     },
   },
-  plugins: [
-    require('@tailwindcss/forms'),
-  ],
+  plugins: [],
 }

@@ -47,6 +47,9 @@ module.exports = {
     }
   },
   pluginOptions: {
+    windicss: {
+      preflight: false,
+    },
     'style-resources-loader': {
       preProcessor: 'less',
       patterns: [path.resolve(__dirname, "./src/theme/theme.less")],

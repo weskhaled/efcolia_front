@@ -1851,6 +1851,7 @@ export default {
             )
           }
         })
+        this.$refs.addContactFormRef.resetForm()
     },
     openGmapInfoStop(historyId) {
       this.$refs[`infoWindowRef-${historyId}`][0] &&

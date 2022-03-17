@@ -8,7 +8,7 @@
   >
     <template slot="actions" class="ant-card-actions p-0 relative">
       <a-tooltip>
-        <template slot="title"> battery connected </template>
+        <template slot="title"> Alimentation externe </template>
         <span>
           <svg
             version="1.1"
@@ -42,7 +42,7 @@
       </a-tooltip>
       <a-tooltip>
         <template slot="title">
-          {{ device.batteryvoltage }} V -
+          {{ (device.batteryvoltage / 1000).toFixed(2) }} -
           {{ ((device.batterylevel * 100) / 7).toFixed(0) }} %
         </template>
         <span class="icon-wrp">
@@ -59,7 +59,7 @@
         </span>
       </a-tooltip>
       <a-tooltip>
-        <template slot="title"> Engine state </template>
+        <template slot="title"> Contact </template>
         <span>
           <a-badge :color="device.enginestate ? (device.enginestate === 3 ? 'green' : 'red') : ''">
             <a-icon
@@ -73,13 +73,13 @@
         </span>
       </a-tooltip>
       <a-tooltip>
-        <template slot="title"> Speed </template>
+        <template slot="title"> Vitesse </template>
         <span class="capitalize" style="font-size: 0.7em">
           {{ device.speed }} km/h
         </span>
       </a-tooltip>
       <a-tooltip>
-        <template slot="title"> Signal </template>
+        <template slot="title"> GSM </template>
         <span>
           <div>
             <div class="signal">
@@ -120,7 +120,7 @@
         </span>
       </a-tooltip>
       <a-tooltip>
-        <template slot="title"> GPRS state </template>
+        <template slot="title"> GPRS </template>
         <span>
           <svg
             version="1.1"
@@ -214,7 +214,7 @@
       <div>
         <div class="flex items-stretch">
           <div
-            class="flex self-center flex-0 mr-2 pr-1 border-gray-400 border-r h-100"
+            class="flex self-center flex-0 mr-2 pr-1 border-gray-400 border-r"
           >
             <a-icon
               type="info-circle"

@@ -81,7 +81,7 @@
             <a-range-picker
               v-model="form.fromTo"
               show-time
-              :placeholder="['from', 'to']"
+              :placeholder="['du', 'au']"
               style="width: 100%"
             />
           </a-form-model-item>
@@ -127,8 +127,8 @@
           </a-form-model-item>
         </div>
         <div>
-          <a-form-model-item label="Recherche" prop="findAddress">
-            <a-switch v-model="form.findAddress" />
+          <a-form-model-item label="Recherche" prop="findaddress">
+            <a-switch v-model="form.findaddress" />
           </a-form-model-item>
         </div>
       </div>
@@ -206,10 +206,10 @@ export default {
         fromTo: [null, null],
         status: false,
         clientId: undefined,
-        findAddress: false,
         privacy: '',
         simcard: undefined,
         description: '',
+        findaddress: false
       },
       rules: {
         name: [
@@ -282,13 +282,14 @@ export default {
         if (valid) {
           this.$emit('submit', {
             ...this.form,
+            findaddress: undefined,
             id: this.device?.id || undefined,
             simCardId: this.form.simcard,
             timezone: 'Europe/Paris',
             deviceTypeId: +this.form.deviceTypeId,
             deviceSubtypeId: +this.form.deviceSubtypeId,
-            status: this.form.status ? 1 : 0,
-            findAddress: this.form.findAddress ? 1 : 0,
+            status: this.form.status ? true : false,
+            findAddress: this.form.findaddress ? 1 : 0,
             begindate: (this.form.fromTo && this.form.fromTo[0]) || null,
             enddate: (this.form.fromTo && this.form.fromTo[1]) || null,
             fromTo: undefined,
@@ -324,12 +325,12 @@ export default {
       this.form.device_id2 = this.device?.device_id2 || ''
       this.form.imei = this.device?.csq || ''
       this.form.serialNumber = this.device?.serialnumber || ''
-      this.form.fromTo = [null, null]
+      this.form.fromTo = [this.moment(new Date()).format('YYYY-MM-DD HH:mm:ss'), null]
       this.device?.begindate && (this.form.fromTo[0] = this.moment(new Date(this.device?.begindate)))
       this.device?.enddate && (this.form.fromTo[1] = this.moment(new Date(this.device?.enddate)))
-      this.form.status = !!this.device?.status || ''
-      this.form.clientId = this.device?.clientId || ''
-      this.form.findAddress = !!this.device?.findaddress || ''
+      this.form.status = this.device?.status === 1 || false
+      this.form.clientId = this.device?.clientId || this.clientId || ''
+      this.form.findaddress = this.device?.findaddress === 1 || false
       this.form.description = this.device?.description || ''
       this.form.simcard = this.device?.simcard_id || ''
     },

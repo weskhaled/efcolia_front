@@ -233,6 +233,13 @@ export default {
   created() {
     this.getPermissions()
   },
+  // watch: {
+  //   clientId: function () {
+  //     this.$nextTick(() => {
+  //       this.resetForm()
+  //     })
+  //   },
+  // },
   methods: {
     getPermissions() {
       request(`${BASE_URL}/api/objectType`, METHOD.GET).then((res) => {

@@ -146,7 +146,7 @@ export default {
         localizationhour: 'Heure de localisation',
       },
       US: {
-        enginestate: 'Engine state',
+        enginestate: 'Contact',
         localizationhour: 'Localization hour',
       },
     },

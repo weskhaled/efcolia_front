@@ -1,9 +1,10 @@
 import Vue from 'vue'
 import App from './App.vue'
 import { initRouter } from './router'
-import 'animate.css/source/animate.css'
+// import 'animate.css/source/animate.css'
 import './theme/index.less'
-import './assets/styles/tailwind.css'
+// import './assets/styles/tailwind.css'
+import 'windi.css'
 import Antd from 'ant-design-vue'
 import { FormModel } from 'ant-design-vue'
 import Viser from 'viser-vue'
@@ -16,6 +17,7 @@ import bootstrap from '@/bootstrap'
 import VueFusionCharts from 'vue-fusioncharts'
 import FusionCharts from 'fusioncharts'
 import TimeSeries from 'fusioncharts/fusioncharts.timeseries'
+import 'windi.css'
 
 const router = initRouter(store.state.setting.asyncRoutes)
 const i18n = initI18n('US', 'FR', 'CN')

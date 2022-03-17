@@ -24,7 +24,6 @@
       <div
         v-if="layout !== 'side' && !isMobile"
         class="admin-header-menu"
-        :style="`width: ${menuWidth};`"
       >
         <i-menu
           class="head-menu"
@@ -34,6 +33,7 @@
           @select="onSelect"
         />
       </div>
+      <slot slot="contentCenter" name="contentCenter"></slot>
       <div :class="['admin-header-right', headerTheme]">
         <a-tooltip class="header-item" title="Help document" placement="bottom">
           <a href="" target="_blank" class="hidden md:block">
