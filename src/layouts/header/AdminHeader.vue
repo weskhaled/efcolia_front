@@ -1,59 +1,61 @@
 <template>
-  <a-layout-header :class="[headerTheme, 'admin-header print:hidden']">
+  <a-layout-header :class="[headerTheme, 'admin-header print:hidden fixed top-0 w-full']">
     <div class="px-1 md:px-4" :class="['admin-header-wide', layout, pageWidth]">
-      <router-link
-        v-if="isMobile || layout === 'head'"
-        to="/"
-        class="md:w-24"
-        :class="['logo', isMobile ? null : 'pc', headerTheme]"
-      >
-        <img
-          v-if="!isMobile"
-          class="mx-auto my-auto h-full p-1"
-          src="@/assets/img/logo.png"
-        />
-        <h1 v-if="isMobile">{{ systemName }}</h1>
-      </router-link>
-      <a-divider v-if="isMobile" type="vertical" />
-      <a-icon
-        v-if="layout !== 'head'"
-        class="trigger"
-        :type="collapsed ? 'menu-unfold' : 'menu-fold'"
-        @click="toggleCollapse"
-      />
-      <div
-        v-if="layout !== 'side' && !isMobile"
-        class="admin-header-menu"
-      >
-        <i-menu
-          class="head-menu"
-          :theme="headerTheme"
-          mode="horizontal"
-          :options="menuData"
-          @select="onSelect"
-        />
-      </div>
-      <slot slot="contentCenter" name="contentCenter"></slot>
-      <div :class="['admin-header-right', headerTheme]">
-        <a-tooltip class="header-item" title="Help document" placement="bottom">
-          <a href="" target="_blank" class="hidden md:block">
-            <a-icon type="question-circle-o" />
-          </a>
-        </a-tooltip>
-        <header-notice class="header-item" />
-        <header-avatar class="header-item" />
-        <a-dropdown class="lang header-item">
-          <div> <a-icon type="global" /> {{ langAlias }} </div>
-          <a-menu
-            @click="(val) => setLang(val.key)"
-            :selected-keys="[lang]"
-            slot="overlay"
+      <div class="flex justify-between">
+        <div class=" h-16">
+          <router-link
+            v-if="isMobile || layout === 'head'"
+            to="/"
+            class="md:w-24"
+            :class="['logo', isMobile ? null : 'pc', headerTheme]"
           >
-            <a-menu-item v-for="lang in langList" :key="lang.key">{{
-              lang.key.toLowerCase() + ' ' + lang.name
-            }}</a-menu-item>
-          </a-menu>
-        </a-dropdown>
+            <img v-if="!isMobile" class="mx-auto my-auto h-full p-1" src="@/assets/img/logo.png" />
+            <h1 v-if="isMobile">{{ systemName }}</h1>
+          </router-link>
+          <a-divider v-if="isMobile" type="vertical" />
+          <a-icon
+            v-if="layout !== 'head'"
+            class="trigger"
+            :type="collapsed ? 'menu-unfold' : 'menu-fold'"
+            @click="toggleCollapse"
+          />
+          <div v-if="layout !== 'side' && !isMobile" class="admin-header-menu hidden">
+            <i-menu
+              class="head-menu"
+              :theme="headerTheme"
+              mode="horizontal"
+              :options="menuData"
+              @select="onSelect"
+            />
+          </div>
+        </div>
+        <div class="flex flex-1 justify-between">
+          <div class="flex-1 items-center justify-center">
+            <slot name="headerContentCenter"></slot>
+          </div>
+          <div :class="['admin-header-right', headerTheme]">
+            <a-tooltip class="header-item" title="Help document" placement="bottom">
+              <a href target="_blank" class="hidden md:block">
+                <a-icon type="question-circle-o" />
+              </a>
+            </a-tooltip>
+            <header-notice class="header-item" />
+            <header-avatar class="header-item" />
+            <a-dropdown class="lang header-item">
+              <div>
+                <a-icon type="global" />
+                {{ langAlias }}
+              </div>
+              <a-menu @click="(val) => setLang(val.key)" :selected-keys="[lang]" slot="overlay">
+                <a-menu-item v-for="lang in langList" :key="lang.key">
+                  {{
+                    lang.key.toLowerCase() + ' ' + lang.name
+                  }}
+                </a-menu-item>
+              </a-menu>
+            </a-dropdown>
+          </div>
+        </div>
       </div>
     </div>
   </a-layout-header>
@@ -121,5 +123,5 @@ export default {
 </script>
 
 <style lang="less" scoped>
-@import 'index';
+@import "index";
 </style>

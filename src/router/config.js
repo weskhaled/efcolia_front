@@ -1,4 +1,4 @@
-import TabsView from '@/layouts/tabs/TabsView'
+// import TabsView from '@/layouts/tabs/TabsView'
 // import BlankView from '@/layouts/BlankView'
 // import PageView from '@/layouts/PageView'
 
@@ -29,7 +29,6 @@ const options = {
     {
       path: '/',
       name: 'home',
-      component: TabsView,
       redirect: '/login',
       children: [
         {

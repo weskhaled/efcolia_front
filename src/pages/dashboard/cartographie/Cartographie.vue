@@ -1,262 +1,420 @@
 <template>
-  <page-layout :avatar="currUser.avatar">
-    <div slot="headerContent">
-      <div class="title">{{ currUser.name }}</div>
-      <div>{{ currUser.position[lang] }}</div>
-    </div>
-    <template slot="extra">
-      <div class="w-full block md:flex justify-end">
-        <div class="flex flex-1 mb-4 md:mb-0 relative">
-          <a-tree-select
-            @change="selectClient"
-            treeNodeFilterProp="title"
-            class="self-center w-full"
-            placeholder="Please select a client"
-            show-search
-            tree-data-simple-mode
-            :disabled="!!!treeClientsData.length"
-            :class="!!!treeClientsData.length ? 'opacity-50' : ''"
-            :dropdown-style="{ maxHeight: '300px', overflow: 'auto' }"
-            :treeDefaultExpandAll="false"
-            :treeDefaultExpandedKeys="[1]"
-            :tree-data="treeClientsData"
-            v-model="selectedClientValue"
-          />
-          <a-spin
-            :spinning="!!!treeClientsData.length"
-            style="position: absolute; top: calc(50% - 13px); right: 5px"
-          >
-            <a-icon
-              slot="indicator"
-              type="loading"
-              style="font-size: 24px"
-              spin
+  <div>
+    <admin-header :menuData="[]" :collapsed="() => {}">
+      <template slot="headerContentCenter">
+        <div class="w-full flex mx-auto max-w-lg h-full">
+          <div class="flex flex-1 mb-4 md:mb-0 relative">
+            <a-tree-select
+              @change="selectClient"
+              treeNodeFilterProp="title"
+              class="self-center w-full"
+              placeholder="Please select a client"
+              show-search
+              tree-data-simple-mode
+              :disabled="!!!treeClientsData.length"
+              :class="!!!treeClientsData.length ? 'opacity-50' : ''"
+              :dropdown-style="{ maxHeight: '300px', overflow: 'auto' }"
+              :treeDefaultExpandAll="false"
+              :treeDefaultExpandedKeys="[1]"
+              :tree-data="treeClientsData"
+              v-model="selectedClientValue"
             />
-          </a-spin>
-        </div>
-        <div class="flex">
-          <div class="md:flex-none flex flex-1 justify-center mx-1">
-            <a-button
-              class="self-center"
-              type="primary"
-              shape="circle"
-              icon="search"
-            />
+            <a-spin
+              :spinning="!!!treeClientsData.length"
+              style="position: absolute; top: calc(50% - 13px); right: 5px"
+            >
+              <a-icon slot="indicator" type="loading" style="font-size: 24px" spin />
+            </a-spin>
           </div>
         </div>
-      </div>
-    </template>
-    <!-- main content -->
-    <div class="block md:flex">
-      <div
-        class="w-full sm:w-full md:w-10 lg:w-12 overflow-hidden print:hidden"
-      >
-        <a-card :title="false" :bordered="false" :body-style="{ padding: 0 }">
-          <div class="px-0 left-tab overflow-hidden">
-            <div class="flex md:block md:divide-y divide-gray-100">
-              <div class="md:flex-none flex flex-1 justify-center">
-                <a-tooltip placement="rightTop">
-                  <template slot="title">{{ $t('ListeBoitiers') }}</template>
-                  <a
-                    class="flex justify-center w-full md:w-12 h-12"
-                    :class="tab === 1 ? 'bg-blue-100 active' : null"
-                    @click.prevent="
-                      () => {
-                        tab = 1
-                        showHistoryInMap = false
-                        rightCardTabsKey = 'gMaps'
-                        checkUserHasPermission(
-                          currUser.permissions,
-                          'map',
-                          'r'
-                        ) &&
-                          zoomExtends(
-                            devices.listDevice.filter(
-                              (d) => d.latitude && d.longitude
+      </template>
+    </admin-header>
+    <div class="p-5">
+      <!-- main content -->
+      <div class="block md:flex">
+        <div class="w-full sm:w-full md:w-10 lg:w-12 overflow-hidden print:hidden">
+          <a-card :title="false" :bordered="false" :body-style="{ padding: 0 }">
+            <div class="px-0 left-tab overflow-hidden">
+              <div class="flex md:block md:divide-y divide-gray-100">
+                <div class="md:flex-none flex flex-1 justify-center">
+                  <a-tooltip placement="rightTop">
+                    <template slot="title">{{ $t('ListeBoitiers') }}</template>
+                    <a
+                      class="flex justify-center w-full md:w-12 h-12"
+                      :class="tab === 1 ? 'bg-blue-100 active' : null"
+                      @click.prevent="
+                        () => {
+                          tab = 1
+                          showHistoryInMap = false
+                          rightCardTabsKey = 'gMaps'
+                          checkUserHasPermission(
+                            currUser.permissions,
+                            'map',
+                            'r'
+                          ) &&
+                            zoomExtends(
+                              devices.listDevice.filter(
+                                (d) => d.latitude && d.longitude
+                              )
                             )
-                          )
-                      }
-                    "
-                  >
-                    <a-icon
-                      class="self-center"
-                      type="pushpin"
-                      :class="tab === 1 ? 'text-blue-600' : null"
-                    />
-                  </a>
-                </a-tooltip>
-              </div>
+                        }
+                      "
+                    >
+                      <a-icon
+                        class="self-center"
+                        type="pushpin"
+                        :class="tab === 1 ? 'text-blue-600' : null"
+                      />
+                    </a>
+                  </a-tooltip>
+                </div>
 
-              <div
-                v-if="
-                  checkUserHasPermission(currUser.permissions, 'ensemble', 'r')
-                "
-                class="md:flex-none flex flex-1 justify-center"
-              >
-                <a-tooltip placement="rightTop">
-                  <template slot="title">Liste des Flottes</template>
-                  <a
-                    class="flex justify-center w-full md:w-12 h-12"
-                    :class="tab === 6 ? 'bg-blue-100 active' : null"
-                    :disabled="!!!selectedClient"
-                    @click.prevent="
-                      () => {
-                        tab = 6
-                      }
-                    "
-                  >
-                    <a-icon
-                      class="self-center"
-                      type="folder-open"
-                      :class="tab === 6 ? 'text-blue-600' : null"
-                    />
-                  </a>
-                </a-tooltip>
-              </div>
+                <div
+                  v-if="
+                    checkUserHasPermission(currUser.permissions, 'ensemble', 'r')
+                  "
+                  class="md:flex-none flex flex-1 justify-center"
+                >
+                  <a-tooltip placement="rightTop">
+                    <template slot="title">Liste des Flottes</template>
+                    <a
+                      class="flex justify-center w-full md:w-12 h-12"
+                      :class="tab === 6 ? 'bg-blue-100 active' : null"
+                      :disabled="!!!selectedClient"
+                      @click.prevent="
+                        () => {
+                          tab = 6
+                        }
+                      "
+                    >
+                      <a-icon
+                        class="self-center"
+                        type="folder-open"
+                        :class="tab === 6 ? 'text-blue-600' : null"
+                      />
+                    </a>
+                  </a-tooltip>
+                </div>
 
-              <div
-                class="md:flex-none flex flex-1 justify-center"
-                v-if="
-                  checkUserHasPermission(currUser.permissions, 'alert', 'r')
-                "
-              >
-                <a-tooltip placement="rightTop">
-                  <template slot="title">{{ $t('ListeAlert') }}</template>
+                <div
+                  class="md:flex-none flex flex-1 justify-center"
+                  v-if="
+                    checkUserHasPermission(currUser.permissions, 'alert', 'r')
+                  "
+                >
+                  <a-tooltip placement="rightTop">
+                    <template slot="title">{{ $t('ListeAlert') }}</template>
 
-                  <a
-                    class="flex justify-center w-full md:w-12 h-12"
-                    :class="tab === 2 ? 'bg-blue-100 active' : null"
-                    @click.prevent="
-                      () => {
-                        tab = 2
-                        selectedAlert = null
-                        alertes.forEach((a) => (a.selected = false))
-                      }
-                    "
-                  >
-                    <a-icon
-                      class="self-center"
-                      type="alert"
-                      :class="tab === 2 ? 'text-blue-600' : null"
-                    />
-                  </a>
-                </a-tooltip>
-              </div>
+                    <a
+                      class="flex justify-center w-full md:w-12 h-12"
+                      :class="tab === 2 ? 'bg-blue-100 active' : null"
+                      @click.prevent="
+                        () => {
+                          tab = 2
+                          selectedAlert = null
+                          alertes.forEach((a) => (a.selected = false))
+                        }
+                      "
+                    >
+                      <a-icon
+                        class="self-center"
+                        type="alert"
+                        :class="tab === 2 ? 'text-blue-600' : null"
+                      />
+                    </a>
+                  </a-tooltip>
+                </div>
 
-              <div
-                class="md:flex-none flex flex-1 justify-center"
-                v-if="
-                  checkUserHasPermission(currUser.permissions, 'contact', 'r')
-                "
-              >
-                <a-tooltip placement="rightTop">
-                  <template slot="title">{{ $t('ListeContacts') }}</template>
-                  <a
-                    class="flex justify-center w-full md:w-12 h-12"
-                    :class="tab === 4 ? 'bg-blue-100 active' : null"
-                    @click.prevent="
-                      () => {
-                        tab = 4
-                      }
-                    "
-                  >
-                    <a-icon
-                      class="self-center"
-                      type="user"
-                      :class="tab === 4 ? 'text-blue-600' : null"
-                    />
-                  </a>
-                </a-tooltip>
-              </div>
+                <div
+                  class="md:flex-none flex flex-1 justify-center"
+                  v-if="
+                    checkUserHasPermission(currUser.permissions, 'contact', 'r')
+                  "
+                >
+                  <a-tooltip placement="rightTop">
+                    <template slot="title">{{ $t('ListeContacts') }}</template>
+                    <a
+                      class="flex justify-center w-full md:w-12 h-12"
+                      :class="tab === 4 ? 'bg-blue-100 active' : null"
+                      @click.prevent="
+                        () => {
+                          tab = 4
+                        }
+                      "
+                    >
+                      <a-icon
+                        class="self-center"
+                        type="user"
+                        :class="tab === 4 ? 'text-blue-600' : null"
+                      />
+                    </a>
+                  </a-tooltip>
+                </div>
 
-              <div
-                v-if="
-                  checkUserHasPermission(currUser.permissions, 'ensemble', 'r')
-                "
-                class="md:flex-none flex flex-1 justify-center"
-              >
-                <a-tooltip placement="rightTop">
-                  <template slot="title">{{ $t('ListeSociétés') }}</template>
-                  <a
-                    class="flex justify-center w-full md:w-12 h-12"
-                    :class="tab === 5 ? 'bg-blue-100 active' : null"
-                    :disabled="!!!selectedClient"
-                    @click.prevent="
-                      () => {
-                        tab = 5
-                        clientChildSelected = { ...selectedClient }
-                        $nextTick(() => {
-                          $refs.clientChildSelectedRef.updateInfos()
-                        })
-                      }
-                    "
-                  >
-                    <a-icon
-                      class="self-center"
-                      type="home"
-                      :class="tab === 5 ? 'text-blue-600' : null"
-                    />
-                  </a>
-                </a-tooltip>
+                <div
+                  v-if="
+                    checkUserHasPermission(currUser.permissions, 'ensemble', 'r')
+                  "
+                  class="md:flex-none flex flex-1 justify-center"
+                >
+                  <a-tooltip placement="rightTop">
+                    <template slot="title">{{ $t('ListeSociétés') }}</template>
+                    <a
+                      class="flex justify-center w-full md:w-12 h-12"
+                      :class="tab === 5 ? 'bg-blue-100 active' : null"
+                      :disabled="!!!selectedClient"
+                      @click.prevent="
+                        () => {
+                          tab = 5
+                          clientChildSelected = { ...selectedClient }
+                          $nextTick(() => {
+                            $refs.clientChildSelectedRef.updateInfos()
+                          })
+                        }
+                      "
+                    >
+                      <a-icon
+                        class="self-center"
+                        type="home"
+                        :class="tab === 5 ? 'text-blue-600' : null"
+                      />
+                    </a>
+                  </a-tooltip>
+                </div>
               </div>
             </div>
-          </div>
-        </a-card>
-      </div>
-      <!-- left card tabs -->
-      <div
-        class="print:hidden"
-        :class="
-          tab === 3
-            ? 'w-full sm:w-full md:w-3/6 lg:w-3/6 xl:w-3/6'
-            : 'w-full sm:w-full md:w-3/6 lg:w-2/6'
-        "
-      >
-        <transition-group name="fade-up" target="div" appear>
-          <!-- devices list -->
-          <a-card
-            v-if="tab === 1"
-            key="1"
-            :bordered="false"
-            :body-style="{ padding: 0 }"
-            class="devices-card overflow-hidden"
-          >
-            <template slot="title">
-              {{ `${devices.listDevice.length || 0} / ${devices.count || 0}` }}
-              {{ $t('devices') }}
-              <a-button
-                v-show="selectedClient"
-                class="self-center"
-                type="primary"
-                shape="circle"
-                icon="plus"
-                size="small"
-                @click="
-                  () => {
-                    device = null
-                    $nextTick(() => (modalDeviceVisible = true))
-                  }
-                "
-              />
-            </template>
-            <a slot="extra">
-              <a-input-search
-                class="self-center w-48 invisible md:visible"
-                :placeholder="$t('FiltreBoitier')"
-                allowClear
-                @search="searchDevice"
-              />
-            </a>
-            <div>
+          </a-card>
+        </div>
+        <!-- left card tabs -->
+        <div
+          class="print:hidden"
+          :class="
+            tab === 3
+              ? 'w-full sm:w-full md:w-3/6 lg:w-3/6 xl:w-3/6'
+              : 'w-full sm:w-full md:w-3/6 lg:w-2/6'
+          "
+        >
+          <transition-group name="fade-up" target="div" appear>
+            <!-- devices list -->
+            <a-card
+              v-if="tab === 1"
+              key="1"
+              :bordered="false"
+              :body-style="{ padding: 0 }"
+              class="devices-card overflow-hidden"
+            >
+              <template slot="title">
+                {{ `${devices.listDevice.length || 0} / ${devices.count || 0}` }}
+                {{ $t('devices') }}
+                <a-button
+                  v-show="selectedClient"
+                  class="self-center"
+                  type="primary"
+                  shape="circle"
+                  icon="plus"
+                  size="small"
+                  @click="
+                    () => {
+                      device = null
+                      $nextTick(() => (modalDeviceVisible = true))
+                    }
+                  "
+                />
+              </template>
+              <a slot="extra">
+                <a-input-search
+                  class="self-center w-48 invisible md:visible"
+                  :placeholder="$t('FiltreBoitier')"
+                  allowClear
+                  @search="searchDevice"
+                />
+              </a>
+              <div>
+                <div
+                  class="p-3 overflow-y-auto min-h-555 h-content"
+                  style="border-right: 1px solid rgb(226, 232, 240)"
+                  ref="listDevicesRef"
+                  v-on:scroll="devicesScroll"
+                >
+                  <a-result
+                    v-if="
+                      devices.length === 0 && !devicesLoaded && !devicesLoading
+                    "
+                    :title="$t('selectClientFirst')"
+                  ></a-result>
+                  <a-result
+                    status="404"
+                    title="No Devices"
+                    sub-title="Sorry, No devices for this client."
+                    v-if="devices.length === 0 && devicesLoaded"
+                  ></a-result>
+                  <div
+                    v-if="!devicesLoaded && devicesLoading"
+                    class="w-full h-full flex place-content-center content-center absolute absolute z-10 bg-white bg-opacity-75"
+                    style="margin: -0.8rem"
+                  >
+                    <a-spin class="self-center" />
+                  </div>
+                  <div class="mb-3 device" v-for="device in filtredDevices" :key="device.id">
+                    <device-card
+                      :device="device"
+                      @select="selecteDevice"
+                      @history-device="historyDevice"
+                      @edit-device="editDevice"
+                      @delete-device="deleteDevice"
+                      @report-device="reportDevice"
+                    />
+                  </div>
+                </div>
+              </div>
+            </a-card>
+            <!-- alert list -->
+            <a-card v-if="tab === 2" key="2" :bordered="false" :body-style="{ padding: 0 }">
+              <template slot="title">
+                {{ (alertes.length > 0 && alertes.length) || 0 }}
+                {{ $t('devicesAlerts') }}
+                <a-button
+                  class="self-center"
+                  type="primary"
+                  shape="circle"
+                  icon="plus"
+                  size="small"
+                  @click="() => (modalAddAlertVisible = true)"
+                />
+              </template>
+              <a slot="extra">
+                <a-input-search
+                  class="self-center w-48 invisible md:visible"
+                  placeholder="search alert"
+                />
+              </a>
               <div
-                class="p-3 overflow-y-auto min-h-555 h-content"
+                class="p-3 overflow-scroll min-h-555 h-content"
                 style="border-right: 1px solid rgb(226, 232, 240)"
-                ref="listDevicesRef"
-                v-on:scroll="devicesScroll"
+              >
+                <a-result
+                  v-if="alertes.length === 0 && !alertesLoaded && !alertesLoading"
+                  :title="$t('selectClientFirst')"
+                ></a-result>
+                <a-result
+                  status="404"
+                  title="No Alertes"
+                  sub-title="No alertes for this client."
+                  v-if="alertes.length === 0 && alertesLoaded"
+                ></a-result>
+                <div
+                  v-if="!alertesLoaded && alertesLoading"
+                  class="w-full h-full flex place-content-center content-center"
+                >
+                  <a-spin class="self-center" />
+                </div>
+                <div class="mb-3" v-for="alert in alertes" :key="alert.id">
+                  <device-alert-card :alert="alert" @select="selecteAlert" @delete="deleteAlert" />
+                </div>
+              </div>
+            </a-card>
+            <!-- history devices -->
+            <a-card
+              class="device-history-list"
+              v-if="tab === 3"
+              key="3"
+              :bordered="false"
+              :body-style="{ padding: '0px', overflowY: 'hidden' }"
+            >
+              <template slot="title">
+                <span class="mr-1">{{ $t('deviceHistory') }}</span>
+                <a-button
+                  type="primary"
+                  icon="download"
+                  size="small"
+                  @click="toXLSX"
+                  :disabled="!!!dataHistory.length"
+                >XLSX</a-button>
+              </template>
+              <template slot="extra">
+                <a-range-picker
+                  :show-time="{ format: 'HH:mm' }"
+                  format="DD-MM-YYYY HH:mm"
+                  :default-value="[
+                    moment(
+                      new Date(
+                        new Date().getFullYear(),
+                        new Date().getMonth(),
+                        new Date().getDate(),
+                        0,
+                        0
+                      ),
+                      'DD-MM-YYYY HH:mm'
+                    ),
+                    moment(
+                      new Date(
+                        new Date().getFullYear(),
+                        new Date().getMonth(),
+                        new Date().getDate(),
+                        23,
+                        59
+                      ),
+                      'DD-MM-YYYY HH:mm'
+                    ),
+                  ]"
+                  :disabled="dataHistoryLoading"
+                  @ok="dataHistoryDateChange"
+                />
+              </template>
+              <div>
+                <div
+                  class="p-0 overflow-hidden min-h-555 h-content"
+                  style="border-right: 1px solid rgb(226, 232, 240)"
+                >
+                  <div class="relative w-full h-full">
+                    <device-history-table
+                      :dataHistory="dataHistory"
+                      :dataHistoryLoading="dataHistoryLoading"
+                    />
+                  </div>
+                </div>
+              </div>
+            </a-card>
+            <!-- users list -->
+            <a-card
+              class="users-list"
+              v-if="tab === 4"
+              key="4"
+              :bordered="false"
+              :body-style="{ padding: '0px', overflowY: 'auto' }"
+            >
+              <template slot="title">
+                {{ (contacts.length > 0 && contacts.length) || 0 }}
+                {{ $t('contactList') }}
+                <a-button
+                  class="self-center"
+                  type="primary"
+                  shape="circle"
+                  icon="plus"
+                  size="small"
+                  v-if="
+                    checkUserHasPermission(currUser.permissions, 'contact', 'n')
+                  "
+                  @click="() => (modalAddContactVisible = true)"
+                />
+              </template>
+              <template
+                slot="extra"
+                v-if="checkUserHasPermission(currUser.permissions, 'user', 'd') && checkUserHasPermission(currUser.permissions, 'user', 'm')"
+              >
+                <a-radio-group default-value="all" v-model="filterActiveUser" size="small">
+                  <a-radio-button value="all">All</a-radio-button>
+                  <a-radio-button value="active">Active</a-radio-button>
+                  <a-radio-button value="inactive">Inactive</a-radio-button>
+                </a-radio-group>
+              </template>
+              <div
+                class="p-3 overflow-scroll min-h-555 h-content"
+                style="border-right: 1px solid rgb(226, 232, 240)"
               >
                 <a-result
                   v-if="
-                    devices.length === 0 && !devicesLoaded && !devicesLoading
+                    contacts.length === 0 && !contactsLoaded && !contactsLoading
                   "
                   :title="$t('selectClientFirst')"
                 ></a-result>
@@ -264,812 +422,575 @@
                   status="404"
                   title="No Devices"
                   sub-title="Sorry, No devices for this client."
-                  v-if="devices.length === 0 && devicesLoaded"
+                  v-if="contacts.length === 0 && contactsLoaded"
                 ></a-result>
                 <div
-                  v-if="!devicesLoaded && devicesLoading"
-                  class="w-full h-full flex place-content-center content-center absolute absolute z-10 bg-white bg-opacity-75"
-                  style="margin: -0.8rem"
+                  v-if="!contactsLoaded && contactsLoading"
+                  class="w-full h-full flex place-content-center content-center"
                 >
                   <a-spin class="self-center" />
                 </div>
                 <div
-                  class="mb-3 device"
-                  v-for="device in filtredDevices"
-                  :key="device.id"
+                  class="mb-3"
+                  v-for="contact in filterActiveUser === 'all' ? contacts : contacts.filter(c => c.isActive === !!(filterActiveUser === 'active'))"
+                  :key="contact.id"
                 >
-                  <device-card
-                    :device="device"
-                    @select="selecteDevice"
-                    @history-device="historyDevice"
-                    @edit-device="editDevice"
-                    @delete-device="deleteDevice"
-                    @report-device="reportDevice"
-                  />
+                  <user-card :user="contact" @select="selecteUser" @delete="deleteUser" />
                 </div>
               </div>
-            </div>
-          </a-card>
-          <!-- alert list -->
-          <a-card
-            v-if="tab === 2"
-            key="2"
-            :bordered="false"
-            :body-style="{ padding: 0 }"
-          >
-            <template slot="title">
-              {{ (alertes.length > 0 && alertes.length) || 0 }}
-              {{ $t('devicesAlerts') }}
-              <a-button
-                class="self-center"
-                type="primary"
-                shape="circle"
-                icon="plus"
-                size="small"
-                @click="() => (modalAddAlertVisible = true)"
-              />
-            </template>
-            <a slot="extra">
-              <a-input-search
-                class="self-center w-48 invisible md:visible"
-                placeholder="search alert"
-              />
-            </a>
-            <div
-              class="p-3 overflow-scroll min-h-555 h-content"
-              style="border-right: 1px solid rgb(226, 232, 240)"
+            </a-card>
+            <!-- clients list -->
+            <a-card
+              class="flotte-list"
+              v-if="tab === 5"
+              key="5"
+              :bordered="false"
+              :body-style="{ padding: '0px', overflowY: 'auto' }"
             >
-              <a-result
-                v-if="alertes.length === 0 && !alertesLoaded && !alertesLoading"
-                :title="$t('selectClientFirst')"
-              ></a-result>
-              <a-result
-                status="404"
-                title="No Alertes"
-                sub-title="No alertes for this client."
-                v-if="alertes.length === 0 && alertesLoaded"
-              ></a-result>
-              <div
-                v-if="!alertesLoaded && alertesLoading"
-                class="w-full h-full flex place-content-center content-center"
-              >
-                <a-spin class="self-center" />
-              </div>
-              <div class="mb-3" v-for="alert in alertes" :key="alert.id">
-                <device-alert-card
-                  :alert="alert"
-                  @select="selecteAlert"
-                  @delete="deleteAlert"
+              <template slot="title">
+                {{
+                  (clientChildsData.length > 0 && clientChildsData.length) || 0
+                }}
+                {{ $t('flotteList') }}
+                <a-button
+                  class="self-center"
+                  type="primary"
+                  shape="circle"
+                  icon="plus"
+                  size="small"
+                  v-if="
+                    currUser.permissions
+                      .find((p) => p.objecttype === 'company')
+                      .permission.indexOf('n') !== -1
+                  "
+                  @click="() => (modalClientVisible = true)"
                 />
-              </div>
-            </div>
-          </a-card>
-          <!-- history devices -->
-          <a-card
-            class="device-history-list"
-            v-if="tab === 3"
-            key="3"
-            :bordered="false"
-            :body-style="{ padding: '0px', overflowY: 'hidden' }"
-          >
-            <template slot="title">
-              <span class="mr-1">{{ $t('deviceHistory') }}</span>
-              <a-button
-                type="primary"
-                icon="download"
-                size="small"
-                @click="toXLSX"
-                :disabled="!!!dataHistory.length"
-                >XLSX</a-button
-              >
-            </template>
-            <template slot="extra">
-              <a-range-picker
-                :show-time="{ format: 'HH:mm' }"
-                format="DD-MM-YYYY HH:mm"
-                :default-value="[
-                  moment(
-                    new Date(
-                      new Date().getFullYear(),
-                      new Date().getMonth(),
-                      new Date().getDate(),
-                      0,
-                      0
-                    ),
-                    'DD-MM-YYYY HH:mm'
-                  ),
-                  moment(
-                    new Date(
-                      new Date().getFullYear(),
-                      new Date().getMonth(),
-                      new Date().getDate(),
-                      23,
-                      59
-                    ),
-                    'DD-MM-YYYY HH:mm'
-                  ),
-                ]"
-                :disabled="dataHistoryLoading"
-                @ok="dataHistoryDateChange"
-              />
-            </template>
-            <div>
+              </template>
+              <template slot="extra"></template>
               <div
-                class="p-0 overflow-hidden min-h-555 h-content"
+                class="p-3 overflow-scroll min-h-555 h-content"
                 style="border-right: 1px solid rgb(226, 232, 240)"
               >
-                <div class="relative w-full h-full">
-                  <device-history-table
-                    :dataHistory="dataHistory"
-                    :dataHistoryLoading="dataHistoryLoading"
+                <a-result v-if="!selectedClient" :title="$t('selectClientFirst')"></a-result>
+                <a-result
+                  status="404"
+                  title="No Clients"
+                  sub-title="Sorry, No clients for this client."
+                  v-if="clientChildsData.length === 0"
+                ></a-result>
+                <div v-if="loading" class="w-full h-full flex place-content-center content-center">
+                  <a-spin class="self-center" />
+                </div>
+                <div class="mb-3" v-for="client in clientChildsData" :key="client.id">
+                  <client-card
+                    :client="client"
+                    :selected="
+                      clientChildSelected !== null &&
+                      clientChildSelected.client_id === client.client_id
+                    "
+                    @select="selectChildClient"
+                    @delete="(client) => deleteClient(client.client_id)"
                   />
                 </div>
               </div>
-            </div>
-          </a-card>
-          <!-- users list -->
-          <a-card
-            class="users-list"
-            v-if="tab === 4"
-            key="4"
-            :bordered="false"
-            :body-style="{ padding: '0px', overflowY: 'auto' }"
-          >
-            <template slot="title">
-              {{ (contacts.length > 0 && contacts.length) || 0 }}
-              {{ $t('contactList') }}
-              <a-button
-                class="self-center"
-                type="primary"
-                shape="circle"
-                icon="plus"
-                size="small"
-                v-if="
-                  checkUserHasPermission(currUser.permissions, 'contact', 'n')
-                "
-                @click="() => (modalAddContactVisible = true)"
-              />
-            </template>
-            <template slot="extra" v-if="checkUserHasPermission(currUser.permissions, 'user', 'd') && checkUserHasPermission(currUser.permissions, 'user', 'm')">
-              <a-radio-group default-value="all" v-model="filterActiveUser" size="small">
-                <a-radio-button value="all"> All </a-radio-button>
-                <a-radio-button value="active"> Active </a-radio-button>
-                <a-radio-button value="inactive"> Inactive </a-radio-button>
-              </a-radio-group>
-            </template>
-            <div
-              class="p-3 overflow-scroll min-h-555 h-content"
-              style="border-right: 1px solid rgb(226, 232, 240)"
-            >
-              <a-result
-                v-if="
-                  contacts.length === 0 && !contactsLoaded && !contactsLoading
-                "
-                :title="$t('selectClientFirst')"
-              ></a-result>
-              <a-result
-                status="404"
-                title="No Devices"
-                sub-title="Sorry, No devices for this client."
-                v-if="contacts.length === 0 && contactsLoaded"
-              ></a-result>
-              <div
-                v-if="!contactsLoaded && contactsLoading"
-                class="w-full h-full flex place-content-center content-center"
-              >
-                <a-spin class="self-center" />
-              </div>
-              <div class="mb-3" v-for="contact in filterActiveUser === 'all' ? contacts : contacts.filter(c=> c.isActive === !!(filterActiveUser === 'active'))" :key="contact.id">
-                <user-card
-                  :user="contact"
-                  @select="selecteUser"
-                  @delete="deleteUser"
-                />
-              </div>
-            </div>
-          </a-card>
-          <!-- clients list -->
-          <a-card
-            class="flotte-list"
-            v-if="tab === 5"
-            key="5"
-            :bordered="false"
-            :body-style="{ padding: '0px', overflowY: 'auto' }"
-          >
-            <template slot="title">
-              {{
-                (clientChildsData.length > 0 && clientChildsData.length) || 0
-              }}
-              {{ $t('flotteList') }}
-              <a-button
-                class="self-center"
-                type="primary"
-                shape="circle"
-                icon="plus"
-                size="small"
-                v-if="
-                  currUser.permissions
-                    .find((p) => p.objecttype === 'company')
-                    .permission.indexOf('n') !== -1
-                "
-                @click="() => (modalClientVisible = true)"
-              />
-            </template>
-            <template slot="extra"></template>
-            <div
-              class="p-3 overflow-scroll min-h-555 h-content"
-              style="border-right: 1px solid rgb(226, 232, 240)"
-            >
-              <a-result
-                v-if="!selectedClient"
-                :title="$t('selectClientFirst')"
-              ></a-result>
-              <a-result
-                status="404"
-                title="No Clients"
-                sub-title="Sorry, No clients for this client."
-                v-if="clientChildsData.length === 0"
-              ></a-result>
-              <div
-                v-if="loading"
-                class="w-full h-full flex place-content-center content-center"
-              >
-                <a-spin class="self-center" />
-              </div>
-              <div
-                class="mb-3"
-                v-for="client in clientChildsData"
-                :key="client.id"
-              >
-                <client-card
-                  :client="client"
-                  :selected="
-                    clientChildSelected !== null &&
-                    clientChildSelected.client_id === client.client_id
-                  "
-                  @select="selectChildClient"
-                  @delete="(client) => deleteClient(client.client_id)"
-                />
-              </div>
-            </div>
-          </a-card>
-          <!-- flotte list -->
-          <flotteList
-            key="6"
-            v-if="tab === 6"
-            :selectedClient="selectedClient"
-          />
-        </transition-group>
-      </div>
-      <!-- right card tabs -->
-      <div
-        class="print:w-screen"
-        :class="
-          tab === 3
-            ? 'w-full sm:w-full md:w-3/6 lg:w-3/6 xl:w-3/6 md:min-w-xl'
-            : 'w-full sm:w-full md:w-3/6 lg:w-4/6'
-        "
-      >
-        <transition-group name="fade-up" target="div" appear>
-          <a-card
-            v-if="tab === 1 || tab === 3 || tab === 6"
-            key="1"
-            size="small"
-            :loading="loading"
-            :bordered="false"
-            :body-style="{ padding: 0 }"
-            :tab-list="
-              tab === 3
-                ? rightCardTabsList
-                : [
+            </a-card>
+            <!-- flotte list -->
+            <flotteList key="6" v-if="tab === 6" :selectedClient="selectedClient" />
+          </transition-group>
+        </div>
+        <!-- right card tabs -->
+        <div
+          class="print:w-screen"
+          :class="
+            tab === 3
+              ? 'w-full sm:w-full md:w-3/6 lg:w-3/6 xl:w-3/6 md:min-w-xl'
+              : 'w-full sm:w-full md:w-3/6 lg:w-4/6'
+          "
+        >
+          <transition-group name="fade-up" target="div" appear>
+            <a-card
+              v-if="tab === 1 || tab === 3 || tab === 6"
+              key="1"
+              size="small"
+              :loading="loading"
+              :bordered="false"
+              :body-style="{ padding: 0 }"
+              :tab-list="
+                tab === 3
+                  ? rightCardTabsList
+                  : [
                     {
                       key: 'gMaps',
                       tab: this.$t('geo'),
                     },
                   ]
-            "
-            :active-tab-key="rightCardTabsKey"
-            @tabChange="
-              (key) => {
-                rightCardTabsKey = key
-                key === 'gMaps' && tab === 1
-                  ? zoomExtends(
+              "
+              :active-tab-key="rightCardTabsKey"
+              @tabChange="
+                (key) => {
+                  rightCardTabsKey = key
+                  key === 'gMaps' && tab === 1
+                    ? zoomExtends(
                       devices.listDevice.filter(
                         (d) => d.latitude && d.longitude
                       )
                     )
-                  : tab === 3 && zoomExtends(dataHistoryPoints)
-              }
-            "
-          >
-            <a-button
-              slot="tabBarExtraContent"
-              type="primary"
-              class="print:hidden"
-              icon="printer"
-              size="small"
-              @click="printMap"
-              :disabled="
-                !checkUserHasPermission(currUser.permissions, 'map', 'r')
+                    : tab === 3 && zoomExtends(dataHistoryPoints)
+                }
               "
-              ><span class="hiddden md:visible">Imprimer</span></a-button
             >
-            <div
-              v-if="rightCardTabsKey === 'gMaps'"
-              class="min-h-555 h-content bg-gray-200 relative"
-            >
-              <div
-                v-if="!checkUserHasPermission(currUser.permissions, 'map', 'r')"
-                class="w-full h-full bg-white flex justify-center content-center items-center absolute z-40"
+              <a-button
+                slot="tabBarExtraContent"
+                type="primary"
+                class="print:hidden"
+                icon="printer"
+                size="small"
+                @click="printMap"
+                :disabled="
+                  !checkUserHasPermission(currUser.permissions, 'map', 'r')
+                "
               >
-                <h3 class="text-center">You don't have permission for map</h3>
-              </div>
-              <gmaps-map :options="mapOptions" ref="devicesMap">
-                <template v-if="!showHistoryInMap">
-                  <gmaps-popup
-                    v-for="device in checkUserHasPermission(
+                <span class="hiddden md:visible">Imprimer</span>
+              </a-button>
+              <div
+                v-if="rightCardTabsKey === 'gMaps'"
+                class="min-h-555 h-content bg-gray-200 relative"
+              >
+                <div
+                  v-if="!checkUserHasPermission(currUser.permissions, 'map', 'r')"
+                  class="w-full h-full bg-white flex justify-center content-center items-center absolute z-40"
+                >
+                  <h3 class="text-center">You don't have permission for map</h3>
+                </div>
+                <gmaps-map :options="mapOptions" ref="devicesMap">
+                  <template v-if="!showHistoryInMap">
+                    <gmaps-popup
+                      v-for="device in checkUserHasPermission(
                       currUser.permissions,
                       'map',
                       'r'
                     )
                       ? devices.listDevice.filter(
-                          (d) => d.latitude && d.longitude
-                        )
+                        (d) => d.latitude && d.longitude
+                      )
                       : []"
-                    :key="'gmaps-popup-' + device.id"
-                    :position="{
-                      lat: Number(device.latitude),
-                      lng: Number(device.longitude),
-                    }"
-                    :background="
-                      device.selected
-                        ? 'rgb(255 255 255 / 100%)'
-                        : 'rgb(0 0 0 / 45%)'
-                    "
-                    :zIndex="device.selected ? 2 : 1"
-                  >
-                    <div
-                      :class="[
-                        device.selected ? 'opacity-100' : 'opacity-75',
-                        'print:opacity-100',
-                      ]"
+                      :key="'gmaps-popup-' + device.id"
+                      :position="{
+                        lat: Number(device.latitude),
+                        lng: Number(device.longitude),
+                      }"
+                      :background="
+                        device.selected
+                          ? 'rgb(255 255 255 / 100%)'
+                          : 'rgb(0 0 0 / 45%)'
+                      "
+                      :zIndex="device.selected ? 2 : 1"
                     >
-                      <button
-                        class="w-full p-1 flex items-center justify-center rounded-sm text-white focus:outline-none text-base"
+                      <div
                         :class="[
-                          device.enginestate === 3
-                            ? 'bg-green-600'
-                            : 'bg-red-600',
+                          device.selected ? 'opacity-100' : 'opacity-75',
+                          'print:opacity-100',
                         ]"
-                        @click="clickOnMapPin($event, device)"
-                        >{{ device.name }}</button
                       >
-                    </div>
-                  </gmaps-popup>
-                </template>
-                <template v-if="showHistoryInMap && historyPoints.length">
-                  <gmaps-polyline
-                    v-for="(hpts, index) in historyPoints"
-                    :key="`hpts-${index}`"
-                    :editable="false"
-                    :path="hpts.points"
-                    :strokeColor="
-                      hpts.speed > 100
-                        ? 'red'
-                        : hpts.speed > 80
-                        ? 'coral'
-                        : 'dodgerblue'
-                    "
-                    strokeOpacity="0.85"
-                    strokeWeight="7"
-                  />
-                </template>
-                <template v-if="showHistoryInMap">
-                  <gmaps-marker
-                    v-for="(startFinish, index) in dataHistory
+                        <button
+                          class="w-full p-1 flex items-center justify-center rounded-sm text-white focus:outline-none text-base"
+                          :class="[
+                            device.enginestate === 3
+                              ? 'bg-green-600'
+                              : 'bg-red-600',
+                          ]"
+                          @click="clickOnMapPin($event, device)"
+                        >{{ device.name }}</button>
+                      </div>
+                    </gmaps-popup>
+                  </template>
+                  <template v-if="showHistoryInMap && historyPoints.length">
+                    <gmaps-polyline
+                      v-for="(hpts, index) in historyPoints"
+                      :key="`hpts-${index}`"
+                      :editable="false"
+                      :path="hpts.points"
+                      :strokeColor="
+                        hpts.speed > 100
+                          ? 'red'
+                          : hpts.speed > 80
+                            ? 'coral'
+                            : 'dodgerblue'
+                      "
+                      strokeOpacity="0.85"
+                      strokeWeight="7"
+                    />
+                  </template>
+                  <template v-if="showHistoryInMap">
+                    <gmaps-marker
+                      v-for="(startFinish, index) in dataHistory
                       .filter((d) => d.latitude && d.longitude)
                       .filter(
                         (d, index) =>
                           index === 0 ||
                           index ===
-                            dataHistory.filter((d) => d.latitude && d.longitude)
-                              .length -
-                              1
+                          dataHistory.filter((d) => d.latitude && d.longitude)
+                            .length -
+                          1
                       )"
-                    :key="`startFinish-${index}`"
-                    :position="{
-                      lat: startFinish.latitude,
-                      lng: startFinish.longitude,
-                    }"
-                    @click="openGmapInfoStop(startFinish.history_id)"
-                    :icon="
-                      index === 0 && startFinish.enginestate === 1
-                        ? require('@/assets/img/finish.svg')
-                        : index !== 0
-                        ? require('@/assets/img/start.svg')
-                        : require('@/assets/img/arrow.svg')
-                    "
-                  />
-                  <gmaps-marker
-                    v-for="historyPoint in dataHistory
+                      :key="`startFinish-${index}`"
+                      :position="{
+                        lat: startFinish.latitude,
+                        lng: startFinish.longitude,
+                      }"
+                      @click="openGmapInfoStop(startFinish.history_id)"
+                      :icon="
+                        index === 0 && startFinish.enginestate === 1
+                          ? require('@/assets/img/finish.svg')
+                          : index !== 0
+                            ? require('@/assets/img/start.svg')
+                            : require('@/assets/img/arrow.svg')
+                      "
+                    />
+                    <gmaps-marker
+                      v-for="historyPoint in dataHistory
                       .filter((d) => d.latitude && d.longitude)
                       .filter((d) => d.enginestate === 1)
                       .filter(
                         (d, index) =>
                           index !== 0 &&
                           index !==
-                            dataHistory.filter((d) => d.latitude && d.longitude)
-                              .length -
-                              1
+                          dataHistory.filter((d) => d.latitude && d.longitude)
+                            .length -
+                          1
                       )"
-                    :key="historyPoint.history_id"
-                    :position="{
-                      lat: historyPoint.latitude,
-                      lng: historyPoint.longitude,
-                    }"
-                    :icon="require('@/assets/img/stop.svg')"
-                    @click="openGmapInfoStop(historyPoint.history_id)"
-                  />
-                  <gmaps-info-window
-                    v-for="historyPoint in Object.values(
-                      dataHistory.reduce(
-                        (acc, cur) =>
-                          Object.assign(acc, { [cur.history_id]: cur }),
-                        {}
-                      )
-                    ).filter((d) => d.latitude && d.longitude)"
-                    :key="`info-window-${historyPoint.history_id}`"
-                    :ref="`infoWindowRef-${historyPoint.history_id}`"
-                    :options="{
-                      hidden: true,
-                      position: {
+                      :key="historyPoint.history_id"
+                      :position="{
                         lat: historyPoint.latitude,
                         lng: historyPoint.longitude,
-                      },
-                    }"
-                  >
-                    <div>
-                      <div class="mb-2 pb-2 border-gray-200 border-b">
-                        <span class="font-medium">Raport Time: </span>
-                        <span>{{ historyPoint.localizationdate }}</span>
+                      }"
+                      :icon="require('@/assets/img/stop.svg')"
+                      @click="openGmapInfoStop(historyPoint.history_id)"
+                    />
+                    <gmaps-info-window
+                      v-for="historyPoint in Object.values(
+                        dataHistory.reduce(
+                          (acc, cur) =>
+                            Object.assign(acc, { [cur.history_id]: cur }),
+                          {}
+                        )
+                      ).filter((d) => d.latitude && d.longitude)"
+                      :key="`info-window-${historyPoint.history_id}`"
+                      :ref="`infoWindowRef-${historyPoint.history_id}`"
+                      :options="{
+                        hidden: true,
+                        position: {
+                          lat: historyPoint.latitude,
+                          lng: historyPoint.longitude,
+                        },
+                      }"
+                    >
+                      <div>
+                        <div class="mb-2 pb-2 border-gray-200 border-b">
+                          <span class="font-medium">Raport Time:</span>
+                          <span>{{ historyPoint.localizationdate }}</span>
+                        </div>
+                        <div class="mb-1">
+                          <span class="font-medium">Adresse:</span>
+                          <span>
+                            {{ historyPoint.latitude }},
+                            {{ historyPoint.longitude }}
+                          </span>
+                        </div>
                       </div>
-                      <div class="mb-1">
-                        <span class="font-medium">Adresse: </span>
-                        <span>
-                          {{ historyPoint.latitude }},
-                          {{ historyPoint.longitude }}
-                        </span>
-                      </div>
-                    </div>
-                  </gmaps-info-window>
-                </template>
-              </gmaps-map>
-            </div>
-            <div
-              v-else-if="rightCardTabsKey === 'historyStats'"
-              class="min-h-555 h-content bg-white"
-            >
-              <div id="chart-container" class="p2">
-                <fusioncharts
-                  :type="type"
-                  :width="width"
-                  :height="height"
-                  :dataFormat="dataFormat"
-                  :dataSource="dataSource"
-                ></fusioncharts>
+                    </gmaps-info-window>
+                  </template>
+                </gmaps-map>
               </div>
-              <!-- <div
+              <div
+                v-else-if="rightCardTabsKey === 'historyStats'"
+                class="min-h-555 h-content bg-white"
+              >
+                <div id="chart-container" class="p2">
+                  <fusioncharts
+                    :type="type"
+                    :width="width"
+                    :height="height"
+                    :dataFormat="dataFormat"
+                    :dataSource="dataSource"
+                  ></fusioncharts>
+                </div>
+                <!-- <div
                   v-else
                   class="w-full h-full flex justify-center content-center"
                 >
                   <h2 class="self-center">No History Founded</h2>
                 </div>-->
-            </div>
-          </a-card>
-          <!-- tab gmaps-map 
+              </div>
+            </a-card>
+            <!-- tab gmaps-map 
             alert details card-->
-          <a-card
-            class
-            v-if="tab === 2"
-            key="2"
-            :bordered="false"
-            :title="$t('alertDetails')"
-            :body-style="{ padding: '0px', overflowY: 'auto' }"
-          >
-            <div class="bg-white">
-              <div class="p-2 min-h-555 h-content">
-                <a-result
-                  v-if="!selectedAlert"
-                  :title="$t('selectAlertFirst')"
-                />
-                <alert-descriptions
-                  v-show="selectedAlert"
-                  ref="alertDescriptionsRef"
-                  :alert="selectedAlert"
-                />
-              </div>
-            </div>
-          </a-card>
-          <!-- user details card -->
-          <a-card
-            class
-            v-if="tab === 4"
-            key="3"
-            :bordered="false"
-            :title="$t('userDetails')"
-            :body-style="{ padding: '0px', overflowY: 'auto' }"
-          >
-            <div class="bg-white">
-              <div class="p-2 min-h-555 h-content">
-                <a-result v-if="!selectedUser" :title="$t('selectUserFirst')" />
-                <user-infos
-                  v-show="selectedUser"
-                  ref="userInfosRef"
-                  :user="selectedUser"
-                  :loading="addingLoading"
-                  @submit="updateUser"
-                />
-              </div>
-            </div>
-          </a-card>
-          <!-- clients childs details card -->
-          <a-card
-            class
-            v-if="tab === 5"
-            key="4"
-            :bordered="false"
-            :title="$t('clientDetails')"
-            :body-style="{ padding: '0px', overflowY: 'auto' }"
-          >
-            <div class="bg-white">
-              <div class="p-2 min-h-555 h-content">
-                <a-result
-                  v-if="
-                    !clientChildSelectedLoading && clientChildSelected === null
-                  "
-                  :title="$t('clientChildSelected')"
-                />
-                <div
-                  v-if="
-                    clientChildSelectedLoading && clientChildSelected === null
-                  "
-                  class="w-full h-full flex place-content-center content-center"
-                >
-                  <a-spin class="self-center" />
+            <a-card
+              class
+              v-if="tab === 2"
+              key="2"
+              :bordered="false"
+              :title="$t('alertDetails')"
+              :body-style="{ padding: '0px', overflowY: 'auto' }"
+            >
+              <div class="bg-white">
+                <div class="p-2 min-h-555 h-content">
+                  <a-result v-if="!selectedAlert" :title="$t('selectAlertFirst')" />
+                  <alert-descriptions
+                    v-show="selectedAlert"
+                    ref="alertDescriptionsRef"
+                    :alert="selectedAlert"
+                  />
                 </div>
-                <client-infos
-                  v-show="
-                    clientChildSelected !== null && !clientChildSelectedLoading
-                  "
-                  ref="clientChildSelectedRef"
-                  :client="clientChildSelected"
-                  @updateClient="updateClient"
-                />
               </div>
-            </div>
-          </a-card>
-        </transition-group>
+            </a-card>
+            <!-- user details card -->
+            <a-card
+              class
+              v-if="tab === 4"
+              key="3"
+              :bordered="false"
+              :title="$t('userDetails')"
+              :body-style="{ padding: '0px', overflowY: 'auto' }"
+            >
+              <div class="bg-white">
+                <div class="p-2 min-h-555 h-content">
+                  <a-result v-if="!selectedUser" :title="$t('selectUserFirst')" />
+                  <user-infos
+                    v-show="selectedUser"
+                    ref="userInfosRef"
+                    :user="selectedUser"
+                    :loading="addingLoading"
+                    @submit="updateUser"
+                  />
+                </div>
+              </div>
+            </a-card>
+            <!-- clients childs details card -->
+            <a-card
+              class
+              v-if="tab === 5"
+              key="4"
+              :bordered="false"
+              :title="$t('clientDetails')"
+              :body-style="{ padding: '0px', overflowY: 'auto' }"
+            >
+              <div class="bg-white">
+                <div class="p-2 min-h-555 h-content">
+                  <a-result
+                    v-if="
+                      !clientChildSelectedLoading && clientChildSelected === null
+                    "
+                    :title="$t('clientChildSelected')"
+                  />
+                  <div
+                    v-if="
+                      clientChildSelectedLoading && clientChildSelected === null
+                    "
+                    class="w-full h-full flex place-content-center content-center"
+                  >
+                    <a-spin class="self-center" />
+                  </div>
+                  <client-infos
+                    v-show="
+                      clientChildSelected !== null && !clientChildSelectedLoading
+                    "
+                    ref="clientChildSelectedRef"
+                    :client="clientChildSelected"
+                    @updateClient="updateClient"
+                  />
+                </div>
+              </div>
+            </a-card>
+          </transition-group>
+        </div>
       </div>
+      <!-- modal add new alert -->
+      <a-modal
+        :title="`${$t('addNewAlert')} #${selectedClient ? selectedClient.commercialname : ''
+        }`"
+        class="add-evice-modal"
+        width="65vw"
+        :dialog-style="{ top: '20px' }"
+        :visible="modalAddAlertVisible"
+        @cancel="
+          () => {
+            $refs.addAlertFormRef.resetForm()
+            modalAddAlertVisible = false
+          }
+        "
+      >
+        <template slot="footer">
+          <a-button
+            type="danger"
+            key="cancel"
+            @click="
+              () => {
+                $refs.addAlertFormRef.resetForm()
+                modalAddAlertVisible = false
+              }
+            "
+          >{{ $t('Cancel') }}</a-button>
+          <a-button key="back" @click="() => $refs.addAlertFormRef.resetForm()">
+            {{
+              $t('Reset')
+            }}
+          </a-button>
+          <a-button
+            key="submit"
+            type="primary"
+            :loading="addingLoading"
+            @click="() => $refs.addAlertFormRef.onSubmit()"
+          >{{ $t('Submit') }}</a-button>
+        </template>
+        <add-alert-form
+          :devices="devices.listDevice"
+          :clientId="selectedClientValue"
+          ref="addAlertFormRef"
+          @submit="addNewAlert"
+        />
+      </a-modal>
+      <!-- modal add new contact -->
+      <a-modal
+        :title="`${$t('addNewContact')} #${selectedClient ? selectedClient.commercialname : ''
+        }`"
+        class="add-evice-modal"
+        width="65vw"
+        :dialog-style="{ top: '20px' }"
+        :visible="modalAddContactVisible"
+        @cancel="
+          () => {
+            $refs.addContactFormRef.resetForm()
+            modalAddContactVisible = false
+          }
+        "
+      >
+        <template slot="footer">
+          <a-button
+            type="danger"
+            key="cancel"
+            @click="
+              () => {
+                $refs.addContactFormRef.resetForm()
+                modalAddContactVisible = false
+              }
+            "
+          >{{ $t('Cancel') }}</a-button>
+          <a-button key="back" @click="() => $refs.addContactFormRef.resetForm()">{{ $t('Reset') }}</a-button>
+          <a-button
+            key="submit"
+            type="primary"
+            :loading="addingLoading"
+            @click="() => $refs.addContactFormRef.onSubmit()"
+          >{{ $t('Submit') }}</a-button>
+        </template>
+        <add-contact-form
+          :deviceTypes="deviceTypes"
+          :clientId="selectedClientValue"
+          ref="addContactFormRef"
+          @submit="addNewContact"
+        />
+      </a-modal>
+      <!-- modal add new device -->
+      <a-modal
+        :title="`${device ? $t('updateDevice') : $t('addNewDevice')} #${selectedClient ? selectedClient.commercialname : ''
+        }`"
+        class="add-evice-modal"
+        width="65vw"
+        :dialog-style="{ top: '20px' }"
+        :visible="modalDeviceVisible"
+        @cancel="
+          () => {
+            device = null
+            $refs.addDeviceFormRef.resetForm()
+            modalDeviceVisible = false
+          }
+        "
+      >
+        <template slot="footer">
+          <a-button
+            type="danger"
+            key="cancel"
+            @click="
+              () => {
+                device = null
+                $refs.addDeviceFormRef.resetForm()
+                modalDeviceVisible = false
+              }
+            "
+          >{{ $t('Cancel') }}</a-button>
+          <a-button key="back" @click="() => $refs.addDeviceFormRef.resetForm()">{{ $t('Reset') }}</a-button>
+          <a-button
+            key="submit"
+            type="primary"
+            :loading="addingLoading"
+            @click="() => $refs.addDeviceFormRef.onSubmit()"
+          >{{ $t('Submit') }}</a-button>
+        </template>
+        <add-device-form
+          ref="addDeviceFormRef"
+          :device="device"
+          :deviceTypes="deviceTypes"
+          :clients="treeClientsData"
+          :clientId="selectedClientValue"
+          @submit="submitDevice"
+        />
+      </a-modal>
+      <!-- modal add new client -->
+      <a-modal
+        :title="`${$t('addNewClient')} #${selectedClient ? selectedClient.commercialname : ''
+        }`"
+        class="add-evice-modal"
+        width="65vw"
+        :dialog-style="{ top: '20px' }"
+        :visible="modalClientVisible"
+        @cancel="
+          () => {
+            $refs.addClientFormRef.resetForm()
+            modalClientVisible = false
+          }
+        "
+      >
+        <template slot="footer">
+          <a-button
+            type="danger"
+            key="cancel"
+            @click="
+              () => {
+                $refs.addClientFormRef.resetForm()
+                modalClientVisible = false
+              }
+            "
+          >{{ $t('Cancel') }}</a-button>
+          <a-button key="back" @click="() => $refs.addClientFormRef.resetForm()">{{ $t('Reset') }}</a-button>
+          <a-button
+            key="submit"
+            type="primary"
+            :loading="addingLoading"
+            @click="() => $refs.addClientFormRef.onSubmit()"
+          >{{ $t('Submit') }}</a-button>
+        </template>
+        <add-client-form :deviceTypes="deviceTypes" ref="addClientFormRef" @submit="addNewClient" />
+      </a-modal>
+      <!-- modal report device -->
+      <a-modal v-model="visibleReportDevice" title="Device Report" @ok="getDeviceReport">
+        <div class="text-center">
+          <a-radio-group default-value="1day" button-style="solid" v-model="reportDuration">
+            <a-radio-button value="1day">Un jour</a-radio-button>
+            <a-radio-button value="3days">3 jours</a-radio-button>
+            <a-radio-button value="1week">1 semaine</a-radio-button>
+            <a-radio-button value="month">1 mois</a-radio-button>
+          </a-radio-group>
+        </div>
+      </a-modal>
     </div>
-    <!-- modal add new alert -->
-    <a-modal
-      :title="`${$t('addNewAlert')} #${
-        selectedClient ? selectedClient.commercialname : ''
-      }`"
-      class="add-evice-modal"
-      width="65vw"
-      :dialog-style="{ top: '20px' }"
-      :visible="modalAddAlertVisible"
-      @cancel="
-        () => {
-          $refs.addAlertFormRef.resetForm()
-          modalAddAlertVisible = false
-        }
-      "
-    >
-      <template slot="footer">
-        <a-button
-          type="danger"
-          key="cancel"
-          @click="
-            () => {
-              $refs.addAlertFormRef.resetForm()
-              modalAddAlertVisible = false
-            }
-          "
-          >{{ $t('Cancel') }}</a-button
-        >
-        <a-button key="back" @click="() => $refs.addAlertFormRef.resetForm()">{{
-          $t('Reset')
-        }}</a-button>
-        <a-button
-          key="submit"
-          type="primary"
-          :loading="addingLoading"
-          @click="() => $refs.addAlertFormRef.onSubmit()"
-          >{{ $t('Submit') }}</a-button
-        >
-      </template>
-      <add-alert-form
-        :devices="devices.listDevice"
-        :clientId="selectedClientValue"
-        ref="addAlertFormRef"
-        @submit="addNewAlert"
-      />
-    </a-modal>
-    <!-- modal add new contact -->
-    <a-modal
-      :title="`${$t('addNewContact')} #${
-        selectedClient ? selectedClient.commercialname : ''
-      }`"
-      class="add-evice-modal"
-      width="65vw"
-      :dialog-style="{ top: '20px' }"
-      :visible="modalAddContactVisible"
-      @cancel="
-        () => {
-          $refs.addContactFormRef.resetForm()
-          modalAddContactVisible = false
-        }
-      "
-    >
-      <template slot="footer">
-        <a-button
-          type="danger"
-          key="cancel"
-          @click="
-            () => {
-              $refs.addContactFormRef.resetForm()
-              modalAddContactVisible = false
-            }
-          "
-          >{{ $t('Cancel') }}</a-button
-        >
-        <a-button
-          key="back"
-          @click="() => $refs.addContactFormRef.resetForm()"
-          >{{ $t('Reset') }}</a-button
-        >
-        <a-button
-          key="submit"
-          type="primary"
-          :loading="addingLoading"
-          @click="() => $refs.addContactFormRef.onSubmit()"
-          >{{ $t('Submit') }}</a-button
-        >
-      </template>
-      <add-contact-form
-        :deviceTypes="deviceTypes"
-        :clientId="selectedClientValue"
-        ref="addContactFormRef"
-        @submit="addNewContact"
-      />
-    </a-modal>
-    <!-- modal add new device -->
-    <a-modal
-      :title="`${device ? $t('updateDevice') : $t('addNewDevice')} #${
-        selectedClient ? selectedClient.commercialname : ''
-      }`"
-      class="add-evice-modal"
-      width="65vw"
-      :dialog-style="{ top: '20px' }"
-      :visible="modalDeviceVisible"
-      @cancel="
-        () => {
-          device = null
-          $refs.addDeviceFormRef.resetForm()
-          modalDeviceVisible = false
-        }
-      "
-    >
-      <template slot="footer">
-        <a-button
-          type="danger"
-          key="cancel"
-          @click="
-            () => {
-              device = null
-              $refs.addDeviceFormRef.resetForm()
-              modalDeviceVisible = false
-            }
-          "
-          >{{ $t('Cancel') }}</a-button
-        >
-        <a-button
-          key="back"
-          @click="() => $refs.addDeviceFormRef.resetForm()"
-          >{{ $t('Reset') }}</a-button
-        >
-        <a-button
-          key="submit"
-          type="primary"
-          :loading="addingLoading"
-          @click="() => $refs.addDeviceFormRef.onSubmit()"
-          >{{ $t('Submit') }}</a-button
-        >
-      </template>
-      <add-device-form
-        ref="addDeviceFormRef"
-        :device="device"
-        :deviceTypes="deviceTypes"
-        :clients="treeClientsData"
-        :clientId="selectedClientValue"
-        @submit="submitDevice"
-      />
-    </a-modal>
-    <!-- modal add new client -->
-    <a-modal
-      :title="`${$t('addNewClient')} #${
-        selectedClient ? selectedClient.commercialname : ''
-      }`"
-      class="add-evice-modal"
-      width="65vw"
-      :dialog-style="{ top: '20px' }"
-      :visible="modalClientVisible"
-      @cancel="
-        () => {
-          $refs.addClientFormRef.resetForm()
-          modalClientVisible = false
-        }
-      "
-    >
-      <template slot="footer">
-        <a-button
-          type="danger"
-          key="cancel"
-          @click="
-            () => {
-              $refs.addClientFormRef.resetForm()
-              modalClientVisible = false
-            }
-          "
-          >{{ $t('Cancel') }}</a-button
-        >
-        <a-button
-          key="back"
-          @click="() => $refs.addClientFormRef.resetForm()"
-          >{{ $t('Reset') }}</a-button
-        >
-        <a-button
-          key="submit"
-          type="primary"
-          :loading="addingLoading"
-          @click="() => $refs.addClientFormRef.onSubmit()"
-          >{{ $t('Submit') }}</a-button
-        >
-      </template>
-      <add-client-form
-        :deviceTypes="deviceTypes"
-        ref="addClientFormRef"
-        @submit="addNewClient"
-      />
-    </a-modal>
-    <!-- modal report device -->
-    <a-modal
-      v-model="visibleReportDevice"
-      title="Device Report"
-      @ok="getDeviceReport"
-    >
-      <div class="text-center">
-        <a-radio-group
-          default-value="1day"
-          button-style="solid"
-          v-model="reportDuration"
-        >
-          <a-radio-button value="1day"> Un jour </a-radio-button>
-          <a-radio-button value="3days"> 3 jours </a-radio-button>
-          <a-radio-button value="1week"> 1 semaine </a-radio-button>
-          <a-radio-button value="month"> 1 mois </a-radio-button>
-        </a-radio-group>
-      </div>
-    </a-modal>
-  </page-layout>
+  </div>
 </template>
 
 <script>
 import { format } from 'date-fns'
 import moment from 'moment'
-import PageLayout from '@/layouts/PageLayout'
+import AdminHeader from '@/layouts/header/AdminHeader'
 import { mapState } from 'vuex'
 import { request, METHOD } from '@/utils/request'
 import { logout } from '@/services/user'
@@ -1126,7 +1047,7 @@ const checkUserHasPermission = (permissions, objectType, permission) =>
 export default {
   name: 'Cartographie',
   components: {
-    PageLayout,
+    AdminHeader,
     gmapsMap,
     gmapsPopup,
     gmapsMarker,
@@ -1276,20 +1197,20 @@ export default {
         return this.devicesSearch === ''
           ? this.devices.listDevice
           : this.devices.listDevice.filter(
-              (d) =>
-                new RegExp(
-                  `${this.devicesSearch
-                    .replace(/[-\\^$*+?.()|[\]{}]/g, '\\$&')
-                    .toLocaleLowerCase()}`,
-                  'i'
-                ).test(d.name + ''.toLocaleLowerCase()) ||
-                new RegExp(
-                  `${this.devicesSearch
-                    .replace(/[-\\^$*+?.()|[\]{}]/g, '\\$&')
-                    .toLocaleLowerCase()}`,
-                  'i'
-                ).test(d.simcardNumber + ''.toLocaleLowerCase())
-            )
+            (d) =>
+              new RegExp(
+                `${this.devicesSearch
+                  .replace(/[-\\^$*+?.()|[\]{}]/g, '\\$&')
+                  .toLocaleLowerCase()}`,
+                'i'
+              ).test(d.name + ''.toLocaleLowerCase()) ||
+              new RegExp(
+                `${this.devicesSearch
+                  .replace(/[-\\^$*+?.()|[\]{}]/g, '\\$&')
+                  .toLocaleLowerCase()}`,
+                'i'
+              ).test(d.simcardNumber + ''.toLocaleLowerCase())
+          )
       },
       set(newValue) {
         const uniqDevices = newValue.filter(
@@ -1416,10 +1337,10 @@ export default {
         skip === 0
           ? (this.devices.listDevice = data.listDevice)
           : this.devices.listDevice.push(
-              ...data.listDevice.filter(
-                (d) => !this.devices.listDevice.find((cd) => cd.id === d.id)
-              )
+            ...data.listDevice.filter(
+              (d) => !this.devices.listDevice.find((cd) => cd.id === d.id)
             )
+          )
         this.devicesLoaded = true
         this.devicesLoading = false
         if (this.tab === 1) {
@@ -1614,8 +1535,7 @@ export default {
           this.modalDeviceVisible = false
           this.addingLoading = false
           this.$message.success(
-            `${device.name}, Device has been ${
-              device.id ? 'updated' : 'Adedd'
+            `${device.name}, Device has been ${device.id ? 'updated' : 'Adedd'
             }`,
             5
           )
@@ -1624,8 +1544,7 @@ export default {
         .catch((error) => {
           this.addingLoading = false
           this.$message.error(
-            `${device.name}, Sorry device can not ${
-              device.id ? 'updated' : 'created'
+            `${device.name}, Sorry device can not ${device.id ? 'updated' : 'created'
             }, error: ${error.status}`,
             5
           )
@@ -1851,7 +1770,7 @@ export default {
             )
           }
         })
-        this.$refs.addContactFormRef.resetForm()
+      this.$refs.addContactFormRef.resetForm()
     },
     openGmapInfoStop(historyId) {
       this.$refs[`infoWindowRef-${historyId}`][0] &&
@@ -1920,8 +1839,8 @@ export default {
           names.forEach((nv) =>
             nv.split(' || ')[1] === 'enginestate'
               ? (d[nv.split(' || ')[0]] = engineState(
-                  object[nv.split(' || ')[1]]
-                ))
+                object[nv.split(' || ')[1]]
+              ))
               : (d[nv.split(' || ')[0]] = object[nv.split(' || ')[1]])
           )
           return d
@@ -1950,7 +1869,7 @@ export default {
 </script>
 
 <style lang="less">
-@import 'index';
+@import "index";
 .ant-spin-container {
   width: 100%;
   align-self: center;

@@ -10,12 +10,12 @@
         @refresh="refresh"
         @contextmenu="onContextmenu"
     />
+    <template slot="contentCenter"> rrrtv
+      <slot name="headerContentCenter"></slot>
+    </template>
     <div :class="['tabs-view-content', layout, pageWidth]" :style="`margin-top: ${multiPage ? -24 : 0}px`">
       <page-toggle-transition :disabled="animate.disabled" :animate="animate.name" :direction="animate.direction">
-        <a-keep-alive v-if="multiPage" v-model="clearCaches">
-          <router-view v-if="!refreshing" ref="tabContent" :key="$route.fullPath" />
-        </a-keep-alive>
-        <router-view v-else />
+        <router-view />
       </page-toggle-transition>
     </div>
   </admin-layout>
@@ -27,13 +27,12 @@ import Contextmenu from '@/components/menu/Contextmenu'
 import PageToggleTransition from '@/components/transition/PageToggleTransition'
 import { mapState, mapMutations } from 'vuex'
 import { getI18nKey } from '@/utils/routerUtil'
-import AKeepAlive from '@/components/cache/AKeepAlive'
 import TabsHead from '@/layouts/tabs/TabsHead'
 
 export default {
   name: 'TabsView',
   i18n: require('./i18n'),
-  components: {TabsHead, PageToggleTransition, Contextmenu, AdminLayout , AKeepAlive },
+  components: {TabsHead, PageToggleTransition, Contextmenu, AdminLayout },
   data () {
     return {
       clearCaches: [],

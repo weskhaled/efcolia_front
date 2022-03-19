@@ -30,10 +30,16 @@
       </div>
       <setting />
     </drawer>
-    <a-layout class="admin-layout-main beauty-scroll">
-      <admin-header class="print:hidden" :class="[{'fixed-tabs': fixedTabs, 'fixed-header': fixedHeader, 'multi-page': multiPage}]" :style="headerStyle" :menuData="headMenuData" :collapsed="collapsed" @toggleCollapse="toggleCollapse" />
-      <a-layout-header :class="['virtual-header', {'fixed-tabs' : fixedTabs, 'fixed-header': fixedHeader, 'multi-page': multiPage}]" v-show="fixedHeader"></a-layout-header>
-      <a-layout-content class="admin-layout-content print:p-0">
+    <a-layout class="admin-layout-main p-0 beauty-scroll">
+      <admin-header
+        class="hidden"
+        :class="[{ 'fixed-tabs': fixedTabs, 'fixed-header': fixedHeader, 'multi-page': multiPage }]"
+        :style="headerStyle"
+        :menuData="headMenuData"
+        :collapsed="collapsed"
+        @toggleCollapse="toggleCollapse"
+      />
+      <a-layout-content class="admin-layout-content print:p-0 pt-16">
         <div :style="`min-height: ${minHeight}px; position: relative`">
           <slot></slot>
         </div>
@@ -53,7 +59,7 @@ import SideMenu from '../components/menu/SideMenu'
 import Setting from '../components/setting/Setting'
 import { mapState, mapMutations, mapGetters } from 'vuex'
 
-const minHeight = window.innerHeight - 64 - 24 - 122
+const minHeight = window.innerHeight - 64 - 24
 
 export default {
   name: 'AdminLayout',
@@ -152,33 +158,33 @@ export default {
       left: 0;
       top: 0;
     }
-    .virtual-side{
+    .virtual-side {
       transition: all 0.2s;
     }
-    .virtual-header{
+    .virtual-header {
       transition: all 0.2s;
       opacity: 0;
-      &.fixed-tabs.multi-page:not(.fixed-header){
+      &.fixed-tabs.multi-page:not(.fixed-header) {
         height: 0;
       }
     }
-    .admin-layout-main{
-      .admin-header{
+    .admin-layout-main {
+      .admin-header {
         top: 0;
         right: 0;
         overflow: hidden;
         transition: all 0.2s;
-        &.fixed-tabs.multi-page:not(.fixed-header){
+        &.fixed-tabs.multi-page:not(.fixed-header) {
           height: 0;
         }
       }
     }
-    .admin-layout-content{
-      padding: 24px 24px 0;
+    .admin-layout-content {
+      padding: 0;
       overflow-x: hidden;
       min-height: calc(100vh - 64px - 122px);
     }
-    .setting{
+    .setting {
       background-color: @primary-color;
       color: @base-bg-color;
       border-radius: 5px 0 0 5px;
@@ -190,7 +196,6 @@ export default {
     }
   }
   .admin-layout-content {
-    padding: 24px 24px 0;
     overflow-x: hidden;
     min-height: calc(100vh - 64px - 122px);
   }

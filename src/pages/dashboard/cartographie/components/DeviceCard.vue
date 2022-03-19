@@ -120,7 +120,7 @@
         </span>
       </a-tooltip>
       <a-tooltip>
-        <template slot="title"> GPRS </template>
+        <template slot="title"> GPS </template>
         <span>
           <svg
             version="1.1"
