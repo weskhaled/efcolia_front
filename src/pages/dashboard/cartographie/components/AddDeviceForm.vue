@@ -1,11 +1,5 @@
 <template>
-  <a-form-model
-    class="add-device-form"
-    ref="ruleForm"
-    :model="form"
-    :rules="rules"
-    layout="inline"
-  >
+  <a-form-model class="add-device-form" ref="ruleForm" :model="form" :rules="rules" layout="inline">
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
       <div>
         <div>
@@ -29,9 +23,7 @@
                 v-for="deviceType in deviceTypes"
                 :key="deviceType.devicetype_id"
                 :value="deviceType.devicetype_id"
-              >
-                {{ deviceType.name }}
-              </a-select-option>
+              >{{ deviceType.name }}</a-select-option>
             </a-select>
           </a-form-model-item>
         </div>
@@ -45,32 +37,22 @@
                 v-for="deviceSubType in deviceSubTypes"
                 :key="deviceSubType.devicesubtype_id"
                 :value="deviceSubType.devicesubtype_id"
-              >
-                {{ deviceSubType.name }}
-              </a-select-option>
+              >{{ deviceSubType.name }}</a-select-option>
             </a-select>
           </a-form-model-item>
         </div>
         <div>
-          <a-form-model-item
-            ref="serialNumber"
-            label="N° de série"
-            prop="serialNumber"
-          >
+          <a-form-model-item ref="serialNumber" label="N° de série" prop="serialNumber">
             <a-input v-model="form.serialNumber" />
           </a-form-model-item>
         </div>
         <div>
-          <a-form-model-item ref="csq" label="IMEI" prop="csq">
-            <a-input v-model="form.csq" />
+          <a-form-model-item ref="imei" label="IMEI" prop="imei">
+            <a-input v-model="form.imei" />
           </a-form-model-item>
         </div>
         <div>
-          <a-form-model-item
-            ref="serialNumber"
-            label="Identifiant"
-            prop="device_id2"
-          >
+          <a-form-model-item ref="serialNumber" label="Identifiant" prop="device_id2">
             <a-input v-model="form.device_id2" />
           </a-form-model-item>
         </div>
@@ -107,12 +89,7 @@
                 :spinning="!!!clients.length"
                 style="position: absolute; top: calc(50% - 13px); right: 5px"
               >
-                <a-icon
-                  slot="indicator"
-                  type="loading"
-                  style="font-size: 24px"
-                  spin
-                />
+                <a-icon slot="indicator" type="loading" style="font-size: 24px" spin />
               </a-spin>
             </div>
           </a-form-model-item>
@@ -148,26 +125,21 @@
                 v-for="simcard in simCards"
                 :key="simcard.simcard_id"
                 :value="simcard.simcard_id"
-              >
-                {{ simcard.sim }}
-              </a-select-option>
+              >{{ simcard.sim }}</a-select-option>
             </a-select>
           </a-form-model-item>
         </div>
         <div>
           <a-form-model-item label="Vie privee" prop="device_privacy">
-            <a-select
-              v-model="form.privacy"
-              placeholder="please select Vie privee"
-            >
-              <a-select-option value="aucun"> Aucun </a-select-option>
-              <a-select-option value="input1"> Input 1 </a-select-option>
-              <a-select-option value="input2"> Input 2 </a-select-option>
+            <a-select v-model="form.privacy" placeholder="please select Vie privee">
+              <a-select-option value="aucun">Aucun</a-select-option>
+              <a-select-option value="input1">Input 1</a-select-option>
+              <a-select-option value="input2">Input 2</a-select-option>
             </a-select>
           </a-form-model-item>
         </div>
       </div>
-      <div> </div>
+      <div></div>
     </div>
   </a-form-model>
 </template>
@@ -202,6 +174,7 @@ export default {
         deviceSubtypeId: undefined,
         device_id2: '',
         csq: '',
+        imei: '',
         serialNumber: '',
         fromTo: [null, null],
         status: false,
@@ -278,20 +251,24 @@ export default {
       )
     },
     onSubmit() {
-      this.$refs.ruleForm.validate((valid) => {
+      this.$refs.ruleForm?.validate((valid) => {
+        console.log(valid)
+        console.log(this.form)
         if (valid) {
+          const form = JSON.parse(JSON.stringify(this.form))
+
           this.$emit('submit', {
-            ...this.form,
+            ...form,
             findaddress: undefined,
             id: this.device?.id || undefined,
             simCardId: this.form.simcard,
             timezone: 'Europe/Paris',
-            deviceTypeId: +this.form.deviceTypeId,
-            deviceSubtypeId: +this.form.deviceSubtypeId,
-            status: this.form.status ? true : false,
-            findAddress: this.form.findaddress ? 1 : 0,
-            begindate: (this.form.fromTo && this.form.fromTo[0]) || null,
-            enddate: (this.form.fromTo && this.form.fromTo[1]) || null,
+            deviceTypeId: +form.deviceTypeId,
+            deviceSubtypeId: +form.deviceSubtypeId,
+            status: form.status ? true : false,
+            findAddress: form.findaddress ? 1 : 0,
+            begindate: (form.fromTo && form.fromTo[0]) || null,
+            enddate: (form.fromTo && form.fromTo[1]) || null,
             fromTo: undefined,
           })
         } else {
@@ -323,11 +300,14 @@ export default {
       this.form.deviceTypeId = this.device?.devicetype_id || ''
       this.form.deviceSubtypeId = this.device?.devicesubtype_id || ''
       this.form.device_id2 = this.device?.device_id2 || ''
-      this.form.imei = this.device?.csq || ''
+      this.form.csq = this.device?.csq || ''
+      this.form.imei = this.device?.imei || ''
       this.form.serialNumber = this.device?.serialnumber || ''
-      this.form.fromTo = [this.moment(new Date()).format('YYYY-MM-DD HH:mm:ss'), null]
-      this.device?.begindate && (this.form.fromTo[0] = this.moment(new Date(this.device?.begindate)))
-      this.device?.enddate && (this.form.fromTo[1] = this.moment(new Date(this.device?.enddate)))
+      this.form.fromTo = [this.moment(new Date()), null]
+      if (this.device) {
+        this.device?.begindate ? (this.form.fromTo[0] = this.moment(new Date(this.device?.begindate))) : (this.form.fromTo[0] = this.moment(new Date()).format('YYYY-MM-DD HH:mm:ss'))
+        this.device?.enddate ? (this.form.fromTo[1] = this.moment(new Date(this.device?.enddate))) : (this.form.fromTo[1] = null)
+      }
       this.form.status = this.device?.status === 1 || false
       this.form.clientId = this.device?.clientId || this.clientId || ''
       this.form.findaddress = this.device?.findaddress === 1 || false

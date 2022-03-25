@@ -902,7 +902,6 @@
         @cancel="
           () => {
             device = null
-            $refs.addDeviceFormRef.resetForm()
             modalDeviceVisible = false
           }
         "
@@ -914,7 +913,6 @@
             @click="
               () => {
                 device = null
-                $refs.addDeviceFormRef.resetForm()
                 modalDeviceVisible = false
               }
             "
@@ -1531,7 +1529,7 @@ export default {
       })
         .then(() => {
           this.getDevicesByClientId(this.selectedClientValue)
-          this.$refs.addDeviceFormRef.resetForm()
+          // this.$refs.addDeviceFormRef.resetForm()
           this.modalDeviceVisible = false
           this.addingLoading = false
           this.$message.success(
