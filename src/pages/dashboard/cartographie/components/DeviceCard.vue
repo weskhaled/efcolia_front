@@ -42,7 +42,7 @@
       </a-tooltip>
       <a-tooltip>
         <template slot="title">
-          {{ (device.batteryvoltage / 1000).toFixed(2) }} -
+          {{ (device.batteryvoltage / 1000).toFixed(2) }} V -
           {{ ((device.batterylevel * 100) / 7).toFixed(0) }} %
         </template>
         <span class="icon-wrp">
