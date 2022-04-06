@@ -32,8 +32,14 @@ module.exports = {
             FiltreBoitier: 'Filtrer les boitiers',
             Cancel: 'Annuler',
             Reset: 'Réinitialiser',
-            Submit: 'Soumettre'
-
+            Submit: 'Soumettre',
+            clientDetails: 'Détails du client',
+            flotteList: 'Liste des flottes',
+            alertDetails: "Détails d'alerte",
+            userDetails: "Détails de l'utilisateur",
+            clientDetails: "Détails du client",
+            addNewAlert: "Ajouter une nouvelle alerte",
+            addNewClient: "Ajouter un nouveau client"
 
         },
         US: {

@@ -451,7 +451,7 @@
                 {{
                   (clientChildsData.length > 0 && clientChildsData.length) || 0
                 }}
-                {{ $t('Liste des flottes') }}
+                {{ $t('flotteList') }}
                 <a-button
                   class="self-center"
                   type="primary"
@@ -730,7 +730,7 @@
               v-if="tab === 2"
               key="2"
               :bordered="false"
-              :title="$t('Détails d'alerte')"
+              :title="$t('alertDetails')"
               :body-style="{ padding: '0px', overflowY: 'auto' }"
             >
               <div class="bg-white">
@@ -750,7 +750,7 @@
               v-if="tab === 4"
               key="3"
               :bordered="false"
-              :title="$t('Détails de l'utilisateur')"
+              :title="$t('userDetails')"
               :body-style="{ padding: '0px', overflowY: 'auto' }"
             >
               <div class="bg-white">
@@ -772,7 +772,7 @@
               v-if="tab === 5"
               key="4"
               :bordered="false"
-              :title="$t('Détails du client')"
+              :title="$t('clientDetails')"
               :body-style="{ padding: '0px', overflowY: 'auto' }"
             >
               <div class="bg-white">
@@ -807,7 +807,7 @@
       </div>
       <!-- modal add new alert -->
       <a-modal
-        :title="`${$t('Ajouter une nouvelle alerte ')} #${selectedClient ? selectedClient.commercialname : ''
+        :title="`${$t('addNewAlert')} #${selectedClient ? selectedClient.commercialname : ''
         }`"
         class="add-evice-modal"
         width="65vw"
@@ -852,7 +852,7 @@
       </a-modal>
       <!-- modal add new contact -->
       <a-modal
-        :title="`${$t('Ajouter un nouveau contact')} #${selectedClient ? selectedClient.commercialname : ''
+        :title="`${$t('addNewContact')} #${selectedClient ? selectedClient.commercialname : ''
         }`"
         class="add-evice-modal"
         width="65vw"
@@ -936,7 +936,7 @@
       </a-modal>
       <!-- modal add new client -->
       <a-modal
-        :title="`${$t('Ajouter un nouveau client')} #${selectedClient ? selectedClient.commercialname : ''
+        :title="`${$t('addNewClient')} #${selectedClient ? selectedClient.commercialname : ''
         }`"
         class="add-evice-modal"
         width="65vw"
