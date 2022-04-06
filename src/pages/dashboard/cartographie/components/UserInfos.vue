@@ -25,7 +25,7 @@
                   <div>
                     <a-form-model-item
                       ref="firstname"
-                      label="prénom"
+                      label="Prénom"
                       prop="firstname"
                     >
                       <a-input
