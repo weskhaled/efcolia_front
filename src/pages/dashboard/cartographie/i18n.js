@@ -31,7 +31,7 @@ module.exports = {
             ListeSociétés: 'Liste des sociétés',
             FiltreBoitier: 'Filtrer les boitiers',
             Cancel: 'Annuler',
-            Reset: 'Reset',
+            Reset: 'Réinitialiser',
             Submit: 'Soumettre'
 
 

@@ -10,7 +10,7 @@
                   <div>
                     <a-form-model-item
                       ref="lastname"
-                      label="lastname"
+                      label="Nom de famille"
                       prop="lastname"
                     >
                       <a-input
@@ -25,7 +25,7 @@
                   <div>
                     <a-form-model-item
                       ref="firstname"
-                      label="firstname"
+                      label="prénom"
                       prop="firstname"
                     >
                       <a-input
@@ -43,7 +43,7 @@
                 <div>
                   <a-form-model-item
                     ref="jobtitle"
-                    label="jobtitle"
+                    label="Titre du poste"
                     prop="jobtitle"
                   >
                     <a-input
@@ -74,7 +74,7 @@
               <div>
                 <a-form-model-item
                   ref="password"
-                  label="Password"
+                  label="Mot de passe"
                   prop="password"
                 >
                   <a-input-password
@@ -165,13 +165,13 @@
                 </span>
               </a-table>
             </a-tab-pane>
-            <a-tab-pane key="2" tab="Addresses"> Addresses </a-tab-pane>
+            <a-tab-pane key="2" tab="Addresses"> Adresses </a-tab-pane>
           </a-tabs>
         </div>
       </div>
     </div>
     <div v-if="checkUserHasPermission(currUser.permissions, 'user', 'm')" class="flex h-10 items-center justify-end self-end mx-1">
-      <a-button key="back" @click="updateInfos"> Reset </a-button>
+      <a-button key="back" @click="updateInfos"> Réinitialiser </a-button>
       <a-button
         key="submit"
         type="primary"
@@ -179,7 +179,7 @@
         @click="onSubmit"
         class="ml-2"
       >
-        Update
+        Mise à jour
       </a-button>
     </div>
   </div>
@@ -197,32 +197,32 @@ const checkUserHasPermission = (permissions, objectType, permission) =>
 
 const columnsUserPermissions = [
   {
-    title: 'Function',
+    title: 'Fonction',
     dataIndex: 'objecttype',
     width: '180px',
   },
   {
-    title: 'Consult',
+    title: 'Consulter',
     dataIndex: 'r',
     scopedSlots: { customRender: 'consultRender' },
   },
   {
-    title: 'Create',
+    title: 'Créer',
     dataIndex: 'n',
     scopedSlots: { customRender: 'createRender' },
   },
   {
-    title: 'Modify',
+    title: 'Modifier',
     dataIndex: 'm',
     scopedSlots: { customRender: 'updateRender' },
   },
   {
-    title: 'Delete',
+    title: 'Supprimer',
     dataIndex: 'd',
     scopedSlots: { customRender: 'deleteRender' },
   },
   {
-    title: 'All',
+    title: 'Tous',
     dataIndex: 'allPermission',
     scopedSlots: { customRender: 'allRender' },
   },

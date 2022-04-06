@@ -285,7 +285,7 @@
               <a slot="extra">
                 <a-input-search
                   class="self-center w-48 invisible md:visible"
-                  placeholder="search alert"
+                  placeholder="Rechercher alert"
                 />
               </a>
               <div
@@ -403,7 +403,7 @@
                 v-if="checkUserHasPermission(currUser.permissions, 'user', 'd') && checkUserHasPermission(currUser.permissions, 'user', 'm')"
               >
                 <a-radio-group default-value="all" v-model="filterActiveUser" size="small">
-                  <a-radio-button value="all">All</a-radio-button>
+                  <a-radio-button value="all">Tous</a-radio-button>
                   <a-radio-button value="active">Active</a-radio-button>
                   <a-radio-button value="inactive">Inactive</a-radio-button>
                 </a-radio-group>
@@ -451,7 +451,7 @@
                 {{
                   (clientChildsData.length > 0 && clientChildsData.length) || 0
                 }}
-                {{ $t('flotteList') }}
+                {{ $t('Liste des flottes') }}
                 <a-button
                   class="self-center"
                   type="primary"
@@ -730,7 +730,7 @@
               v-if="tab === 2"
               key="2"
               :bordered="false"
-              :title="$t('alertDetails')"
+              :title="$t('Détails d'alerte')"
               :body-style="{ padding: '0px', overflowY: 'auto' }"
             >
               <div class="bg-white">
@@ -750,7 +750,7 @@
               v-if="tab === 4"
               key="3"
               :bordered="false"
-              :title="$t('userDetails')"
+              :title="$t('Détails de l'utilisateur')"
               :body-style="{ padding: '0px', overflowY: 'auto' }"
             >
               <div class="bg-white">
@@ -772,7 +772,7 @@
               v-if="tab === 5"
               key="4"
               :bordered="false"
-              :title="$t('clientDetails')"
+              :title="$t('Détails du client')"
               :body-style="{ padding: '0px', overflowY: 'auto' }"
             >
               <div class="bg-white">
@@ -807,7 +807,7 @@
       </div>
       <!-- modal add new alert -->
       <a-modal
-        :title="`${$t('addNewAlert')} #${selectedClient ? selectedClient.commercialname : ''
+        :title="`${$t('Ajouter une nouvelle alerte ')} #${selectedClient ? selectedClient.commercialname : ''
         }`"
         class="add-evice-modal"
         width="65vw"
@@ -852,7 +852,7 @@
       </a-modal>
       <!-- modal add new contact -->
       <a-modal
-        :title="`${$t('addNewContact')} #${selectedClient ? selectedClient.commercialname : ''
+        :title="`${$t('Ajouter un nouveau contact')} #${selectedClient ? selectedClient.commercialname : ''
         }`"
         class="add-evice-modal"
         width="65vw"
@@ -936,7 +936,7 @@
       </a-modal>
       <!-- modal add new client -->
       <a-modal
-        :title="`${$t('addNewClient')} #${selectedClient ? selectedClient.commercialname : ''
+        :title="`${$t('Ajouter un nouveau client')} #${selectedClient ? selectedClient.commercialname : ''
         }`"
         class="add-evice-modal"
         width="65vw"

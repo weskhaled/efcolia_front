@@ -8,7 +8,7 @@
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
       <div>
         <div>
-          <a-form-model-item ref="name" label="Alert name" prop="name">
+          <a-form-model-item ref="name" label="Nom alerte" prop="name">
             <a-input
               v-model="form.name"
               @blur="
@@ -56,7 +56,7 @@
       </div>
       <div>
         <div>
-          <a-form-model-item label="level" prop="level">
+          <a-form-model-item label="Niveau" prop="level">
             <a-select
               v-model="form.level"
               placeholder="please select your device level"
@@ -74,7 +74,7 @@
           </a-form-model-item>
         </div>
         <div>
-          <a-form-model-item label="Activity time" prop="fromTo">
+          <a-form-model-item label="Temps d'activité" prop="fromTo">
             <a-range-picker
               v-model="form.fromTo"
               show-time
@@ -84,7 +84,7 @@
           </a-form-model-item>
         </div>
         <div>
-          <a-form-model-item label="Statu" prop="status">
+          <a-form-model-item label="Statut" prop="status">
             <a-switch v-model="form.status" />
           </a-form-model-item>
         </div>
