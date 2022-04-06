@@ -169,7 +169,7 @@
           </a-menu-item>
           <a-menu-item>
             <span @click.stop="$emit('delete-device', device.id)"
-              ><a-icon class="mr-1" type="delete" /> supprimer device</span
+              ><a-icon class="mr-1" type="delete" /> Supprimer device</span
             >
           </a-menu-item>
           <a-menu-item>
