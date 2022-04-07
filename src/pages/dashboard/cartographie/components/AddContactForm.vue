@@ -10,7 +10,7 @@
         <div>
           <a-form-model-item
             ref="firstname"
-            label="First Name"
+            label="Prénom"
             prop="firstname"
           >
             <a-input
@@ -24,7 +24,7 @@
           </a-form-model-item>
         </div>
         <div>
-          <a-form-model-item ref="lastname" label="Last Name" prop="lastname">
+          <a-form-model-item ref="lastname" label="Nom de famille" prop="lastname">
             <a-input
               v-model="form.lastname"
               @blur="
@@ -50,7 +50,7 @@
           </a-form-model-item>
         </div>
         <div>
-          <a-form-model-item ref="password" label="Password" prop="password">
+          <a-form-model-item ref="password" label="Mot de passe" prop="password">
             <a-input-password
               v-model="form.password"
               @blur="
@@ -139,7 +139,7 @@
           </a-table>
         </a-tab-pane>
         <a-tab-pane key="2" tab="Addresses">
-          Addresses
+          Adresses
         </a-tab-pane>
       </a-tabs>
     </div>
@@ -151,32 +151,32 @@ const BASE_URL = process.env.VUE_APP_API_BASE_URL
 
 const columnsUserPermissions = [
   {
-    title: 'Function',
+    title: 'Fonction',
     dataIndex: 'objecttype',
     width: '180px',
   },
   {
-    title: 'Consult',
+    title: 'Consulter',
     dataIndex: 'r',
     scopedSlots: { customRender: 'consultRender' },
   },
   {
-    title: 'Create',
+    title: 'Créer',
     dataIndex: 'n',
     scopedSlots: { customRender: 'createRender' },
   },
   {
-    title: 'Modify',
+    title: 'Modifier',
     dataIndex: 'm',
     scopedSlots: { customRender: 'updateRender' },
   },
   {
-    title: 'Delete',
+    title: 'Supprimer',
     dataIndex: 'd',
     scopedSlots: { customRender: 'deleteRender' },
   },
   {
-    title: 'All',
+    title: 'Tous',
     dataIndex: 'allPermission',
     scopedSlots: { customRender: 'allRender' },
   },

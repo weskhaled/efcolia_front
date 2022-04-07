@@ -158,7 +158,7 @@
                   class="md:flex-none flex flex-1 justify-center"
                 >
                   <a-tooltip placement="rightTop">
-                    <template slot="title">{{ $t('ListeSociétés') }}</template>
+                    <template slot="title">{{ $t('companyList') }}</template>
                     <a
                       class="flex justify-center w-full md:w-12 h-12"
                       :class="tab === 5 ? 'bg-blue-100 active' : null"
@@ -285,7 +285,7 @@
               <a slot="extra">
                 <a-input-search
                   class="self-center w-48 invisible md:visible"
-                  placeholder="search alert"
+                  placeholder="Rechercher alert"
                 />
               </a>
               <div
@@ -403,7 +403,7 @@
                 v-if="checkUserHasPermission(currUser.permissions, 'user', 'd') && checkUserHasPermission(currUser.permissions, 'user', 'm')"
               >
                 <a-radio-group default-value="all" v-model="filterActiveUser" size="small">
-                  <a-radio-button value="all">All</a-radio-button>
+                  <a-radio-button value="all">Tous</a-radio-button>
                   <a-radio-button value="active">Active</a-radio-button>
                   <a-radio-button value="inactive">Inactive</a-radio-button>
                 </a-radio-group>

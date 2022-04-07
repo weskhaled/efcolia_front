@@ -13,9 +13,9 @@
       v-if="checkUserHasPermission(currUser.permissions, 'company', 'd')"
     >
       <a-popconfirm
-        title="Are you sure delete this client ?"
-        ok-text="Yes"
-        cancel-text="No"
+        title="Vous êtes sûr de supprimer ce client ?"
+        ok-text="Oui"
+        cancel-text="Non"
         @confirm="$emit('delete', client)"
       >
         <a-icon key="delete" type="delete" />

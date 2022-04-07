@@ -164,17 +164,17 @@
           </a-menu-item>
           <a-menu-item>
             <span @click.stop="$emit('edit-device', device)"
-              ><a-icon class="mr-1" type="edit" /> Edit Device</span
+              ><a-icon class="mr-1" type="edit" /> Modifier device</span
             >
           </a-menu-item>
           <a-menu-item>
             <span @click.stop="$emit('delete-device', device.id)"
-              ><a-icon class="mr-1" type="delete" /> Delete Device</span
+              ><a-icon class="mr-1" type="delete" /> Supprimer device</span
             >
           </a-menu-item>
           <a-menu-item>
             <span @click.stop="$emit('report-device', device.id)"
-              ><a-icon class="mr-1" type="read" /> Rapport Device</span
+              ><a-icon class="mr-1" type="read" /> Rapport device</span
             >
           </a-menu-item>
         </a-menu>
@@ -193,7 +193,7 @@
       </div>
       <div slot="description">
         <a-icon type="environment" />
-        {{ device.adress || 'No address For this Device' }}
+        {{ device.adress || 'Pas d\'adresse pour ce device' }}
       </div>
       <div slot="avatar" class="self-center">
         <a-button

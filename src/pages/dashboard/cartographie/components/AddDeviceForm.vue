@@ -114,7 +114,7 @@
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
       <div>
         <div>
-          <a-form-model-item label="Cart SIM" prop="simcard">
+          <a-form-model-item label="Carte SIM" prop="simcard">
             <a-select
               v-model="form.simcard"
               placeholder="please select Sim Card"

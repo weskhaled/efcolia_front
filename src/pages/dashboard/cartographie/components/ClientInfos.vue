@@ -7,7 +7,7 @@
             <div>
               <a-form-model-item
                 ref="commercialName"
-                label="commercialName"
+                label="Nom commercial"
                 prop="commercialName"
               >
                 <a-input
@@ -21,7 +21,7 @@
               </a-form-model-item>
             </div>
             <div>
-              <a-form-model-item label="country" prop="country">
+              <a-form-model-item label="Pays" prop="country">
                 <a-select
                   v-model="form.country"
                   show-search
@@ -41,7 +41,7 @@
             <div>
               <a-form-model-item
                 ref="begindate"
-                label="begindate"
+                label="Date de début"
                 prop="begindate"
               >
                 <a-input
@@ -57,7 +57,7 @@
           </div>
           <div>
             <div>
-              <a-form-model-item label="Client Type" prop="clientType">
+              <a-form-model-item label="Type de client" prop="clientType">
                 <a-select
                   v-model="form.clientType"
                   placeholder="please select your client type"
@@ -73,12 +73,12 @@
               </a-form-model-item>
             </div>
             <div class="col-span-1">
-              <a-form-model-item label="Status" prop="status">
+              <a-form-model-item label="Statut" prop="status">
                 <a-switch v-model="form.status" />
               </a-form-model-item>
             </div>
             <div class="col-span-1">
-              <a-form-model-item label="description" prop="description">
+              <a-form-model-item label="Description" prop="description">
                 <a-input v-model="form.description" type="textarea" />
               </a-form-model-item>
             </div>

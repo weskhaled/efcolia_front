@@ -37,7 +37,7 @@
       </a-descriptions-item>
     </a-descriptions>
     <a-tabs default-active-key="1">
-      <a-tab-pane key="1" tab="Alert And Flotte">
+      <a-tab-pane key="1" tab="Alertes et flottes">
         <a-table
           :columns="columnsAlertDeviceAndFlotte"
           :data-source="devicesAndFlottes"
@@ -49,7 +49,7 @@
           </span>
         </a-table>
       </a-tab-pane>
-      <a-tab-pane key="2" tab="Requirement">
+      <a-tab-pane key="2" tab="Exigences">
         <a-table
           :columns="columnsConditionsAlert"
           :data-source="conditions"
@@ -83,7 +83,7 @@ const columnsActionsAlert = [
     dataIndex: 'type',
   },
   {
-    title: 'Target',
+    title: 'Cible',
     dataIndex: 'target',
   },
 ]
@@ -93,38 +93,38 @@ const columnsConditionsAlert = [
     dataIndex: 'relation',
   },
   {
-    title: 'type',
+    title: 'Type',
     dataIndex: 'type',
   },
   {
-    title: 'cible',
+    title: 'Cible',
     dataIndex: 'target',
     scopedSlots: { customRender: 'targetRender' },
   },
   {
-    title: 'Operator',
+    title: 'Operateur',
     dataIndex: 'operator',
   },
   {
-    title: 'value',
+    title: 'Valeur',
     dataIndex: 'VALUE',
   },
 ]
 const columnsAlertDeviceAndFlotte = [
   {
-    title: 'Alert Name',
+    title: 'Nom alerte',
     dataIndex: 'alertName',
   },
   {
-    title: 'Device Name',
+    title: 'Nom device',
     dataIndex: 'deviceName',
   },
   {
-    title: 'Flotte Name',
+    title: 'Nom flotte',
     dataIndex: 'flotteName',
   },
   {
-    title: 'Object Type',
+    title: 'Type d\'objet',
     dataIndex: 'objectType',
     scopedSlots: { customRender: 'objectType' },
   },

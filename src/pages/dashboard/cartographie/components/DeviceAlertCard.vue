@@ -17,9 +17,9 @@
     <template slot="actions" class="ant-card-actions">
       <a-icon key="edit" type="edit" />
       <a-popconfirm
-        title="Are you sure delete this alert?"
-        ok-text="Yes"
-        cancel-text="No"
+        title="Vous êtes sûr de supprimer cette alerte ?"
+        ok-text="Oui"
+        cancel-text="Non"
         @confirm="$emit('delete', alert)"
       >
         <a-icon key="delete" type="delete" />
