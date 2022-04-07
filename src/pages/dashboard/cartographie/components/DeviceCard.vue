@@ -193,7 +193,7 @@
       </div>
       <div slot="description">
         <a-icon type="environment" />
-        {{ device.adress || 'Pas d'adresse pour ce device' }}
+        {{ device.adress || 'Pas d\'adresse pour ce device' }}
       </div>
       <div slot="avatar" class="self-center">
         <a-button

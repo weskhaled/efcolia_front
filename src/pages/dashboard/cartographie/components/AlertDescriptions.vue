@@ -124,7 +124,7 @@ const columnsAlertDeviceAndFlotte = [
     dataIndex: 'flotteName',
   },
   {
-    title: 'Type d'objet',
+    title: 'Type d\'objet',
     dataIndex: 'objectType',
     scopedSlots: { customRender: 'objectType' },
   },

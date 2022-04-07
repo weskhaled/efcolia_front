@@ -18,11 +18,10 @@ module.exports = {
             noGeoForDevice: 'Cet appareil n\'a pas de géolocalisation',
             alert: 'alerte',
             devicesAlerts: 'Alertes',
-            alertDetails: 'Détails d\'alert',
             deviceHistory: 'Historique',
             addNewDevice: 'Ajouter un nouvel appareil',
             updateDevice: 'Modifier appareil',
-            flotteList: 'Sociétés',
+            clientList: 'Sociétés',
             contactList: 'contacts',
             enginestate: 'Etat moteur',
             ListeBoitiers: 'Liste des boitiers',
@@ -37,7 +36,6 @@ module.exports = {
             flotteList: 'Liste des flottes',
             alertDetails: "Détails d'alerte",
             userDetails: "Détails de l'utilisateur",
-            clientDetails: "Détails du client",
             addNewAlert: "Ajouter une nouvelle alerte",
             addNewClient: "Ajouter un nouveau client"
 
