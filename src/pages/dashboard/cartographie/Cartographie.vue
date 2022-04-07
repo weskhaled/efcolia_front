@@ -158,7 +158,7 @@
                   class="md:flex-none flex flex-1 justify-center"
                 >
                   <a-tooltip placement="rightTop">
-                    <template slot="title">{{ $t('ListeSociétés') }}</template>
+                    <template slot="title">{{ $t('companyList') }}</template>
                     <a
                       class="flex justify-center w-full md:w-12 h-12"
                       :class="tab === 5 ? 'bg-blue-100 active' : null"
